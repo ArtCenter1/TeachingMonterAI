@@ -1,0 +1,837 @@
+﻿Teaching Monster AI Agent — PRD v1.0    CONFIDENTIAL
+
+
+PRODUCT REQUIREMENTS DOCUMENT
+
+
+Teaching Monster AI Agent
+
+
+Autonomous Pedagogical Video Generation System
+
+
+Version
+	1.0 — Initial Release
+	Status
+	Ready for Engineering
+	Date
+	April 2026
+	Competition
+	Teaching Monster Challenge — teaching.monster
+	Team Size
+	3–6 engineers
+	Deadline
+	30-min end-to-end video generation
+	
+
+CONFIDENTIAL — INTERNAL USE ONLY
+________________
+
+
+1. Product Overview
+1.1 Purpose
+This document specifies the full engineering requirements for the Teaching Monster AI Agent — an autonomous system that receives a JSON API request containing a course topic and student persona, and returns a complete educational video URL within 30 minutes, with zero human intervention.
+The agent is designed to compete in and win the Teaching Monster Challenge (teaching.monster), a competition evaluating AI-generated teaching videos for secondary education subjects across physics, biology, computer science, and mathematics.
+
+
+1.2 The core differentiator
+Most competing teams will build video generators. The winning team builds a system that learns what better teaching means. The competition's Elo arena and AI Student evaluator are not just metrics — they are training signals. Every match is a data point for improving the agent's pedagogical policy.
+
+
+Key insight: Video quality is table stakes. The differentiator is Pedagogical Content Knowledge (PCK) — the ability to understand how humans learn, not just what is factually correct. The agent must reason about scaffolding, misconceptions, cognitive load, and adaptive explanation style.
+	
+
+1.3 Competition structure
+Phase
+	Objective
+	Evaluation mechanism
+	Phase 1 — Warm-up
+	API integration & pipeline validation
+	Automated AI Student scoring on 4 criteria
+	Phase 2 — Preliminary
+	Human Arena head-to-head
+	Elo ranking by real student pairwise preference
+	Phase 3 — Grand Final
+	High-difficulty 30-min sprints
+	Expert review by professors and teachers
+	Phase 4 — Workshop
+	Architecture sharing
+	Official rankings and award presentation
+	
+
+1.4 Judging criteria (all phases)
+All phases evaluate on four axes. The agent must score high on all four simultaneously:
+
+
+Criterion
+	Definition
+	Agent capability required
+	Accuracy
+	Zero hallucinations; every fact, formula, citation verifiable
+	Source grounding via NotebookLM MCP + web search + code interpreter verification
+	Logic & Flow
+	Scaffolding from simple → complex; smooth narrative bridges
+	Concept dependency graph; prerequisite sequencing; no info dumps
+	Adaptability
+	True personalisation to student persona; matched vocabulary, examples, depth
+	Persona parser; knowledge gap estimator; ZPD-driven lesson arc
+	Engagement
+	Vivid storytelling, Socratic questions, synced multimodal elements
+	Narration pacing optimizer; engagement predictor; curiosity gap insertion
+	________________
+
+
+2. System Architecture
+2.1 High-level pipeline
+The agent operates as a fully automated multi-stage pipeline. No human is in the loop at any point between API request and video URL delivery.
+
+
+Pipeline flow: API Input → [NotebookLM sourcing stage] → Persona Parser → Concept Planner → Script Generator → CIDPP Critic → Revision Loop → Multimodal Planner → Video Renderer → Output URL
+	
+
+2.2 API contract
+Request
+POST /generate
+{
+  "course_requirement": "Self-Attention Mechanism",
+  "student_persona": "High schooler, no calculus"
+}
+	
+
+Response
+{
+  "video_url": "https://...",
+  "supplementary_url": "https://...",  // optional: NLM study guide
+  "generation_time_seconds": 1247
+}
+	
+
+Hard constraints
+* Total generation time: ≤ 1800 seconds (30 minutes) from request to URL
+* Zero human intervention between request and response
+* Video language: English
+* Video length: ≤ 30 minutes (match competition rules)
+* Must be fully reproducible in Docker
+
+
+2.3 Module map
+The system consists of eight modules. Each is independently testable and replaceable.
+
+
+Module
+	Primary responsibility
+	Key output
+	M1 — NotebookLM sourcing
+	Load authoritative sources, extract grounded facts with citations
+	Cited content bundle (JSON)
+	M2 — Persona parser
+	Infer learner state from student_persona string
+	Student model object
+	M3 — Concept planner
+	Build prerequisite dependency graph, sequence lesson arc
+	Ordered concept graph (JSON)
+	M4 — Script generator
+	Write full narration script with visual cue annotations
+	Annotated script (Markdown)
+	M5 — CIDPP critic
+	Score script on 5 pedagogical dimensions, flag revisions
+	Rubric scores + revision instructions
+	M6 — Multimodal planner
+	Map each concept segment to optimal visual representation
+	Visual plan (JSON)
+	M7 — Video renderer
+	Assemble TTS + visuals into final video, upload, return URL
+	video_url string
+	M8 — Feedback logger
+	Record all inputs, decisions, scores, and outcomes per run
+	Logged run record (DB)
+	________________
+
+
+3. Five Capability Layers
+The agent's intelligence is organised into five layers. Layers 1–2 define what the agent knows about learning. Layers 3–5 define how it improves over time. These layers inform the design of Modules M2–M5.
+
+
+Layer 1 — Pedagogical intelligence
+The agent must embody Pedagogical Content Knowledge (PCK): not just factual accuracy, but domain-specific knowledge of how to make content learnable. This layer powers Module M4 (script generation) and M5 (critic).
+
+
+1a. Misconception detection
+Before writing any script, the agent retrieves a domain-specific misconception library for the target concept. These are pre-curated, not generated, and cover the four competition subjects.
+* Physics: force vs. momentum, weight vs. mass, current vs. voltage
+* Biology: evolution is goal-directed, genes are switched on/off permanently
+* CS: recursion = infinite loop, arrays are the only data structure
+* Mathematics: correlation implies causation, division always makes smaller
+Implementation: Retrieval-augmented lookup against a misconception knowledge base, indexed by concept × subject. The script generator is required to address the top-2 misconceptions for each concept node before proceeding.
+
+
+1b. Scaffolding strategy selection
+The agent selects an explanation structure before writing. The available strategies are:
+* Example → generalization (best for concrete learners, younger audiences)
+* Intuition → formula → application (best for IB/AP students comfortable with abstraction)
+* Misconception → correction → reconstruction (best for topics with strong prior errors)
+* Story → formalization (best for engagement-first personas, narrative learners)
+Selection is parameterized by the student model from Layer 2. The strategy choice is logged per run so the feedback loop (Layer 3) can track which strategies win in the Elo arena.
+
+
+1c. Cognitive load optimization
+The script generator is constrained by measurable cognitive load proxies. The CIDPP critic enforces these limits:
+Parameter
+	Target range
+	Enforcement
+	Concept density
+	≤ 2 new concepts per 3 minutes
+	Critic flags violations, triggers split
+	Equation-to-analogy ratio
+	≤ 1:2 for non-calculus personas
+	Persona parser sets ratio ceiling
+	Average sentence length
+	≤ 18 words for age < 16
+	Script post-processor trims
+	Quiz/check frequency
+	1 check per 4–5 minutes
+	Planner enforces checkpoints
+	
+
+1d. Explanation style adaptation
+The agent does not just acknowledge the student persona — it reasons about implied prior knowledge. A persona string like 'High schooler, no calculus' implies: comfort with algebra, unfamiliarity with limits/derivatives, likely familiar with slope but not as a function. The persona parser extracts these implied constraints and the script generator respects them throughout.
+
+
+Layer 2 — Student modeling
+From the student_persona string, the agent constructs a structured student model object that drives all downstream decisions.
+
+
+Student model schema
+student_model = {
+  level:                 "IB" | "AP" | "high_school" | "middle_school",
+  knowledge_embedding:   [...],   // implied known concepts
+  misconception_risk:    {...},   // top-3 likely errors by concept
+  cognitive_load_budget: float,  // max concept density ceiling
+  modality_preference:   "visual" | "verbal" | "mixed",
+  abstraction_tolerance: float,  // 0=concrete only, 1=fully abstract
+}
+	
+
+Zone of Proximal Development (ZPD) targeting
+The concept planner (M3) must target the student's ZPD: starting just below their ceiling and building up. The lesson arc must not assume any concept without having introduced it earlier in the same video. The planner validates this by checking every node in the concept graph against the student's knowledge_embedding before finalising the order.
+
+
+Synthetic student testing
+Before committing to video generation, the agent runs 4 synthetic student personas against the draft script. Each persona role-plays the target student and reports: what was still confusing, what assumed knowledge they did not have, where pacing was too fast. Revisions are triggered if any persona flags more than 2 gaps.
+* Persona A: Confused visual learner — needs diagrams before words
+* Persona B: Math-anxious student — flags equations without analogies
+* Persona C: High-performing abstract thinker — flags oversimplification
+* Persona D: Low prior knowledge, high curiosity — flags missing prerequisites
+
+
+Layer 3 — Teaching strategy learning loop
+This is the layer that separates the winning team from everyone else. The agent treats every API call as a training event and updates its teaching policy from every signal available.
+
+
+3a. Feedback signal collection
+Three signal sources are collected and stored in the feedback logger (M8):
+* AI Student scores (Phase 1): structured per-dimension scores and textual critique from the automated evaluator. Parsed into: which concept was unclear, where logic broke down, vocabulary mismatch. Treated as the primary training signal during warm-up.
+* Elo outcomes (Phase 2): win/loss per match, opponent style (if observable), concept × persona context. Used to update the teaching policy and reward model.
+* Expert review signals (Phase 3): qualitative feedback from professors. Stored as preference data for reward model fine-tuning.
+
+
+3b. Teaching reward model
+The agent maintains a lightweight reward model R(script, student_model) → float that predicts teaching effectiveness before the video is rendered. This enables Best-of-N selection: generate 3 script variants, score each, commit to the highest scorer.
+The reward model follows the Reinforcement Learned Teacher (RLT) paradigm: the reward is not script fluency, but the predicted probability that a student model recovers the correct answer given the explanation. This aligns the teacher's objective with actual learning outcomes.
+Initial implementation: a prompted LLM judge scoring on the CIDPP rubric (see M5). Over time, trained on accumulated preference data from AI Student reports and Elo outcomes.
+
+
+3c. Self-play A/B evaluation
+For each lesson, the script generator produces N=3 variants using different scaffolding strategies (Layer 1b). The reward model scores all three and selects the highest. The unchosen variants and their scores are logged as negative preference examples for future reward model training.
+
+
+3d. Pedagogy memory bank
+Every run that achieves an AI Student score ≥ 8/10 or an Elo win is stored as a few-shot example in the pedagogy memory bank, indexed by concept × student_level. Future runs on similar topics retrieve the top-2 stored examples and use them as positive demonstrations in the script generator's system prompt.
+This creates a compounding advantage: every strong performance makes the next similar lesson better. By the time of the finals, the agent's memory bank contains accumulated best-practice pedagogical moves for every tested domain.
+
+
+3e. Meta-policy for strategy selection
+The feedback logger tracks win rate per scaffolding strategy × student_level × subject combination. Over time the agent builds a meta-policy:
+* Physics + non-calculus → intuition-first + geometric analogy (tracked win rate)
+* CS + high prior knowledge → misconception-correction approach (tracked win rate)
+* Biology + visual learner → diagram-first narrative (tracked win rate)
+The strategy selector (Layer 1b) uses this meta-policy to bias its choice on new requests, while still exploring undersampled strategies with ε-greedy probability (ε = 0.15 initially, decaying to 0.05 after 50 runs).
+________________
+
+
+Layer 4 — Multimodal instruction generation
+The multimodal planner (M6) maps each concept segment in the script to an optimal visual representation. This is a policy decision, not a creative one — the wrong visual type actively hurts comprehension.
+
+
+Visual representation selector
+Concept type
+	Optimal representation
+	Trigger condition
+	Geometric / spatial
+	Animation (motion graphics)
+	Keywords: shape, area, volume, rotation, vector
+	Symbolic mathematics
+	Step-by-step derivation overlay
+	Equation ratio > threshold in segment
+	Algorithm / process
+	Flowchart animation
+	Keywords: steps, loop, if, repeat, sequence
+	Physics phenomena
+	Simulation with labelled parameters
+	Physics subject + dynamic concept
+	Biology structure
+	Labeled diagram with callout highlights
+	Anatomy, cell, molecule, organism keywords
+	Abstract concept
+	Spatial metaphor animation
+	No physical referent; high abstraction_tolerance required
+	Analogy
+	Side-by-side split-screen comparison
+	Analogy signal in script: 'think of it like...'
+	
+
+PCK analogy retrieval
+The agent maintains a retrieval store of expert pedagogical moves — specific, high-quality analogies indexed by concept and student level. These are curated, not generated:
+* Recursion (CS, beginner) → Russian nesting dolls; mirrors facing each other
+* Conservation of momentum (Physics) → billiard balls; ice skater pulling arms in
+* DNA transcription (Biology) → photocopying a blueprint without taking the original out
+* Derivative (Maths, no calculus) → speedometer reading vs. distance on odometer
+* Self-attention (CS/ML, high school) → highlighting every word in a sentence and asking: which other words help me understand this one?
+The script generator queries this store before writing each concept segment. Retrieved analogies are inserted before any formal definition. New high-scoring analogies from AI Student feedback are added to the store post-run.
+
+
+Narration pacing requirements
+* Hook rate: The first 60 seconds must contain a curiosity trigger (open question, counterintuitive fact, or relatable scenario) before any formal content
+* Summary beats: A micro-summary must appear every 4–5 minutes of content
+* Socratic questions: Minimum 2 prediction prompts per lesson ('What do you think happens when...')
+* Progressive reveal: Complex diagrams must be introduced element-by-element, not shown complete
+
+
+Layer 5 — Self-improving evaluation system
+The CIDPP critic (M5) runs on every draft script before video generation. It is the quality gate. No script proceeds to video rendering unless it passes the critic's minimum thresholds.
+
+
+CIDPP rubric
+Dimension
+	Definition
+	Minimum threshold
+	Clarity
+	Logical flow, understandable language, smooth transitions
+	7/10 — below triggers rewrite of flagged segments
+	Integrity
+	Factual accuracy, proper citations, no hallucinations
+	9/10 — near-zero tolerance; triggers source re-verification
+	Depth
+	Nuanced explanations beyond surface facts; addresses misconceptions
+	7/10 — below triggers additional concept layer insertion
+	Practicality
+	Concrete examples, applications, worked problems
+	7/10 — below triggers example addition
+	Pertinence
+	Alignment with student_persona level and stated goal
+	8/10 — below triggers persona re-alignment pass
+	
+
+Critic implementation (prompt template)
+SYSTEM: You are an expert pedagogy evaluator. Score this lesson script for a
+student described as: {student_persona}.
+
+
+Score 1-10 on each CIDPP dimension. For any score < threshold:
+- Quote the specific segment causing the failure
+- Write a concrete revision instruction
+- Specify what the revised segment must contain
+
+
+Return: { clarity, integrity, depth, practicality, pertinence, revisions[] }
+	
+
+Synthetic student test prompt
+SYSTEM: You are a {synthetic_persona_description}. You just watched this lesson.
+Report honestly:
+1. What parts were still confusing after watching?
+2. What knowledge did the lesson assume you had that you did not?
+3. Where did you lose attention and why?
+4. What one change would most improve your understanding?
+Be specific: quote the segment and explain the problem.
+	________________
+
+
+4. NotebookLM Integration
+4.1 Role and boundaries
+NotebookLM is integrated as the sourcing and fact-grounding module (M1). It does not replace any of the five capability layers — it provides verifiable, cited factual content that the teaching agent uses as the script's factual foundation.
+
+
+Critical constraint: NotebookLM's video and audio generation features are NOT reliably exposed through the official API as of April 2026. Do NOT architect around NotebookLM generating the video. It handles sourcing only. Your video pipeline (M7) must be fully independent.
+	
+
+4.2 Access tier decision
+Access path
+	Stability
+	Use in this system
+	Enterprise API (Google Cloud Discovery Engine)
+	Stable — official
+	NOT used (limited to CRUD; no content generation)
+	MCP Server (Model Context Protocol)
+	Fresh but real (March 2026 demo)
+	PRIMARY path — use for research & sourcing stage
+	Unofficial notebooklm-py wrapper
+	Fragile — undocumented endpoints
+	Internal testing only; NOT in production pipeline
+	
+
+4.3 What NotebookLM contributes
+Feature
+	Competition criterion served
+	Implementation notes
+	Source-grounded fact extraction
+	Accuracy (zero hallucination)
+	Every claim traced to passage; eliminates parametric hallucination risk
+	1M token context window
+	Accuracy, Depth
+	Can load full textbook chapters per subject domain
+	Briefing doc / study guide generation
+	Supplementary URL output
+	Studio panel generates study guide → supplementary_url response field
+	Mind maps and FAQs
+	Supplementary URL output
+	Optional addition to the supplementary_url package
+	
+
+4.4 Source loading strategy per subject
+Subject
+	Primary sources to load
+	Fallback if MCP unavailable
+	Physics
+	IB Physics textbook PDFs, AP Physics CED, Khan Academy transcripts
+	Web search + code interpreter for formula verification
+	Biology
+	IB Biology textbook, AP Biology CED, reviewed Wikipedia biology articles
+	Web search restricted to .edu and .gov domains
+	Computer Science
+	IB CS guide, official language documentation, CS50 transcripts
+	Web search + code execution for algorithm verification
+	Mathematics
+	IB Math AA/AI guide, AP Calculus CED, standard textbook chapters
+	Code interpreter for all formula and calculation verification
+	
+
+4.5 MCP integration failure handling
+The 30-minute generation window cannot be held hostage to an upstream API. The following fallback chain must be implemented:
+1. Attempt NotebookLM MCP sourcing (timeout: 90 seconds)
+2. On timeout or error: fall back to web_search + web_fetch for authoritative sources
+3. Run code interpreter verification on all formulas and numerical claims regardless of sourcing path
+4. Log the failure mode in M8 for post-run analysis
+The CIDPP critic's Integrity dimension (threshold: 9/10) serves as the final safety net regardless of which sourcing path was used.
+________________
+
+
+5. Module Specifications
+M1 — NotebookLM sourcing module
+Property
+	Specification
+	Notes
+	Integration path
+	NotebookLM MCP server
+	Fallback: web_search + web_fetch
+	Timeout budget
+	90 seconds maximum
+	Remaining time feeds downstream modules
+	Output format
+	JSON: { facts: [{claim, citation, confidence}], study_guide_url: string }
+	Passed to M2, M4
+	Minimum citations
+	≥ 3 unique source citations per major concept node
+	Below threshold → re-query or flag to critic
+	
+
+M2 — Persona parser
+Property
+	Specification
+	Notes
+	Input
+	student_persona string (free text)
+	E.g. 'High schooler, no calculus, visual learner'
+	Output
+	student_model JSON object (see Layer 2 schema)
+	Passed to M3, M4, M5, M6
+	Inference method
+	LLM extraction with structured output constraint
+	Temperature: 0; JSON schema enforced
+	Validation
+	All fields must be present; level must be one of 4 enum values
+	Fallback to 'high_school' defaults if ambiguous
+	
+
+M3 — Concept planner
+Property
+	Specification
+	Notes
+	Input
+	course_requirement + student_model + cited content bundle
+	From M1 + M2
+	Output
+	Ordered concept graph: [{concept, prerequisites, misconceptions, visual_type, duration_minutes}]
+	Passed to M4, M6
+	Prerequisite check
+	Every node's prerequisites must appear earlier in the sequence or in student knowledge_embedding
+	Planner reorders automatically if violated
+	Duration constraint
+	Total planned duration must be ≤ 25 minutes (5 min buffer for video assembly)
+	Planner trims lowest-priority nodes to fit
+	
+
+M4 — Script generator
+Property
+	Specification
+	Notes
+	Input
+	Concept graph + student_model + cited facts + PCK analogies (retrieved)
+	Analogies retrieved from memory bank
+	Output
+	Annotated script: narration text + [VISUAL: type, content] cue markers
+	Passed to M5, M6
+	N variants
+	Generates N=3 variants using 3 different scaffolding strategies
+	M5 selects best via reward model
+	Citation enforcement
+	Every factual claim must be tagged with its citation from M1 output
+	Untagged claims → critic Integrity failure
+	Hook requirement
+	First 60 seconds must contain curiosity trigger before formal content
+	Enforced by M5 Clarity check
+	
+
+M5 — CIDPP critic agent
+Property
+	Specification
+	Notes
+	Input
+	3 script variants from M4 + student_model
+	
+
+	Output
+	Selected script + CIDPP scores + revision log
+	Passed to M6, M8
+	Scoring method
+	LLM judge with CIDPP rubric prompt (see Layer 5)
+	Temperature: 0; JSON output enforced
+	Max revision loops
+	3 loops maximum per script variant
+	After 3 loops, select best available; log degraded quality flag
+	Reward model scoring
+	All 3 variants scored; highest CIDPP total selected
+	Score delta logged as training signal in M8
+	
+
+M6 — Multimodal planner
+Property
+	Specification
+	Notes
+	Input
+	Approved script + concept graph
+	From M5 + M3
+	Output
+	Visual plan: [{script_segment_id, visual_type, content_spec, duration_seconds}]
+	Passed to M7
+	Representation policy
+	Must follow visual selector table (see Layer 4)
+	Override only if concept graph specifies different type
+	Progressive reveal enforcement
+	Diagrams with > 3 elements must be annotated as reveal:sequential
+	M7 renders in sequence, not all-at-once
+	
+
+M7 — Video renderer
+Property
+	Specification
+	Notes
+	Input
+	Approved script + visual plan
+	From M5 + M6
+	Output
+	video_url (publicly accessible), supplementary_url (optional)
+	Must be accessible within 30-min total window
+	TTS requirement
+	Neural TTS; natural pacing; ≤ 150 words per minute for complex segments
+	Adjust rate programmatically per segment complexity
+	Independence from NLM
+	Must not call NotebookLM APIs at render time
+	NLM sourcing is complete before M7 starts
+	Upload target
+	Any publicly accessible CDN or storage URL
+	Must remain accessible for competition evaluation period
+	
+
+M8 — Feedback logger
+Property
+	Specification
+	Notes
+	Records per run
+	concept, student_level, subject, strategy_used, CIDPP_scores, reward_model_score, video_url, outcome (win/loss/score)
+	
+
+	Retention
+	All runs retained; no deletion during competition
+	Storage: append-only log + indexed DB
+	Accessible to
+	M4 (pedagogy memory bank queries), M5 (reward model training), meta-policy updater
+	Read-only for M4/M5; write-only for pipeline
+	Post-run analytics
+	After each Phase 1 batch: auto-summarise which concepts/strategies had lowest scores
+	Report surfaces to team daily
+	________________
+
+
+6. Capability Roadmap
+6.1 MVP — Weeks 1–2: Close the loop
+The single most important goal in the first two weeks is getting the AI Student feedback loop operational so you are generating training signal from Day 1. Everything else is secondary.
+
+
+MVP definition: A working end-to-end pipeline that: receives the API request, generates a video within 30 minutes, submits to Phase 1, and logs every AI Student critique in structured form. Imperfect teaching quality is acceptable. Missing feedback logging is not.
+	
+
+* Stand up Docker-containerised pipeline skeleton (M1–M8 stubs)
+* Implement M2 persona parser with student_model schema
+* Implement M3 concept planner with basic prerequisite ordering
+* Implement M4 script generator: single variant, intuition-first strategy
+* Implement M5 with basic CIDPP prompt (no multi-variant selection yet)
+* Implement M6 + M7 with simplest viable visual pipeline (slides + TTS)
+* Implement M8 feedback logger with AI Student report ingestion
+* Submit ≥ 20 warm-up requests; parse all AI Student critiques into structured JSON
+
+
+6.2 Phase 2 — Weeks 3–4: Add the reward model
+* Add Best-of-3 script variant generation to M4
+* Train initial reward model (LLM judge) on first 20 AI Student critique records
+* Implement CIDPP multi-variant selection in M5
+* Add misconception library for all 4 subjects to M4
+* Add PCK analogy retrieval store (seed with 20+ high-quality entries per subject)
+* Add synthetic student testing loop (4 personas) before video commit
+* Connect NotebookLM MCP sourcing in M1; implement fallback chain
+
+
+6.3 Phase 3 — Weeks 5+: Build the meta-policy
+* Implement strategy win-rate tracker in M8 (strategy × level × subject)
+* Implement ε-greedy strategy selector using meta-policy in M4
+* Add pedagogy memory bank queries (top-2 few-shot examples per concept × level)
+* Implement Elo outcome ingestion from Phase 2 results into M8
+* Update reward model on combined AI Student + Elo preference data
+* Add progressive reveal enforcement to M6 + M7
+* Refine hook-rate and Socratic question injection in M4
+
+
+6.4 Advanced — Pre-finals: RLT reward alignment (if resources allow)
+* Implement Reinforcement Learned Teacher (RLT) reward: student model log-probability of recovering correct answer given teacher explanation
+* Fine-tune script generator on accumulated pedagogy memory bank as positive examples
+* Implement pipeline meta-optimizer: monitor which module stage most often causes low scores; dynamically allocate more compute there
+* Expand analogy store to 100+ entries across all subjects and levels
+________________
+
+
+7. Evaluation Metrics
+7.1 Internal quality metrics
+These metrics are computed at runtime by M5 and M8. They proxy the competition rubric dimensions and enable the agent to self-evaluate before human feedback arrives.
+
+
+Internal metric
+	Competition dimension
+	Measurement method
+	CIDPP Integrity score
+	Accuracy
+	Critic LLM judge; code interpreter formula verification
+	CIDPP Clarity score
+	Logic & Flow
+	Critic LLM judge; concept dependency graph depth
+	CIDPP Pertinence score
+	Adaptability
+	Critic LLM judge; persona vocabulary match
+	Hook rate flag
+	Engagement
+	First-60-second curiosity trigger presence check
+	Concept density (concepts/3 min)
+	Logic & Flow
+	Automated count from concept graph + script length
+	Equation-to-analogy ratio
+	Adaptability
+	Automated count per concept segment
+	Synthetic student gap count
+	All four
+	Count of reported gaps across 4 synthetic personas
+	Reward model score (best variant)
+	All four
+	LLM judge CIDPP aggregate on selected script
+	
+
+7.2 Competition outcome metrics
+These are tracked in M8 and reviewed by the team after each phase.
+
+
+Metric
+	Target
+	Tracking cadence
+	AI Student score (Phase 1)
+	≥ 8.0 / 10.0 average across all 4 dimensions
+	After every Phase 1 submission
+	Elo win rate (Phase 2)
+	≥ 60% across all matches
+	After each Phase 2 match
+	Strategy win rate delta
+	Winning strategy ≥ 10pp above losing strategy after 20 runs
+	Weekly during Phase 2
+	Pedagogy memory bank size
+	≥ 50 stored high-quality exemplars by Phase 3
+	Weekly
+	Generation time p95
+	≤ 1700 seconds (buffer before 1800-second limit)
+	Every run
+	M1 fallback activation rate
+	< 10% of runs (MCP should succeed most of the time)
+	Every run
+	________________
+
+
+8. Technical Stack and Constraints
+8.1 Required tools (competition-permitted)
+* Web search: permitted and required for M1 fallback sourcing and citation verification
+* Code interpreter: permitted and required for formula verification, simulation generation, and algorithm demonstration in M7
+* NotebookLM MCP: permitted (Google API); use for M1 sourcing stage only
+* External LLM APIs: permitted for all modules; use consistent model across pipeline for predictability
+
+
+8.2 Performance constraints
+Constraint
+	Limit
+	Engineering approach
+	Total end-to-end time
+	≤ 1800 seconds
+	Parallelise M1 + M2 + M3 where possible; set module-level timeouts
+	M1 sourcing timeout
+	90 seconds max
+	Async with MCP; trigger fallback at 90s
+	M4 script generation (per variant)
+	≤ 120 seconds
+	Cap at 3 variants; select synchronously
+	M5 critic + revision loops
+	≤ 3 loops, ≤ 180 seconds total
+	Hard loop limit; proceed on best available
+	M7 video rendering + upload
+	≤ 900 seconds (15 minutes)
+	Largest budget; pre-generate assets in parallel during M5
+	Memory bank query latency
+	≤ 2 seconds
+	Pre-compute embeddings; cache frequent concept lookups
+	
+
+8.3 Reproducibility requirement
+* The entire pipeline must run in Docker with a single command
+* All external API keys injected via environment variables (never hardcoded)
+* M8 feedback log must be volume-mounted (persistent across container restarts)
+* All module inputs and outputs logged at DEBUG level for post-run analysis
+
+
+8.4 Failure modes and mitigations
+Failure mode
+	Impact
+	Mitigation
+	NotebookLM MCP timeout
+	M1 sourcing unavailable
+	Automatic fallback to web_search + web_fetch; log failure in M8
+	Script generation exceeds time budget
+	Pipeline stalls
+	Hard timeout per M4 call; use single-variant fallback if 3-variant exceeds budget
+	CIDPP critic infinite revision loop
+	Pipeline stalls
+	Hard cap: 3 revision loops maximum; select best available score
+	Video rendering failure
+	No output URL
+	Retry once; on second failure return partial output with error flag
+	All CIDPP scores below threshold
+	Low-quality output submitted
+	Submit with degraded-quality flag in M8; analyse post-run; do not block submission
+	________________
+
+
+9. Competitive Advantages and Research Directions
+These are the highest-leverage differentiators, ordered by expected impact on Elo ranking.
+
+
+1. RLT-style student-aligned reward (highest leverage)
+The Sakana AI Reinforcement Learned Teacher paradigm is the most theoretically sound approach to optimising 'better teaching' as a measurable objective. The teacher model is given both the question and the correct answer; its reward is the student model's log-probability of recovering the correct answer given the teacher's explanation. This is not yet widely implemented in competition contexts. First-mover advantage is significant.
+Implementation dependency: requires a student model (a smaller LLM used as the comprehension evaluator). Can be prototyped with a 7B parameter model. Recommended for Phase 3 / pre-finals implementation.
+
+
+2. Persona-conditional PCK retrieval (medium leverage, low effort)
+A growing knowledge base of expert pedagogical moves indexed by concept × learner_level is a compounding asset. Every competition run that scores highly adds entries. Competitors using generic prompting do not have this. Begin seeding in Week 1 with 5 entries per subject domain; target 100+ entries by finals.
+
+
+3. Pipeline meta-optimization (medium leverage, medium effort)
+Monitoring which module stage most often causes low CIDPP scores and dynamically allocating more compute or a better model to that stage is an engineering advantage not captured in any single model improvement. Example: if M3 concept sequencing is consistently flagged by the critic, replace M3's model with a stronger one while keeping M4 on a cheaper model.
+
+
+4. Synthetic student diversity (medium leverage, low effort)
+The more granular and realistic the 4 synthetic personas tested pre-evaluation, the better the revision signal. Calibrate each persona against real AI Student feedback from Phase 1 to make the synthetic test predictive of the real evaluator's concerns.
+
+
+5. Few-shot pedagogy memory prompting (low leverage to implement, high compounding value)
+Storing top-scoring lesson scripts as few-shot examples and prefixing them into the M4 system prompt for similar topics costs almost nothing to implement but compounds significantly over the competition. By the finals, the agent is not generating lessons from scratch — it is generating lessons that are variations on its own best prior work.
+________________
+
+
+10. Open Questions and Decisions Required
+
+
+Question
+	Options
+	Owner / deadline
+	Which video rendering stack for M7?
+	Remotion (React), MoviePy, ComfyUI, HeyGen API, Sora API
+	Engineering lead — Week 1
+	Which TTS provider?
+	ElevenLabs, Google TTS, Azure Neural TTS, OpenAI TTS
+	Engineering lead — Week 1
+	Which LLM for M4/M5?
+	Claude Sonnet (recommended), GPT-4o, Gemini 1.5 Pro
+	Engineering lead — Week 1; test CIDPP scoring consistency
+	Supplementary URL hosting?
+	S3, GCS, Vercel Blob, Cloudflare R2
+	Engineering lead — Week 1
+	NotebookLM MCP auth setup?
+	Requires GCP project + MCP server configuration
+	Engineering lead — Week 2
+	M8 database?
+	SQLite (simple), Postgres (scalable), DynamoDB (serverless)
+	Engineering lead — Week 1
+	RLT student model selection?
+	Which 7B model to use as comprehension evaluator?
+	ML lead — Week 5
+	
+
+11. Glossary
+
+
+Term
+	Definition
+	PCK
+	Pedagogical Content Knowledge — knowing how to teach a subject, not just knowing the subject
+	CIDPP
+	Clarity, Integrity, Depth, Practicality, Pertinence — the 5-dimension rubric used by the CIDPP critic (M5)
+	ZPD
+	Zone of Proximal Development — the range just above what a student can do alone; the optimal teaching target
+	RLT
+	Reinforcement Learned Teacher — a training paradigm where the teacher's reward is the student's comprehension gain
+	Elo
+	The pairwise ranking system used in Phase 2 of the competition to rank agent outputs based on student preference
+	MCP
+	Model Context Protocol — the open standard used to connect agents to external tools like NotebookLM
+	NLM
+	NotebookLM — Google's research tool used in M1 for source grounding and supplementary material generation
+	Best-of-N
+	Generating N script variants and selecting the one with the highest reward model score
+	Meta-policy
+	The learned policy for selecting scaffolding strategies based on accumulated win-rate data per (strategy, level, subject)
+	Pedagogy memory bank
+	The retrieval store of highest-scoring past lessons used as few-shot examples in M4
+	
+
+teaching.monster — Internal Engineering DocumentPage
