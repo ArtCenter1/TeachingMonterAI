@@ -54,5 +54,50 @@
       "video_url": "https://storage.googleapis.com/teaching-monster-videos/mock_video.mp4",
       "generation_time_seconds": 2
     }
+  },
+  {
+    "run_id": "cd2af0bf-a34c-48ad-9244-f62a7e55125f",
+    "data": {
+      "request": {
+        "course_requirement": "Self-Attention Mechanism",
+        "student_persona": "High schooler, no calculus"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Self-Attention Mechanism",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "https://storage.googleapis.com/teaching-monster-videos/mock_video.mp4",
+      "generation_time_seconds": 2
+    }
   }
 ]

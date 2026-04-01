@@ -1,7 +1,13 @@
 import time
 import uuid
 import asyncio
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, BackgroundTasks, HTTPException
+
+# Load environment variables
+load_dotenv()
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 from modules.schemas import GenerationRequest, GenerationResponse
 from modules.m1_sourcing import SourcingModule
 from modules.m2_persona import PersonaParser
@@ -92,4 +98,6 @@ async def generate_video(request: GenerationRequest):
 
 if __name__ == "__main__":
     import uvicorn
+    if not GOOGLE_API_KEY:
+        logger.warning("GOOGLE_API_KEY not found in environment. Real AI modules will fail.")
     uvicorn.run(app, host="0.0.0.0", port=8000)
