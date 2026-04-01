@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pydantic
+openai
+google-generativeai
+httpx
+jinja2
+python-dotenv
+pillow
+pytest
+loguru
