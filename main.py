@@ -70,7 +70,7 @@ async def generate_video(request: GenerationRequest):
         logger.info("Stage 7: Video Rendering")
         # In a real app, this might be a background task, 
         # but the API contract expects the URL in the response.
-        video_url = await m7.render(visual_plan, script.hook)
+        video_url = await m7.render(visual_plan, script)
 
         generation_time = int(time.time() - start_time)
         

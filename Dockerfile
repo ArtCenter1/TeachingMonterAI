@@ -5,6 +5,8 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     libsm6 \
     libxext6 \
+    libfreetype6-dev \
+    fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory

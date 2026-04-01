@@ -7,5 +7,5 @@ httpx
 jinja2
 python-dotenv
 pillow
-pytest
+gTTS
 loguru
