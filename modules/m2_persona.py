@@ -2,6 +2,7 @@ import os
 import json
 import google.generativeai as genai
 from .schemas import StudentModel, StudentLevel, ModalityPreference
+from .utils import extract_json
 from loguru import logger
 
 class PersonaParser:
@@ -9,7 +10,7 @@ class PersonaParser:
         self.api_key = os.getenv("GOOGLE_API_KEY")
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("gemini-1.5-flash")
+            self.model = genai.GenerativeModel("models/gemini-1.5-flash")
 
     async def parse(self, persona_string: str) -> StudentModel:
         if not self.api_key:
@@ -35,12 +36,7 @@ class PersonaParser:
 
         try:
             response = self.model.generate_content(prompt)
-            # Clean the response to ensure it's valid JSON
-            content = response.text.strip()
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0].strip()
-            
-            data = json.loads(content)
+            data = extract_json(response.text)
             return StudentModel(**data)
         except Exception as e:
             logger.error(f"Error parsing persona with Gemini: {str(e)}")

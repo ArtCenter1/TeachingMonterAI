@@ -2,6 +2,7 @@ import os
 import json
 import google.generativeai as genai
 from .schemas import ConceptNode, ConceptGraph, StudentModel
+from .utils import extract_json
 from loguru import logger
 
 class ConceptPlanner:
@@ -9,7 +10,7 @@ class ConceptPlanner:
         self.api_key = os.getenv("GOOGLE_API_KEY")
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("gemini-1.5-flash")
+            self.model = genai.GenerativeModel("models/gemini-1.5-flash")
 
     async def plan(self, topic: str, student_model: StudentModel) -> ConceptGraph:
         if not self.api_key:
@@ -43,11 +44,7 @@ class ConceptPlanner:
 
         try:
             response = self.model.generate_content(prompt)
-            content = response.text.strip()
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0].strip()
-            
-            data = json.loads(content)
+            data = extract_json(response.text)
             return ConceptGraph(**data)
         except Exception as e:
             logger.error(f"Error planning concepts with Gemini: {str(e)}")

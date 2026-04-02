@@ -2,6 +2,7 @@ import os
 import json
 import google.generativeai as genai
 from .schemas import FullScript, StudentModel, CIDPPScores
+from .utils import extract_json
 from loguru import logger
 
 class CIDPPCritic:
@@ -9,7 +10,7 @@ class CIDPPCritic:
         self.api_key = os.getenv("GOOGLE_API_KEY")
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("gemini-1.5-flash")
+            self.model = genai.GenerativeModel("models/gemini-1.5-flash")
 
     async def review(self, script: FullScript, student_model: StudentModel) -> CIDPPScores:
         if not self.api_key:
@@ -41,11 +42,7 @@ class CIDPPCritic:
 
         try:
             response = self.model.generate_content(prompt)
-            content = response.text.strip()
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0].strip()
-            
-            data = json.loads(content)
+            data = extract_json(response.text)
             return CIDPPScores(**data)
         except Exception as e:
             logger.error(f"Error reviewing script with Gemini: {str(e)}")

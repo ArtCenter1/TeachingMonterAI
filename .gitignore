@@ -38,3 +38,10 @@ videos/
 temp/
 logs/
 m8_feedback.db
+
+# Local Logs and Binaries
+pipeline.log
+m8_feedback.json
+bin/
+.kilo/
+

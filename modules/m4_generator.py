@@ -3,6 +3,7 @@ import json
 import google.generativeai as genai
 from typing import List
 from .schemas import FullScript, ScriptSegment, ConceptGraph, StudentModel, FactBundle
+from .utils import extract_json
 from loguru import logger
 
 class ScriptGenerator:
@@ -10,7 +11,7 @@ class ScriptGenerator:
         self.api_key = os.getenv("GOOGLE_API_KEY")
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("gemini-1.5-flash")
+            self.model = genai.GenerativeModel("models/gemini-1.5-flash")
 
     async def generate(self, concept_graph: ConceptGraph, student_model: StudentModel, fact_bundle: FactBundle) -> FullScript:
         if not self.api_key:
@@ -54,11 +55,7 @@ class ScriptGenerator:
 
         try:
             response = self.model.generate_content(prompt)
-            content = response.text.strip()
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0].strip()
-            
-            data = json.loads(content)
+            data = extract_json(response.text)
             return FullScript(**data)
         except Exception as e:
             logger.error(f"Error generating script with Gemini: {str(e)}")

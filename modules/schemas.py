@@ -62,6 +62,7 @@ class GenerationRequest(BaseModel):
 
 class GenerationResponse(BaseModel):
     video_url: str
+    subtitle_url: Optional[str] = None
     supplementary_url: Optional[str] = None
     generation_time_seconds: int
 
