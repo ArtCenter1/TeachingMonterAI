@@ -99,5 +99,1739 @@
       "video_url": "https://storage.googleapis.com/teaching-monster-videos/mock_video.mp4",
       "generation_time_seconds": 2
     }
+  },
+  {
+    "run_id": "38eb33bd-4296-4c50-b809-748ab479c7f5",
+    "data": {
+      "request": {
+        "course_requirement": "unit: Force and Translational Dynamics\n\ntopic: Circular Motion\n\nlearning objective: Describe circular orbits using Kepler\u2019s third law.\n\nessential knowledge: For an object in circular orbit around a central body, the centripetal acceleration is provided solely by gravitational attraction. The period of the orbit is related to the radius and the mass of the central body (Kepler\u2019s third law).",
+        "student_persona": "Education Level: Junior high school | Learning Pace: Slow | Preferred Explanation Style: Derivation | Timeline Urgency: Normal | Depth Preference: Application-first"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to unit: Force and Translational Dynamics\n\ntopic: Circular Motion\n\nlearning objective: Describe circular orbits using Kepler\u2019s third law.\n\nessential knowledge: For an object in circular orbit around a central body, the centripetal acceleration is provided solely by gravitational attraction. The period of the orbit is related to the radius and the mass of the central body (Kepler\u2019s third law).",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "https://a139-118-150-70-62.ngrok-free.app/output/final_video_38eb33bd-4296-4c50-b809-748ab479c7f5.mp4",
+      "generation_time_seconds": 2
+    }
+  },
+  {
+    "run_id": "1a0bd7ad-aa24-4670-ae3b-8be4d37666b8",
+    "data": {
+      "request": {
+        "course_requirement": "unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+        "student_persona": "Education Level: Elementary school | Learning Pace: Medium | Timeline Urgency: Normal | Depth Preference: Application-first"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "subtitle_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "generation_time_seconds": 1
+    }
+  },
+  {
+    "run_id": "2ceaa84a-5053-4c8e-b76a-fc4b86ccd309",
+    "data": {
+      "request": {
+        "course_requirement": "unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+        "student_persona": "Education Level: Elementary school | Learning Pace: Medium | Timeline Urgency: Normal | Depth Preference: Application-first"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "subtitle_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "generation_time_seconds": 1
+    }
+  },
+  {
+    "run_id": "848ca229-0365-45db-a779-fe17e554fe8f",
+    "data": {
+      "request": {
+        "course_requirement": "unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+        "student_persona": "Education Level: Elementary school | Learning Pace: Medium | Timeline Urgency: Normal | Depth Preference: Application-first"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "subtitle_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "generation_time_seconds": 1
+    }
+  },
+  {
+    "run_id": "6a5b099d-786a-429e-9deb-66a041a973ee",
+    "data": {
+      "request": {
+        "course_requirement": "Test topic",
+        "student_persona": "High schooler"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Test topic",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "http://localhost:8000/output/error",
+      "subtitle_url": "http://localhost:8000/output/error",
+      "generation_time_seconds": 1
+    }
+  },
+  {
+    "run_id": "4a41bb16-fc3c-4156-b339-0bd1846fc7c0",
+    "data": {
+      "request": {
+        "course_requirement": "unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+        "student_persona": "Education Level: Elementary school | Learning Pace: Medium | Timeline Urgency: Normal | Depth Preference: Application-first"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "subtitle_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "generation_time_seconds": 7
+    }
+  },
+  {
+    "run_id": "cd2f90aa-d66d-4b05-87f3-ba61b26c94d8",
+    "data": {
+      "request": {
+        "course_requirement": "Test topic",
+        "student_persona": "High schooler"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "Algebra I & II principles (solving equations, functions, graphing, systems, polynomials, quadratics)",
+          "Euclidean geometry basics (proofs, angles, shapes, area, volume, basic trigonometry - SOH CAH TOA)",
+          "Pre-calculus functions (exponential, logarithmic, advanced trigonometric identities, sequences, series, conceptual understanding of limits but no formal calculus)",
+          "Basic statistics and probability (mean, median, mode, fundamental probability rules)",
+          "Scientific method and experimental design basics",
+          "Fundamental concepts in biology (cell structure, genetics, evolution basics, ecosystems, human body systems)",
+          "Fundamental concepts in chemistry (atomic structure, periodic table, chemical bonding, basic reactions, stoichiometry)",
+          "Fundamental concepts in physics (kinematics, Newton's laws of motion, energy conservation, basic electricity and magnetism)",
+          "Basic literary analysis (themes, symbolism, character analysis) and essay writing structure",
+          "Overview of World and U.S. history, civics, and geography"
+        ],
+        "misconception_risk": {
+          "Mathematics": [
+            "Order of operations errors (PEMDAS/BODMAS mistakes)",
+            "Algebraic sign errors (especially with negatives and distribution)",
+            "Incorrect fraction operations (adding/subtracting without common denominators, incorrect cancellation)",
+            "Conceptual misunderstandings of functions (e.g., confusing f(x+y) with f(x)+f(y))",
+            "Probability fallacies (e.g., gambler's fallacy, misunderstanding 'and' vs 'or')",
+            "Misinterpretation of variables or constants in algebraic expressions"
+          ],
+          "Science": [
+            "Misconceptions about evolution (e.g., 'survival of the fittest' implying individual strength, Lamarckian inheritance)",
+            "Misunderstanding energy conservation (e.g., energy is 'used up' rather than transformed)",
+            "Confusion between mass and weight, or force and motion (Aristotelian view of motion)",
+            "Atomic structure oversimplification (e.g., electrons orbiting like planets)",
+            "Misinterpretation of chemical equilibrium or reaction rates",
+            "Difficulty distinguishing between correlation and causation"
+          ]
+        },
+        "cognitive_load_budget": 0.65,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.6
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Distinguish between scalar and vector quantities using real-world examples.",
+            "prerequisites": [],
+            "misconceptions": [
+              "Confusing scalar and vector quantities, e.g., speed vs. velocity, distance vs. displacement.",
+              "Assuming all quantities with a numerical value are scalars."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "Represent vectors geometrically as directed line segments (arrows) with magnitude and direction.",
+            "prerequisites": [
+              "Distinguish between scalar and vector quantities using real-world examples",
+              "Euclidean geometry basics (lines, angles, coordinate plane)"
+            ],
+            "misconceptions": [
+              "Incorrectly associating vector length only with magnitude, not direction.",
+              "Misinterpreting the angle reference (e.g., from x-axis vs. y-axis)."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Resolve 2D vectors into perpendicular components (x and y) using trigonometry.",
+            "prerequisites": [
+              "Represent vectors geometrically as directed line segments (arrows) with magnitude and direction",
+              "Euclidean geometry basics (right triangles)",
+              "Basic trigonometry (SOH CAH TOA)"
+            ],
+            "misconceptions": [
+              "Algebraic sign errors when components are in negative x or y directions.",
+              "Incorrectly applying sine/cosine (e.g., using sin for adjacent side).",
+              "Confusing the angle with respect to the x-axis vs. the y-axis in calculations."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 7.0
+          },
+          {
+            "concept": "Add vectors graphically using the tip-to-tail method to find the resultant vector.",
+            "prerequisites": [
+              "Represent vectors geometrically as directed line segments (arrows) with magnitude and direction"
+            ],
+            "misconceptions": [
+              "Starting the second vector from the origin instead of the tip of the first vector.",
+              "Incorrectly drawing the resultant (e.g., from tip to tip instead of tail of first to tip of last)."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "Add vectors algebraically by summing their respective x and y components.",
+            "prerequisites": [
+              "Resolve 2D vectors into perpendicular components (x and y) using trigonometry",
+              "Algebra I & II principles (adding corresponding elements of ordered pairs)"
+            ],
+            "misconceptions": [
+              "Adding x-component to y-component.",
+              "Algebraic sign errors during component addition, especially with negative components."
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 8.0
+          }
+        ],
+        "total_duration_minutes": 25.0
+      },
+      "critic_scores": {
+        "clarity": 10,
+        "integrity": 10,
+        "depth": 10,
+        "practicality": 10,
+        "pertinence": 10,
+        "revisions": [
+          "In Segment 03, when discussing how cosine and sine automatically give correct signs for components, add a very brief parenthetical reminder about the sign rules for sine and cosine in different quadrants (e.g., \"(Remember that cosine is negative in Q2 and Q3, and sine is negative in Q3 and Q4!)\"). This reinforces the 'why' behind the automatic sign handling.",
+          "For the visual content spec in Segment 05 concerning the `arctan` quadrant adjustment, explicitly request specific examples for each quadrant showing the calculator output for `arctan(Ry/Rx)` and the subsequent manual adjustment needed to get the correct 0-360 degree angle. For instance, illustrate a Q2 vector with `Rx` negative and `Ry` positive, showing `arctan` output and the `+180` correction.",
+          "Refine the visual content spec for Segment 05, Step 2 (Sum x-components and y-components) to visually represent the *addition* of components on their respective axes. For example, show `Ax` as an arrow on the x-axis, then draw `Bx` starting from the tip of `Ax` (maintaining its sign/direction), with a final resultant arrow for `Rx` stretching from the origin to the tip of `Bx`. Do similarly for `Ry`."
+        ]
+      },
+      "video_url": "http://localhost:8000/output/error",
+      "subtitle_url": "http://localhost:8000/output/error",
+      "generation_time_seconds": 324
+    }
+  },
+  {
+    "run_id": "13a19e9e-e5ae-4758-9446-04b3473e0e4f",
+    "data": {
+      "request": {
+        "course_requirement": "unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+        "student_persona": "Education Level: Elementary school | Learning Pace: Medium | Timeline Urgency: Normal | Depth Preference: Application-first"
+      },
+      "student_model": {
+        "level": "middle_school",
+        "knowledge_embedding": [
+          "basic arithmetic",
+          "simple geometry (shapes, perimeter, area)",
+          "reading comprehension",
+          "basic natural science (e.g., life cycles)"
+        ],
+        "misconception_risk": {
+          "Fractions": [
+            "comparing and operations"
+          ],
+          "Place Value": [
+            "errors in multi-digit number understanding"
+          ],
+          "Conservation of Matter": [
+            "e.g., believing dissolved substances disappear"
+          ]
+        },
+        "cognitive_load_budget": 0.5,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.1
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "What is Spinning? (Rotation)",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "How Fast is Something Spinning? (Rotational Speed)",
+            "prerequisites": [
+              "What is Spinning? (Rotation)"
+            ],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "What Makes Something Hard to Spin or Stop? (Spinning Oomph)",
+            "prerequisites": [
+              "How Fast is Something Spinning? (Rotational Speed)"
+            ],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "Understanding Total Spinning Strength (Angular Momentum Idea)",
+            "prerequisites": [
+              "How Fast is Something Spinning? (Rotational Speed)",
+              "What Makes Something Hard to Spin or Stop? (Spinning Oomph)"
+            ],
+            "misconceptions": [],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "What Does 'Conservation' Mean? (Staying the Same)",
+            "prerequisites": [],
+            "misconceptions": [
+              "Conservation of Matter: e.g., believing dissolved substances disappear"
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "The Rule of Spinning Strength Staying the Same (Conservation Principle)",
+            "prerequisites": [
+              "Understanding Total Spinning Strength (Angular Momentum Idea)",
+              "What Does 'Conservation' Mean? (Staying the Same)"
+            ],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "When Can Spinning Strength Change? (External Twists and Interactions)",
+            "prerequisites": [
+              "The Rule of Spinning Strength Staying the Same (Conservation Principle)"
+            ],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          }
+        ],
+        "total_duration_minutes": 23.0
+      },
+      "critic_scores": {
+        "clarity": 7,
+        "integrity": 9,
+        "depth": 9,
+        "practicality": 10,
+        "pertinence": 6,
+        "revisions": [
+          "**Reinforce Analogy Usage:** For students with a 0.1 abstraction tolerance, primarily use the simple, analogous terms (e.g., 'Spinning Oomph', 'Total Spinning Strength', 'External Twist') throughout the main explanation of each concept. Introduce the formal scientific terms (e.g., 'Moment of Inertia', 'Angular Momentum', 'Torque') explicitly as 'what scientists call this' only *after* the concept is thoroughly explained and understood through the analogy, perhaps in a brief, dedicated sentence or summary. Avoid immediate interchanging of terms.",
+          "**Break Down Long Segments:** Split segments with durations over 180 seconds (specifically seg03: 240s, seg06: 300s, seg07: 300s) into two or more shorter, more focused segments. This will help manage cognitive load and allow for more frequent processing breaks for the student.",
+          "**Simplify Introduction of Multiple Concepts:** In segments that introduce multiple linked ideas (e.g., seg04 combining 'Rotational Speed', 'Spinning Oomph', and 'Total Spinning Strength/Angular Momentum'), consider pacing the introduction of these ideas more slowly or dedicating separate micro-segments to each component before combining them. Reduce the number of new concepts introduced simultaneously.",
+          "**Add More Frequent Micro-Checks/Pauses:** Insert brief, simple check-for-understanding questions or recommended pause points after each major concept (e.g., after the explanation of 'Spinning Oomph' in seg03, before moving to 'Total Spinning Strength' in seg04) to reinforce learning and prevent cognitive overload.",
+          "**Review Visual Specifications for Abstraction:** Ensure that visual content specifications are also aligned with low abstraction tolerance. While the current visuals are generally good, re-evaluate if any visual elements could be made even more concrete or less symbolic, especially when introducing formal scientific terms visually. For example, in seg04's diagram, remove the 'question mark' and directly show the product as the result."
+        ]
+      },
+      "video_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "subtitle_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "generation_time_seconds": 199
+    }
+  },
+  {
+    "run_id": "c75da982-bc10-41e4-959d-f042ad12deef",
+    "data": {
+      "request": {
+        "course_requirement": "unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+        "student_persona": "Education Level: Elementary school | Learning Pace: Medium | Timeline Urgency: Normal | Depth Preference: Application-first"
+      },
+      "student_model": {
+        "level": "middle_school",
+        "knowledge_embedding": [
+          "basic arithmetic operations (addition, subtraction, multiplication, division)",
+          "reading comprehension (basic stories, instructions)",
+          "simple sentence structure and grammar",
+          "common geometric shapes (square, circle, triangle, rectangle)",
+          "counting and place value (up to thousands)",
+          "basic measurement concepts (length, weight, time)",
+          "fundamental science concepts (e.g., seasons, animal life cycles, basic weather)",
+          "basic social studies concepts (e.g., community, local history, maps)"
+        ],
+        "misconception_risk": {
+          "fractions": [
+            "confusing larger denominators with larger fractions (e.g., thinking 1/4 is greater than 1/2)"
+          ],
+          "living_things": [
+            "classifying non-living moving objects (e.g., clouds, cars) as living"
+          ],
+          "place_value": [
+            "errors in understanding the value of digits in larger numbers (e.g., confusing hundreds and thousands when adding or subtracting)"
+          ],
+          "area_perimeter": [
+            "confusing the concepts of area and perimeter, or applying the wrong formula"
+          ],
+          "cause_and_effect": [
+            "simplistic or incorrect causal reasoning in science (e.g., 'the sun moves around the earth')"
+          ]
+        },
+        "cognitive_load_budget": 0.4,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.1
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Introduction to Rotational Motion (What is Spinning?)",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Qualitative Torque (How to Make Something Spin or Stop Spinning)",
+            "prerequisites": [
+              "Introduction to Rotational Motion (What is Spinning?)"
+            ],
+            "misconceptions": [
+              "Confusing a linear push/pull with a twisting push/pull (torque)."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "Qualitative Angular Momentum (Part 1: 'Amount of Spin')",
+            "prerequisites": [
+              "Introduction to Rotational Motion (What is Spinning?)",
+              "Qualitative Torque (How to Make Something Spin or Stop Spinning)"
+            ],
+            "misconceptions": [
+              "Thinking spinning objects naturally slow down and stop without any outside influence."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Qualitative Angular Momentum (Part 2: Changing Spin Rate by Changing Shape)",
+            "prerequisites": [
+              "Qualitative Angular Momentum (Part 1: 'Amount of Spin')",
+              "Qualitative Torque (How to Make Something Spin or Stop Spinning)"
+            ],
+            "misconceptions": [
+              "Believing that pulling arms in creates 'spinny-ness' from nothing, or pushing them out destroys it."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "Conservation of Angular Momentum (Main Idea)",
+            "prerequisites": [
+              "Qualitative Angular Momentum (Part 1: 'Amount of Spin')",
+              "Qualitative Angular Momentum (Part 2: Changing Spin Rate by Changing Shape)",
+              "Qualitative Torque (How to Make Something Spin or Stop Spinning)"
+            ],
+            "misconceptions": [
+              "Assuming 'conservation' means the spinning speed never changes, even if the object's shape changes."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 6.0
+          },
+          {
+            "concept": "Total Angular Momentum for a System (Qualitative Summation)",
+            "prerequisites": [
+              "Conservation of Angular Momentum (Main Idea)"
+            ],
+            "misconceptions": [
+              "Difficulty understanding how an internal action (like stopping a wheel) can cause an opposite reaction in another part of the system while the total 'amount of spin' remains unchanged."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          }
+        ],
+        "total_duration_minutes": 25.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 9,
+        "practicality": 10,
+        "pertinence": 7,
+        "revisions": [
+          "Reduce the duration and conceptual density of segments 4, 5, and 6. For a student with a low cognitive load budget (0.4), segments exceeding 4-5 minutes, especially when introducing complex concepts, are too long. Consider breaking Segment 5 into two shorter segments or splitting the entire lesson into two parts.",
+          "Add more frequent, brief recap sentences or visual summaries for new key terms (e.g., 'Remember, torque is a twisting push!') immediately after their introduction and before transitioning to the next concept. This reinforces understanding and addresses the low abstraction tolerance.",
+          "Integrate additional rhetorical questions or short 'think breaks' within the longer segments, not just at the end. This allows students to process information in smaller chunks and manage their cognitive load.",
+          "Enhance visuals in segments 5 and 6 to more explicitly define the 'system' being discussed (e.g., a clear boundary box around the figure skater or the astronaut + wheel). This will help reinforce the distinction between internal and external forces/torques, crucial for the 'cause and effect' misconception risk."
+        ]
+      },
+      "video_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "subtitle_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "generation_time_seconds": 127
+    }
+  },
+  {
+    "run_id": "5b5d9a23-2991-4f16-ab51-1f5221209e8a",
+    "data": {
+      "request": {
+        "course_requirement": "unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+        "student_persona": "Education Level: Elementary school | Learning Pace: Medium | Timeline Urgency: Normal | Depth Preference: Application-first"
+      },
+      "student_model": {
+        "level": "middle_school",
+        "knowledge_embedding": [
+          "Basic arithmetic (addition, subtraction, multiplication, division)",
+          "Understanding of whole numbers, place value up to thousands",
+          "Introduction to fractions (parts of a whole, simple comparisons)",
+          "Identification of basic 2D and 3D geometric shapes",
+          "Concepts of measurement (length, weight, volume, time, money) using standard and non-standard units",
+          "Basic reading, writing, and grammar skills",
+          "Foundational science concepts (e.g., seasons, life cycles, basic properties of matter)",
+          "Elementary social studies (e.g., community, basic geography, simple historical facts)"
+        ],
+        "misconception_risk": {
+          "Place Value": [
+            "Confusing the value of digits based on their position (e.g., thinking 34 is 3 + 4 instead of 30 + 4)",
+            "Difficulty with regrouping/borrowing in subtraction and addition across place values"
+          ],
+          "Fractions": [
+            "Believing a larger denominator always means a larger fraction (e.g., 1/8 is greater than 1/2)",
+            "Struggling to visualize fractions as parts of a whole or set"
+          ],
+          "Operations": [
+            "Difficulty differentiating between the concepts of multiplication (groups of) and repeated addition",
+            "Not understanding the concept of remainders in division or how to interpret them"
+          ],
+          "Geometry": [
+            "Confusing properties of similar shapes (e.g., all rectangles are squares, or vice versa)",
+            "Difficulty understanding perimeter vs. area"
+          ],
+          "Time": [
+            "Confusion between AM and PM",
+            "Struggling with calculating elapsed time across hours or days"
+          ]
+        },
+        "cognitive_load_budget": 0.5,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.1
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "What is Spinning Motion?",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "How Fast Does It Spin? (Angular Speed - Simplified)",
+            "prerequisites": [
+              "What is Spinning Motion?"
+            ],
+            "misconceptions": [
+              "Might confuse fast spinning with 'more' spinny-ness if not linked to other factors later."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "How Mass Arrangement Affects Spinning",
+            "prerequisites": [
+              "How Fast Does It Spin? (Angular Speed - Simplified)"
+            ],
+            "misconceptions": [
+              "Difficulty understanding why spreading out mass changes spinning behavior, as it may not be intuitive."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "\"Spinny-ness\": The Total Amount of Spin (Qualitative Angular Momentum)",
+            "prerequisites": [
+              "How Fast Does It Spin? (Angular Speed - Simplified)",
+              "How Mass Arrangement Affects Spinning"
+            ],
+            "misconceptions": [
+              "Only focusing on speed *or* mass arrangement, not understanding their combined effect on 'spinny-ness'."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "External Twists Change \"Spinny-ness\" (Simplified Torque)",
+            "prerequisites": [
+              "\"Spinny-ness\": The Total Amount of Spin (Qualitative Angular Momentum)"
+            ],
+            "misconceptions": [
+              "Confusing internal actions (e.g., a person moving their arms) with external actions (e.g., someone else pushing a spinning object) that change the overall 'spinny-ness'."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "Keeping Total \"Spinny-ness\" the Same (Conservation Principle)",
+            "prerequisites": [
+              "External Twists Change \"Spinny-ness\" (Simplified Torque)"
+            ],
+            "misconceptions": [
+              "Believing that *any* change or movement inside a spinning system will change its *total* 'spinny-ness'."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "Real-World Examples of \"Spinny-ness\" Conservation",
+            "prerequisites": [
+              "Keeping Total \"Spinny-ness\" the Same (Conservation Principle)"
+            ],
+            "misconceptions": [
+              "Difficulty identifying what objects or parts make up the 'system' in a given example.",
+              "Struggling to distinguish between internal changes and external 'twists' in new scenarios."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          }
+        ],
+        "total_duration_minutes": 25.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 9,
+        "practicality": 10,
+        "pertinence": 7,
+        "revisions": [
+          "For a student with 0.1 abstraction tolerance, strictly remove all formal physics terms (e.g., 'angular velocity,' 'angular momentum,' 'torque,' 'moment of inertia') from the narration, visual text overlays, and check questions. Use only the simplified terms such as 'speed of spin,' 'mass arrangement for spinning,' 'total spinny-ness,' and 'external twist' throughout the student-facing content.",
+          "In Segment 02, ensure visual overlays and narration consistently use 'Speed of Spin' and avoid any mention of 'Angular Speed' or 'Angular Velocity'.",
+          "In Segment 03, revise the phrase 'We call this idea 'how difficult it is to change the spinning motion' based on where the mass is' to a more concise and consistent term, such as 'This idea is about how the mass is arranged for spinning' or 'how resistant it is to changing its spin because of its mass arrangement,' ensuring it aligns with the visual 'Mass Arrangement'.",
+          "In Segment 04, remove the sentence 'We'll call this total amount of spin its 'angular momentum,' but for us, 'spinny-ness' works perfectly!' and simply refer to it as 'total spinny-ness.' Change the visual diagram title from 'Total Spinny-ness (Angular Momentum)' to 'Total Spinny-ness'.",
+          "In Segment 05, remove the phrase 'That push, applied in a way that causes a turn, is what we call a 'torque' in physics, but for us, let's just think of it as an 'external twist'' and consistently use 'external twist' in both narration and visual labels."
+        ]
+      },
+      "video_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "subtitle_url": "https://a139-118-150-70-62.ngrok-free.app/output/error",
+      "generation_time_seconds": 473
+    }
+  },
+  {
+    "run_id": "874bcd8e-492c-4d8c-a586-93f64c9b01e6",
+    "data": {
+      "request": {
+        "course_requirement": "string",
+        "student_persona": "string"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [],
+        "misconception_risk": {},
+        "cognitive_load_budget": 0.5,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Introduction to Data Types",
+            "prerequisites": [],
+            "misconceptions": [
+              "All data handled by computers is just numbers.",
+              "Data types are an advanced concept not relevant to basic programming.",
+              "All text is the same type as numbers if it contains digits."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "What is a String? Definition and Examples",
+            "prerequisites": [
+              "Introduction to Data Types"
+            ],
+            "misconceptions": [
+              "Strings can only contain letters (no numbers, symbols, or spaces).",
+              "Numbers within a string are treated as mathematical values.",
+              "A string is just 'text' without any internal structure or purpose beyond display."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "Representing Strings (Literals)",
+            "prerequisites": [
+              "What is a String? Definition and Examples"
+            ],
+            "misconceptions": [
+              "The quotation marks are part of the string's content.",
+              "Omitting quotation marks for text will still create a string.",
+              "Single quotes and double quotes result in different types of strings or have different behaviors (in languages where they are interchangeable)."
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "String as a Sequence of Characters",
+            "prerequisites": [
+              "What is a String? Definition and Examples",
+              "Representing Strings (Literals)"
+            ],
+            "misconceptions": [
+              "A string is a single, indivisible unit of data.",
+              "The order of characters within a string does not matter.",
+              "Spaces and punctuation are not considered individual characters in a string."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "Basic String Operations: Length and Concatenation",
+            "prerequisites": [
+              "String as a Sequence of Characters",
+              "Representing Strings (Literals)"
+            ],
+            "misconceptions": [
+              "Concatenation (joining strings) automatically adds spaces between the joined strings.",
+              "Calculating string length excludes spaces or punctuation.",
+              "The 'length' of a string is counted starting from 0, similar to how arrays might be indexed (confusing length with index)."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 6.0
+          },
+          {
+            "concept": "Introduction to Indexing (Accessing Characters)",
+            "prerequisites": [
+              "String as a Sequence of Characters",
+              "Basic String Operations: Length and Concatenation"
+            ],
+            "misconceptions": [
+              "String indexing starts from 1, not 0.",
+              "Trying to access an index beyond the string's length will just give you the last character or an empty result.",
+              "Negative indexing is not possible or is difficult to understand conceptually."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          }
+        ],
+        "total_duration_minutes": 25.0
+      },
+      "critic_scores": {
+        "clarity": 10,
+        "integrity": 9,
+        "depth": 10,
+        "practicality": 10,
+        "pertinence": 10,
+        "revisions": [
+          "In `seg_2_what_is_string`, clarify or remove the citation 'Educational Standard'. If it refers to a specific standard (e.g., CSTA K-12), make the source explicit. Otherwise, for a fundamental concept, it might be more appropriate to state it as a general truth without a formal citation, or integrate it more smoothly (e.g., 'This core concept of strings is a fundamental principle in computer science education.').",
+          "Add a brief concluding segment after `seg_6_intro_indexing` that summarizes the key takeaways from the lesson (data types, strings, representation, basic operations, indexing) and perhaps provides a quick look ahead to future topics or applications.",
+          "For `seg_5_basic_operations` and `seg_6_intro_indexing`, consider starting the narration with a brief, motivating real-world problem statement or question that the new concept helps solve. For example, before 'Length', ask: 'How would you check if a password meets a minimum character requirement?' Before 'Indexing', ask: 'How would you get just the first letter of a name from a full name?'"
+        ]
+      },
+      "video_url": "http://127.0.0.1:8000/output/error",
+      "subtitle_url": "http://127.0.0.1:8000/output/error",
+      "generation_time_seconds": 520
+    }
+  },
+  {
+    "run_id": "55196f9f-672c-41c5-98cb-9e19956a95fc",
+    "data": {
+      "request": {
+        "course_requirement": "unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+        "student_persona": "Education Level: Elementary school | Learning Pace: Medium | Timeline Urgency: Normal | Depth Preference: Application-first"
+      },
+      "student_model": {
+        "level": "middle_school",
+        "knowledge_embedding": [
+          "basic arithmetic operations (addition, subtraction, multiplication, division with whole numbers)",
+          "understanding of simple fractions and decimals (to tenths/hundredths)",
+          "identification of common 2D and 3D geometric shapes",
+          "basic measurement units (length, weight, volume, time)",
+          "fundamental concepts of plant and animal life cycles",
+          "introduction to states of matter (solid, liquid, gas)",
+          "basic understanding of weather phenomena",
+          "rudimentary reading, writing, and grammar skills"
+        ],
+        "misconception_risk": {
+          "multiplication": [
+            "Multiplication always results in a larger number."
+          ],
+          "division": [
+            "Division always results in a smaller number."
+          ],
+          "evaporation": [
+            "Evaporated water disappears entirely or goes to space."
+          ],
+          "floating_sinking": [
+            "Light objects float, and heavy objects sink (ignoring density)."
+          ],
+          "seasons": [
+            "Seasons are caused by Earth's distance from the sun."
+          ]
+        },
+        "cognitive_load_budget": 0.4,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.1
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "What is Spinning? (Introduction to Rotation)",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "How Fast Things Spin (Rotational Speed)",
+            "prerequisites": [
+              "What is Spinning? (Introduction to Rotation)"
+            ],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "What Makes Something Spin Faster or Slower (External Push/Pull)?",
+            "prerequisites": [
+              "How Fast Things Spin (Rotational Speed)"
+            ],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "The 'Spinning Amount' (Simplified Angular Momentum)",
+            "prerequisites": [
+              "What Makes Something Spin Faster or Slower (External Push/Pull)?"
+            ],
+            "misconceptions": [],
+            "visual_type": "Diagram",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "Observation: Ice Skater Pulls Arms In",
+            "prerequisites": [
+              "The 'Spinning Amount' (Simplified Angular Momentum)"
+            ],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Observation: Ice Skater Pushes Arms Out",
+            "prerequisites": [
+              "Observation: Ice Skater Pulls Arms In"
+            ],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Explaining the Ice Skater: 'Spinning Amount' Stays the Same!",
+            "prerequisites": [
+              "Observation: Ice Skater Pushes Arms Out"
+            ],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          }
+        ],
+        "total_duration_minutes": 23.0
+      },
+      "critic_scores": {
+        "clarity": 7,
+        "integrity": 10,
+        "depth": 8,
+        "practicality": 10,
+        "pertinence": 6,
+        "revisions": [
+          "In `seg_4`, simplify the narration for 'The 'Spinning Amount''. Focus on the core idea that 'it tends to stay the same unless an *outside* push or pull changes it.' Remove the detailed explanation about 'even if parts of the object move *inside* itself, their 'total spinning amount' for the whole system still tries to stay the same,' as this is too abstract for a 0.1 abstraction tolerance. Let the visual imply the internal aspect without explicit, lengthy narration.",
+          "Reduce the duration of `seg_4` from 300.0 seconds to approximately 180-210 seconds by tightening the narration and removing the overly abstract explanation.",
+          "In `seg_7`, shorten and simplify the explanation of *why* the ice skater's speed changes. Instead of explaining 'easier for her to spin' due to mass distribution (which hints at moment of inertia), phrase it more as an observed consequence. For example: 'When her arms come in, all her 'stuff' gets closer to the middle. To keep her 'total spinning amount' the same, her body has to spin *faster*.' And use similar simplified phrasing for extending arms. Avoid delving into the mechanism of 'easier/harder to spin' in detail.",
+          "Reduce the duration of `seg_7` from 300.0 seconds to approximately 180-210 seconds by simplifying the narration as suggested.",
+          "Add a brief 'check-in' question after `seg_4` (e.g., 'So, what's the main idea about an object's 'total spinning amount' when nothing from the outside touches it?') to reinforce the concept and manage cognitive load."
+        ]
+      },
+      "video_url": "https://a139-118-150-70-62.ngrok-free.app/output/final_video_55196f9f-672c-41c5-98cb-9e19956a95fc.mp4",
+      "subtitle_url": "https://a139-118-150-70-62.ngrok-free.app/output/subtitles_55196f9f-672c-41c5-98cb-9e19956a95fc.srt",
+      "generation_time_seconds": 475
+    }
+  },
+  {
+    "run_id": "dbb2cd4b-5ff6-475e-a29a-c50003a85ec6",
+    "data": {
+      "request": {
+        "course_requirement": "string",
+        "student_persona": "string"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [],
+        "misconception_risk": {},
+        "cognitive_load_budget": 0.5,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Introduction to Strings",
+            "prerequisites": [],
+            "misconceptions": [
+              "Confusing a single character with a string of length one (e.g., 'a' vs. a character type if distinct).",
+              "Thinking strings are only for words, not numbers or symbols."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "String Length and Concatenation",
+            "prerequisites": [
+              "Introduction to Strings"
+            ],
+            "misconceptions": [
+              "Attempting to concatenate a string with a non-string type (e.g., number) without explicit type conversion.",
+              "Confusing `+` for string concatenation with `+` for arithmetic addition."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "String Indexing",
+            "prerequisites": [
+              "Introduction to Strings"
+            ],
+            "misconceptions": [
+              "Using 1-based indexing instead of 0-based indexing.",
+              "Attempting to access an index that is out of the string's bounds (too high or too low for negative indexing)."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "String Slicing",
+            "prerequisites": [
+              "String Indexing"
+            ],
+            "misconceptions": [
+              "Off-by-one errors due to the exclusive nature of the 'end' index (the character at 'end' is not included).",
+              "Confusion about how omitting 'start' or 'end' affects the slice."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 7.0
+          },
+          {
+            "concept": "Immutability of Strings",
+            "prerequisites": [
+              "Introduction to Strings",
+              "String Indexing"
+            ],
+            "misconceptions": [
+              "Believing that characters within an existing string can be changed in-place (e.g., `my_string[0] = 'X'`).",
+              "Not understanding that operations like concatenation or slicing create new string objects."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          }
+        ],
+        "total_duration_minutes": 23.0
+      },
+      "critic_scores": {
+        "clarity": 9,
+        "integrity": 6,
+        "depth": 10,
+        "practicality": 9,
+        "pertinence": 10,
+        "revisions": [
+          "Add citations for the pedagogical claims made in the 'hook' that assert the fundamental importance and advanced applications of strings (e.g., 'Understanding strings is a fundamental principle...', 'Mastering strings will open up a whole new world...'), mirroring the citation style used in the 'Introduction to Strings' segment to maintain consistency as per the rubric's requirement for 'all claims'.",
+          "Clarify at the beginning of the lesson (e.g., in the hook or first segment) which specific programming language's conventions (e.g., Python) will be primarily used for demonstrating string operations. This addresses the 'it depends on the programming language' statement and provides a consistent, unambiguous context for the student.",
+          "Consider integrating one or two brief, high-school-appropriate real-world application examples within each segment to further ground the concepts in practical use. For instance, 'String Length' could mention checking password strength, 'Slicing' could mention extracting parts of a filename or domain name from a URL.",
+          "In the 'string_length_concat' segment's visual_content_spec, refine the visualization for the arithmetic addition example. Instead of '5 + 2 -> '7' (showing number types)', ensure it clearly shows `5 + 2` (as numeric values, without quotes) leading to `7` (as a numeric value), distinctly separate from string concatenation results."
+        ]
+      },
+      "video_url": "http://127.0.0.1:8000/output/error",
+      "subtitle_url": "http://127.0.0.1:8000/output/error",
+      "generation_time_seconds": 79
+    }
+  },
+  {
+    "run_id": "ac755346-3f03-42f5-908c-5b9a8691a1dd",
+    "data": {
+      "request": {
+        "course_requirement": "string",
+        "student_persona": "string"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [],
+        "misconception_risk": {},
+        "cognitive_load_budget": 0.5,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Introduction to Strings",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking a string is a single character only",
+              "Confusing numbers within quotes with actual numerical values (e.g., '123' vs. 123)"
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "String Length",
+            "prerequisites": [
+              "Introduction to Strings"
+            ],
+            "misconceptions": [
+              "Forgetting to count spaces or special characters",
+              "Miscounting due to off-by-one errors (less common here, but good to note)"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "String Indexing",
+            "prerequisites": [
+              "Introduction to Strings"
+            ],
+            "misconceptions": [
+              "Assuming 1-based indexing instead of 0-based",
+              "Attempting to access an index beyond the string's length (index out of range error)"
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "String Slicing",
+            "prerequisites": [
+              "Introduction to Strings",
+              "String Indexing"
+            ],
+            "misconceptions": [
+              "Including the character at the 'end' index in the slice",
+              "Incorrectly calculating the 'start' or 'end' indices for desired substrings",
+              "Forgetting that omitting 'start' or 'end' means beginning or end of string"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "String Concatenation",
+            "prerequisites": [
+              "Introduction to Strings"
+            ],
+            "misconceptions": [
+              "Trying to concatenate strings with non-string types directly (e.g., numbers without conversion)",
+              "Forgetting to add spaces explicitly if desired between joined words"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "String Immutability",
+            "prerequisites": [
+              "Introduction to Strings",
+              "String Concatenation"
+            ],
+            "misconceptions": [
+              "Believing that individual characters of a string can be modified in-place (e.g., my_string[0] = 'a')",
+              "Confusing string immutability with mutable data types like lists"
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 4.0
+          }
+        ],
+        "total_duration_minutes": 21.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 9,
+        "practicality": 9,
+        "pertinence": 8,
+        "revisions": [
+          "Split `seg_4_slicing` into two shorter segments. The first segment should focus solely on the `[start:end]` syntax and the crucial 'exclusive end' rule with clear, focused examples. The second segment can then introduce omitted start/end indices and negative slicing, building on the initial understanding. This will significantly reduce cognitive load and improve pacing for the specified high-school student model.",
+          "Add a clear statement in the `hook` or `seg_1_intro` (e.g., 'We'll be using Python for our examples') to explicitly inform students which programming language will be used, setting appropriate context from the beginning.",
+          "For `seg_3_indexing` and `seg_4_slicing`, ensure that the example variables and code snippets used in the narration are either identical to or clearly and immediately relatable to the examples presented in the `visual_content_spec`. This will minimize cognitive friction from switching between different example strings or variable names."
+        ]
+      },
+      "video_url": "http://127.0.0.1:8000/output/error",
+      "subtitle_url": "http://127.0.0.1:8000/output/error",
+      "generation_time_seconds": 90
+    }
+  },
+  {
+    "run_id": "c6fe339c-8d80-441f-999c-ac0d651edf16",
+    "data": {
+      "request": {
+        "course_requirement": "string",
+        "student_persona": "string"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "Algebraic manipulation (solving linear equations, basic inequalities)",
+          "Fundamental geometry (areas, volumes of basic shapes, angle properties)",
+          "Introductory biology (cell structure, basic genetics, ecosystems)",
+          "Basic scientific method and experimental design principles",
+          "Literary interpretation (identifying themes, character analysis, narrative structures)"
+        ],
+        "misconception_risk": {
+          "Algebra": [
+            "Incorrect distribution of negative signs across parentheses",
+            "Misapplication of the order of operations (PEMDAS/BODMAS)",
+            "Confusion between variables and constants in different contexts"
+          ],
+          "Physics": [
+            "Confusion between heat and temperature",
+            "Misapplication of Newton's laws of motion outside ideal conditions (e.g., ignoring friction)",
+            "Misunderstanding of energy conservation in practical scenarios (e.g., 'energy loss')"
+          ],
+          "Biology": [
+            "Teleological reasoning in evolution (organisms evolving 'for' a purpose)",
+            "Misconceptions about common genetic traits (e.g., dominant traits are more common)"
+          ]
+        },
+        "cognitive_load_budget": 0.5,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.6
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Force and Introduction to Tension",
+            "prerequisites": [],
+            "misconceptions": [
+              "Tension is not a force, it's just 'pull'.",
+              "Tension only acts at the ends of a string, not throughout."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "Equilibrium and Tension in Static Systems",
+            "prerequisites": [
+              "Force and Introduction to Tension",
+              "Algebraic manipulation (solving linear equations)",
+              "Fundamental geometry (angle properties)"
+            ],
+            "misconceptions": [
+              "Incorrectly drawing Free Body Diagrams (FBDs).",
+              "Forgetting to resolve forces into components when dealing with angles.",
+              "Not realizing tension is constant in an ideal, massless string.",
+              "Misapplication of the order of operations (PEMDAS/BODMAS) when solving equations."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 8.0
+          },
+          {
+            "concept": "Transverse Waves on a String - Basic Properties",
+            "prerequisites": [
+              "Algebraic manipulation (for v=\u03bbf)"
+            ],
+            "misconceptions": [
+              "Confusing the motion of the wave (disturbance) with the motion of the string particles.",
+              "Thinking the string itself moves forward along with the wave.",
+              "Misunderstanding the relationship between frequency, wavelength, and wave speed (v = \u03bbf)."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 7.0
+          },
+          {
+            "concept": "Factors Affecting Wave Speed on a String",
+            "prerequisites": [
+              "Transverse Waves on a String - Basic Properties",
+              "Equilibrium and Tension in Static Systems",
+              "Algebraic manipulation (for square roots and ratios)"
+            ],
+            "misconceptions": [
+              "Confusion between total mass and linear mass density (mass per unit length).",
+              "Thinking a heavier string (higher mass) always means faster waves.",
+              "Misapplication of the square root operation in the wave speed formula.",
+              "Not connecting tension, as a force, to its effect on wave propagation."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          }
+        ],
+        "total_duration_minutes": 25.0
+      },
+      "critic_scores": {
+        "clarity": 9,
+        "integrity": 8,
+        "depth": 9,
+        "practicality": 8,
+        "pertinence": 10,
+        "revisions": [
+          "Replace the vague 'Educational Standard' citation in S1 with a more specific and verifiable reference, such as a particular curriculum standard (e.g., NGSS H.S. Physics standards for Forces and Motion, or Waves) or a widely recognized physics textbook.",
+          "In S4, briefly add a concrete real-world application or consequence of the wave speed formula beyond the initial hook. For example, explicitly explain how musicians tune their instruments by adjusting string tension to change pitch (related to frequency and wave speed), or how different instrument strings (e.g., bass vs. treble on a piano or guitar) utilize varying linear mass densities for specific sounds.",
+          "For S2, ensure the 'resolving forces into components' visual includes a clear, step-by-step animation or sequence of diagrams that explicitly shows the trigonometric breakdown (e.g., T1y = T1 sin\u03b8, T1x = T1 cos\u03b8) alongside the graphical representation. This is crucial for students prone to algebraic manipulation and order of operations errors, as highlighted in the student model's misconception risk."
+        ]
+      },
+      "video_url": "http://127.0.0.1:8000/output/error",
+      "subtitle_url": "http://127.0.0.1:8000/output/error",
+      "generation_time_seconds": 69
+    }
+  },
+  {
+    "run_id": "245b2cd3-cf23-443f-b891-e66c7879b00a",
+    "data": {
+      "request": {
+        "course_requirement": "Photosynthesis",
+        "student_persona": "Secondary Education student interested in biology"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "scientific_method",
+          "data_interpretation_basic",
+          "critical_thinking_basic",
+          "arithmetic",
+          "pre_algebra",
+          "algebra_I",
+          "geometry_basics",
+          "atoms",
+          "molecules",
+          "chemical_bonds_basic",
+          "pH_basic",
+          "cell_theory",
+          "prokaryotic_eukaryotic_cells",
+          "organelles_basic_function",
+          "photosynthesis_overview",
+          "cellular_respiration_overview",
+          "DNA_RNA_basic_structure",
+          "genes_alleles",
+          "Mendelian_genetics_basic",
+          "ecosystems_components",
+          "food_webs_basic",
+          "human_body_systems_overview",
+          "biodiversity_basic",
+          "natural_selection_overview"
+        ],
+        "misconception_risk": {
+          "Evolution": [
+            "humans evolved from monkeys",
+            "evolution is goal-oriented",
+            "individuals can evolve during their lifetime",
+            "natural selection is random luck"
+          ],
+          "Photosynthesis_Respiration": [
+            "plants get their food from the soil",
+            "respiration is just breathing",
+            "plants only photosynthesize, animals only respire",
+            "cellular respiration produces energy directly"
+          ],
+          "Genetics": [
+            "dominant traits are always more common",
+            "acquired characteristics are inherited",
+            "genes are solely deterministic, ignoring environmental influence"
+          ],
+          "Cells": [
+            "viruses are living cells",
+            "plants do not have mitochondria",
+            "cells are always spherical and static"
+          ],
+          "Ecology": [
+            "food chains are simple and linear",
+            "all bacteria are harmful",
+            "ecosystems are static and unchanging"
+          ]
+        },
+        "cognitive_load_budget": 0.6,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.6
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Photosynthesis",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 1,
+        "integrity": 1,
+        "depth": 1,
+        "practicality": 1,
+        "pertinence": 1,
+        "revisions": [
+          "**Expand 'Intro to Photosynthesis' content significantly:** The current segment consists only of a title slide and a generic welcome. Add substantial narration and visual content that introduces or reviews the fundamental concepts of photosynthesis for high school students, building upon their existing 'photosynthesis_overview' knowledge.",
+          "**Develop an engaging and specific hook:** Replace the generic 'Ready to learn?' with a more specific and curiosity-provoking question or statement directly related to photosynthesis (e.g., 'How do plants use sunlight to create their own food and the oxygen we breathe?').",
+          "**Introduce key concepts with understandable language:** Clearly define photosynthesis, its primary purpose, and its basic inputs (carbon dioxide, water, light energy) and outputs (glucose, oxygen) using language appropriate for a high school level. Avoid overly technical jargon without explanation.",
+          "**Incorporate concrete examples and real-world applications:** Explain the relevance of photosynthesis to students' lives and the planet. Examples could include: how plants produce the food we eat, the source of oxygen in our atmosphere, its role in the carbon cycle, or its importance in maintaining ecosystems.",
+          "**Begin to address potential misconceptions (Depth):** Given the student model's 'Photosynthesis_Respiration' misconception risk (e.g., 'plants get their food from the soil'), ensure the narration clarifies that plants produce their own food internally through photosynthesis, rather than absorbing it directly from the soil. This can be done subtly within the initial explanation.",
+          "**Ensure factual accuracy and include citations:** As educational content is added, verify all scientific claims for accuracy. Although not explicitly required for a title slide, any future factual claims *must* include appropriate citations to uphold integrity.",
+          "**Structure content logically with smooth transitions:** Organize the introductory concepts of photosynthesis in a clear, step-by-step manner. Ensure smooth transitions between different sub-concepts to enhance understanding.",
+          "**Provide a more descriptive visual content specification:** Instead of just 'Title slide,' specify what should be *on* the title slide and what subsequent visuals for the introductory content should depict (e.g., 'Animated diagram illustrating sunlight absorption by a leaf and basic inputs/outputs', 'Infographic showing the global impact of photosynthesis').",
+          "**Increase segment duration:** A 30-second segment is entirely insufficient for an 'Intro to Photosynthesis' for high school students. Adjust the duration to accommodate the expanded content (e.g., 3-5 minutes for a comprehensive introduction).",
+          "**Consider adding introductory checks for understanding:** While not strictly for the very first segment, think about incorporating a brief, low-stakes check (as implied by `checks: []`) after the initial introduction to gauge students' comprehension of the basic concepts presented, aligning with a good learning flow."
+        ]
+      },
+      "video_url": "http://127.0.0.1:8000/output/final_video_245b2cd3-cf23-443f-b891-e66c7879b00a.mp4",
+      "subtitle_url": "http://127.0.0.1:8000/output/subtitles_245b2cd3-cf23-443f-b891-e66c7879b00a.srt",
+      "generation_time_seconds": 49
+    }
+  },
+  {
+    "run_id": "754aa216-6341-47fc-b81a-33640b4f5277",
+    "data": {
+      "request": {
+        "course_requirement": "Self-Attention Mechanism",
+        "student_persona": "High schooler, no calculus"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Self-Attention Mechanism",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "http://testserver/output/final_video_754aa216-6341-47fc-b81a-33640b4f5277.mp4",
+      "subtitle_url": "http://testserver/output/subtitles_754aa216-6341-47fc-b81a-33640b4f5277.srt",
+      "generation_time_seconds": 2
+    }
+  },
+  {
+    "run_id": "e2117034-0741-44fb-9720-b9aa27bf3998",
+    "data": {
+      "request": {
+        "course_requirement": "Quantum Mechanics for Beginners",
+        "student_persona": "A high school student curious about physics but with no prior knowledge of calculus."
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Quantum Mechanics for Beginners",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "http://127.0.0.1:8000/output/final_video_e2117034-0741-44fb-9720-b9aa27bf3998.mp4",
+      "subtitle_url": "http://127.0.0.1:8000/output/subtitles_e2117034-0741-44fb-9720-b9aa27bf3998.srt",
+      "generation_time_seconds": 1
+    }
+  },
+  {
+    "run_id": "a9d3bd62-8c39-4f7b-b5f1-bd96686e54be",
+    "data": {
+      "request": {
+        "course_requirement": "Quantum Mechanics for Beginners",
+        "student_persona": "A high school student curious about physics but with no prior knowledge of calculus."
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Quantum Mechanics for Beginners",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "http://127.0.0.1:8000/output/final_video_a9d3bd62-8c39-4f7b-b5f1-bd96686e54be.mp4",
+      "subtitle_url": "http://127.0.0.1:8000/output/subtitles_a9d3bd62-8c39-4f7b-b5f1-bd96686e54be.srt",
+      "generation_time_seconds": 22
+    }
+  },
+  {
+    "run_id": "3e9421f6-a9ce-476f-adcc-0d35f838ffe7",
+    "data": {
+      "request": {
+        "course_requirement": "Quantum Mechanics for Beginners",
+        "student_persona": "A high school student curious about physics but with no prior knowledge of calculus."
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Quantum Mechanics for Beginners",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "http://127.0.0.1:8000/output/final_video_3e9421f6-a9ce-476f-adcc-0d35f838ffe7.mp4",
+      "subtitle_url": "http://127.0.0.1:8000/output/subtitles_3e9421f6-a9ce-476f-adcc-0d35f838ffe7.srt",
+      "generation_time_seconds": 2
+    }
+  },
+  {
+    "run_id": "3b194b70-b9aa-4021-9a11-bd45028a0ac2",
+    "data": {
+      "request": {
+        "course_requirement": "Quantum Mechanics for Beginners",
+        "student_persona": "A high school student curious about physics but with no prior knowledge of calculus."
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Quantum Mechanics for Beginners",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "http://127.0.0.1:8000/output/final_video_3b194b70-b9aa-4021-9a11-bd45028a0ac2.mp4",
+      "subtitle_url": "http://127.0.0.1:8000/output/subtitles_3b194b70-b9aa-4021-9a11-bd45028a0ac2.srt",
+      "generation_time_seconds": 7
+    }
+  },
+  {
+    "run_id": "62a817ec-ea47-4e00-a337-38216a784d82",
+    "data": {
+      "request": {
+        "course_requirement": "Quantum Mechanics for Beginners",
+        "student_persona": "A high school student curious about physics but with no prior knowledge of calculus."
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Quantum Mechanics for Beginners",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "http://127.0.0.1:8000/output/final_video_62a817ec-ea47-4e00-a337-38216a784d82.mp4",
+      "subtitle_url": "http://127.0.0.1:8000/output/subtitles_62a817ec-ea47-4e00-a337-38216a784d82.srt",
+      "generation_time_seconds": 8
+    }
   }
 ]

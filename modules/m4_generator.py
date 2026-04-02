@@ -11,7 +11,7 @@ class ScriptGenerator:
         self.api_key = os.getenv("GOOGLE_API_KEY")
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("models/gemini-1.5-flash")
+            self.model = genai.GenerativeModel("models/gemini-2.5-flash")
 
     async def generate(self, concept_graph: ConceptGraph, student_model: StudentModel, fact_bundle: FactBundle) -> FullScript:
         if not self.api_key:

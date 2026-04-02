@@ -10,7 +10,7 @@ class ConceptPlanner:
         self.api_key = os.getenv("GOOGLE_API_KEY")
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("models/gemini-1.5-flash")
+            self.model = genai.GenerativeModel("models/gemini-2.5-flash")
 
     async def plan(self, topic: str, student_model: StudentModel) -> ConceptGraph:
         if not self.api_key:

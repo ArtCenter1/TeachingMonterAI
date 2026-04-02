@@ -10,7 +10,7 @@ class CIDPPCritic:
         self.api_key = os.getenv("GOOGLE_API_KEY")
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("models/gemini-1.5-flash")
+            self.model = genai.GenerativeModel("models/gemini-2.5-flash")
 
     async def review(self, script: FullScript, student_model: StudentModel) -> CIDPPScores:
         if not self.api_key:

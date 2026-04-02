@@ -107,10 +107,10 @@ async def generate_video(
         # 9. Feedback Logging
         logger.info(f"Stage 9: Logging results for {run_id}")
         run_data = {
-            "request": request_data.dict(),
-            "student_model": student_model.dict(),
-            "concept_graph": concept_graph.dict(),
-            "critic_scores": critic_scores.dict(),
+            "request": request_data.model_dump(),
+            "student_model": student_model.model_dump(),
+            "concept_graph": concept_graph.model_dump(),
+            "critic_scores": critic_scores.model_dump(),
             "video_url": public_video_url,
             "subtitle_url": public_subtitle_url,
             "generation_time_seconds": generation_time

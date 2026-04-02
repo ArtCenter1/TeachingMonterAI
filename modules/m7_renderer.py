@@ -75,6 +75,8 @@ class VideoRenderer:
 
                     # Send the narration transcript to the context
                     ctx.send(
+                        model_id="sonic-english",
+                        voice={"mode": "id", "id": self.voice_id},
                         transcript=segment.narration,
                         add_timestamps=True,
                     )
@@ -86,7 +88,11 @@ class VideoRenderer:
 
                         if response.type == "chunk":
                             if response.data:
-                                segment_audio_data += response.data
+                                import base64
+                                if isinstance(response.data, str):
+                                    segment_audio_data += base64.b64decode(response.data)
+                                else:
+                                    segment_audio_data += response.data
 
                         elif response.type == "timestamps":
                             if hasattr(response, "word_timestamps") and response.word_timestamps:
@@ -137,9 +143,9 @@ class VideoRenderer:
             # FFmpeg Command for segment - Optimized for memory efficiency
             cmd = [
                 self.ffmpeg_path, "-y",
-                "-threads", "4",  # Limit threads to prevent "Cannot allocate memory"
+                "-threads", "1",  # Limit threads to prevent "Cannot allocate memory"
                 "-loop", "1", "-t", str(audio_duration), "-i", image_path,
-                "-i", audio_path,
+                "-f", "wav", "-i", audio_path,
                 "-vf", "scale=1280:-2,format=yuv420p",
                 "-c:v", "libx264",
                 "-preset", "ultrafast",
