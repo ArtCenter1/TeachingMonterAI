@@ -18,7 +18,7 @@ class LLMClient:
         # Update fallback to a more stable OpenRouter free model (Qwen 2.5 7B is highly stable)
         self.fallback_model = os.getenv("FALLBACK_MODEL", "qwen/qwen-2.5-7b-instruct:free")
         # Last resort fallback for Gemini SDK
-        self.gemini_last_resort = "models/gemini-1.5-flash"
+        self.gemini_last_resort = "gemini-1.5-flash"
 
         # Initialize Clients
         if self.google_api_key:
@@ -60,8 +60,8 @@ class LLMClient:
             models_to_try.append(self.fallback_model)
             
         # Hard-coded absolute fallback
-        if "gemini-1.5-flash-latest" not in models_to_try:
-            models_to_try.append("gemini-1.5-flash-latest")
+        if "gemini-1.5-flash" not in models_to_try:
+            models_to_try.append("gemini-1.5-flash")
 
         last_exception = None
         for model in models_to_try:

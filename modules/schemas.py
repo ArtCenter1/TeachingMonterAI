@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional, Dict, Any
 from enum import Enum
+import json
 
 class StudentLevel(str, Enum):
     IB = "IB"
@@ -57,10 +58,45 @@ class CIDPPScores(BaseModel):
     revisions: List[str] = Field(default_factory=list)
 
 class GenerationRequest(BaseModel):
-    course_requirement: str
-    student_persona: str
+    course_requirement: str = Field(..., description="Topic or course requirement")
+    student_persona: str = Field(..., description="Student description or persona")
     model_override: Optional[str] = None
     age_group: Optional[str] = "10-15"
+    
+    # Per-request overrides for Search and AI
+    google_api_key: Optional[str] = None
+    search_cx: Optional[str] = None
+    search_api_key: Optional[str] = None
+
+    class Config:
+        extra = "allow" # Stop 422 errors for any extra fields sent by UI
+
+    @model_validator(mode='before')
+    @classmethod
+    def map_legacy_fields(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            # 1. Map 'topic' or 'requirement' to 'course_requirement'
+            for alt in ["topic", "requirement"]:
+                if alt in data and ("course_requirement" not in data or not data["course_requirement"]):
+                    data["course_requirement"] = data[alt]
+            
+            # 2. Map 'persona' or 'student_model' to 'student_persona'
+            for alt in ["persona", "student_model"]:
+                if alt in data and ("student_persona" not in data or not data["student_persona"]):
+                    val = data[alt]
+                    # If it's a dict (common in UI), flatten it to a string for the pipeline
+                    if isinstance(val, dict):
+                        data["student_persona"] = json.dumps(val)
+                    else:
+                        data["student_persona"] = str(val)
+            
+            # 3. Ensure mandatory fields exist for validation
+            if "course_requirement" not in data:
+                data["course_requirement"] = "General Topic"
+            if "student_persona" not in data:
+                data["student_persona"] = "General Learner"
+                
+        return data
 
 class GenerationResponse(BaseModel):
     video_url: str
