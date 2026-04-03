@@ -1,5 +1,7 @@
 import os
 import json
+import asyncio
+from typing import List, Dict, Any, Tuple
 from .schemas import FullScript, StudentModel, CIDPPScores
 from .utils import extract_json
 from .llm_client import LLMClient
@@ -10,6 +12,54 @@ class CIDPPCritic:
         self.llm = LLMClient()
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+
+    async def score_variants(self, scripts: List[FullScript], student_model: StudentModel, 
+                            model_override: str = None) -> Tuple[FullScript, List[Dict[str, Any]]]:
+        """Review multiple scripts and select the one with the highest pedagogical score."""
+        tasks = []
+        for script in scripts:
+            tasks.append(self.review(script, student_model, model_override))
+        
+        reviews = await asyncio.gather(*tasks)
+        
+        scored_data = []
+        for script, review in zip(scripts, reviews):
+            # Calculate aggregate score
+            total_score = (
+                review.clarity + 
+                review.integrity + 
+                review.depth + 
+                review.practicality + 
+                review.pertinence
+            )
+            scored_data.append({
+                "script": script,
+                "review": review,
+                "total_score": total_score,
+                "strategy": script.scaffolding_strategy
+            })
+
+        # Sort by total score descending
+        scored_data.sort(key=lambda x: x["total_score"], reverse=True)
+        
+        best_variant = scored_data[0]["script"]
+        selection_log = [
+            {
+                "strategy": d["strategy"],
+                "total_score": d["total_score"],
+                "breakdown": {
+                    "clarity": d["review"].clarity,
+                    "integrity": d["review"].integrity,
+                    "depth": d["review"].depth,
+                    "practicality": d["review"].practicality,
+                    "pertinence": d["review"].pertinence
+                },
+                "revisions": d["review"].revisions
+            } for d in scored_data
+        ]
+        
+        logger.info(f"Selected strategy: {scored_data[0]['strategy']} with score {scored_data[0]['total_score']}")
+        return best_variant, selection_log
 
     async def review(self, script: FullScript, student_model: StudentModel, model_override: str = None) -> CIDPPScores:
         if not self.google_api_key and not self.openrouter_api_key:

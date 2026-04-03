@@ -2137,5 +2137,101 @@
       "subtitle_url": "http://33b2-118-150-70-62.ngrok-free.app/output/subtitles_d3edc1fd-d41c-4f5c-8833-d39b12488a07.srt",
       "generation_time_seconds": 0
     }
+  },
+  {
+    "run_id": "6023d292-b1b5-418d-bd99-1c67784f13b2",
+    "data": {
+      "request": {
+        "course_requirement": "unit: Kinematics\n\ntopic: Vectors and Motion in Two Dimensions\n\nlearning objective: Describe the motion of an object moving in two dimensions.\n\nessential knowledge: Motion in two dimensions can be analyzed by separating it into perpendicular components and applying one?dimensional kinematic relationships to each. Projectile motion is a special case in which one component has zero acceleration and the other has constant nonzero acceleration.",
+        "student_persona": "Education Level: Working professional without relevant background | Learning Motivation: Exams | Timeline Urgency: Urgent",
+        "model_override": null,
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to unit: Kinematics\n\ntopic: Vectors and Motion in Two Dimensions\n\nlearning objective: Describe the motion of an object moving in two dimensions.\n\nessential knowledge: Motion in two dimensions can be analyzed by separating it into perpendicular components and applying one?dimensional kinematic relationships to each. Projectile motion is a special case in which one component has zero acceleration and the other has constant nonzero acceleration.",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "http://33b2-118-150-70-62.ngrok-free.app/output/final_video_6023d292-b1b5-418d-bd99-1c67784f13b2.mp4",
+      "subtitle_url": "http://33b2-118-150-70-62.ngrok-free.app/output/subtitles_6023d292-b1b5-418d-bd99-1c67784f13b2.srt",
+      "generation_time_seconds": 1
+    }
+  },
+  {
+    "run_id": "4135268c-ea10-4b12-a61c-49b08b9f892b",
+    "data": {
+      "request": {
+        "course_requirement": "Photosynthesis",
+        "student_persona": "10 year old girl who loves space",
+        "model_override": null,
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Photosynthesis",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "http://33b2-118-150-70-62.ngrok-free.app/output/final_video_4135268c-ea10-4b12-a61c-49b08b9f892b.mp4",
+      "subtitle_url": "http://33b2-118-150-70-62.ngrok-free.app/output/subtitles_4135268c-ea10-4b12-a61c-49b08b9f892b.srt",
+      "generation_time_seconds": 1
+    }
   }
 ]

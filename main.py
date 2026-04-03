@@ -101,13 +101,13 @@ async def generate_video(
         logger.info("Stage 3: Concept Planning")
         concept_graph = await m3.plan(request_data.course_requirement, student_model, model_override=request_data.model_override)
 
-        # 4. Script Generation
-        logger.info("Stage 4: Script Generation")
-        script = await m4.generate(concept_graph, student_model, fact_bundle, model_override=request_data.model_override)
+        # 4. Script Generation (Variants)
+        logger.info("Stage 4: Multi-Variant Script Generation")
+        scripts = await m4.generate_variants(concept_graph, student_model, fact_bundle, model_override=request_data.model_override)
 
-        # 5. CIDPP Critic Review
-        logger.info("Stage 5: CIDPP Critic Review")
-        critic_scores = await m5.review(script, student_model, model_override=request_data.model_override)
+        # 5. CIDPP Critic Selection (Best-of-N)
+        logger.info("Stage 5: CIDPP Critic Selection (Best-of-3)")
+        script, selection_log = await m5.score_variants(scripts, student_model, model_override=request_data.model_override)
 
         # 6. Multimodal Planning
         logger.info("Stage 6: Multimodal Planning")
@@ -127,18 +127,18 @@ async def generate_video(
         
         generation_time = int(time.time() - start_time)
         
-        # 9. Feedback Logging
+        # 9. Feedback Logging (with Selection Data)
         logger.info(f"Stage 9: Logging results for {run_id}")
         run_data = {
             "request": request_data.model_dump(),
             "student_model": student_model.model_dump(),
             "concept_graph": concept_graph.model_dump(),
-            "critic_scores": critic_scores.model_dump(),
+            "selected_strategy": script.scaffolding_strategy,
             "video_url": public_video_url,
             "subtitle_url": public_subtitle_url,
             "generation_time_seconds": generation_time
         }
-        await m8.log_run(run_id, run_data)
+        await m8.log_run(run_id, run_data, selection_log=selection_log)
 
         return GenerationResponse(
             video_url=public_video_url,
