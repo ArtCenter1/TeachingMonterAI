@@ -2751,5 +2751,1014 @@
         ]
       }
     ]
+  },
+  {
+    "run_id": "48ab0567-d989-4c25-978f-dd65df752259",
+    "data": {
+      "request": {
+        "course_requirement": "Conservation of Momentum",
+        "student_persona": "10th grade student with high curiosity but struggles with math formulas",
+        "model_override": "google/gemini-2.0-flash-exp:free",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "Foundational math concepts up to algebra I and geometry (e.g., basic arithmetic, linear equations, geometric properties)",
+          "Conceptual understanding of mathematical principles (e.g., understanding what 'area' or 'rate' means, even if the formula is elusive)",
+          "Broad general knowledge due to high curiosity, potentially allowing for interdisciplinary connections",
+          "Procedural knowledge gap in applying and manipulating symbolic mathematical formulas",
+          "Potential weakness in symbolic reasoning and algebraic manipulation related to formulas"
+        ],
+        "misconception_risk": {
+          "Formula Application": [
+            "Incorrectly choosing the relevant formula for a problem",
+            "Confusing similar formulas (e.g., area vs. perimeter for a shape)",
+            "Errors in substituting values into formulas",
+            "Forgetting components or steps of a multi-step formula",
+            "Incorrectly applying order of operations within formulas"
+          ],
+          "Algebraic Manipulation": [
+            "Struggling to rearrange formulas to solve for a different variable",
+            "Errors in simplifying expressions that involve formula components"
+          ],
+          "Problem Translation": [
+            "Difficulty translating word problems into mathematical expressions or selecting the appropriate formula"
+          ],
+          "Conceptual vs. Procedural": [
+            "Believing they don't understand the concept when the actual struggle is with formulaic application (procedural knowledge)"
+          ]
+        },
+        "cognitive_load_budget": 0.5,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.35
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "What is 'Motion Inertia'? (A Feeling of 'Hard-to-Stop')",
+            "prerequisites": [],
+            "misconceptions": [
+              "Confusing the *feeling* of inertia with just speed or just weight.",
+              "Believing only speed matters, not mass (or vice-versa)."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "Momentum (p = mv) - Definition and Calculation",
+            "prerequisites": [
+              "What is 'Motion Inertia'? (A Feeling of 'Hard-to-Stop')"
+            ],
+            "misconceptions": [
+              "Confusing momentum with force or kinetic energy.",
+              "Forgetting that velocity has direction (affecting the sign of momentum).",
+              "Incorrectly substituting values into p=mv (e.g., using mass for velocity or vice versa).",
+              "Forgetting to include units or using incorrect units."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "Isolated Systems - Defining the 'Boundary'",
+            "prerequisites": [],
+            "misconceptions": [
+              "Confusing internal forces (like two objects colliding) with external forces (like friction from the ground).",
+              "Believing gravity is always an external force (when it can be internal if the Earth is part of the system).",
+              "Not understanding that an *external* net force would change the system's total momentum."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "The Idea of 'Conservation' in Physics - What Stays the Same?",
+            "prerequisites": [
+              "Isolated Systems - Defining the 'Boundary'"
+            ],
+            "misconceptions": [
+              "Believing that individual quantities are conserved, rather than the total for the system.",
+              "Thinking that 'conservation' means nothing changes *at all* within the system (e.g., speeds of individual objects)."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Conservation of Momentum Principle (Conceptual Statement)",
+            "prerequisites": [
+              "Momentum (p = mv) - Definition and Calculation",
+              "Isolated Systems - Defining the 'Boundary'",
+              "The Idea of 'Conservation' in Physics - What Stays the Same?"
+            ],
+            "misconceptions": [
+              "Thinking momentum can be created or destroyed within an isolated system.",
+              "Applying conservation to systems that are not isolated (e.g., a ball bouncing on the ground with friction).",
+              "Confusing 'conservation of momentum' with 'conservation of energy'."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "Conservation of Momentum (Formula Introduction and Simple Application)",
+            "prerequisites": [
+              "Conservation of Momentum Principle (Conceptual Statement)"
+            ],
+            "misconceptions": [
+              "Incorrectly assigning 'before' and 'after' states to the variables.",
+              "Forgetting the vector nature of velocity, leading to sign errors in calculations (especially for objects moving in opposite directions).",
+              "Struggling with the algebraic rearrangement of the formula (e.g., isolating a final velocity), which will be addressed carefully.",
+              "Incorrectly adding or subtracting momentum terms due to not understanding vector addition/subtraction conceptually."
+            ],
+            "visual_type": "Derivation",
+            "duration_minutes": 6.0
+          }
+        ],
+        "total_duration_minutes": 22.0
+      },
+      "selected_strategy": "Inductive",
+      "video_url": "http://localhost:8000/output/final_video_48ab0567-d989-4c25-978f-dd65df752259.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_48ab0567-d989-4c25-978f-dd65df752259.srt",
+      "generation_time_seconds": 120
+    },
+    "selection_log": [
+      {
+        "strategy": "Inductive",
+        "total_score": 45,
+        "breakdown": {
+          "clarity": 9,
+          "integrity": 10,
+          "depth": 9,
+          "practicality": 10,
+          "pertinence": 7
+        },
+        "revisions": [
+          "For all formula application examples (e.g., in Segments 2 and 6), significantly slow down the narration when performing calculations. Verbally walk through each substitution and arithmetic step, explaining 'why' each operation is done, not just 'what' the result is, to support procedural knowledge gaps.",
+          "In Segment 6's worked example, break down the algebraic manipulation into smaller, more explicit verbal steps. Narrate the *reasoning* behind each algebraic operation (e.g., 'to isolate v2_final, we first add 2 to both sides to cancel out the -2'). Ensure visual highlighting on screen matches the narrated step to aid symbolic reasoning.",
+          "To reduce cognitive load and cater to algebraic weaknesses, consider simplifying the initial worked example in Segment 6 (e.g., a simpler scenario where two objects stick together, or finding an initial velocity) or provide a guided interaction for the student to *solve* a step rather than just observe.",
+          "Move the 'What if the two balls stuck together' question from the end of Segment 6 to a separate challenge question or a follow-up lesson segment, as the current segment is already dense and may exceed the cognitive load budget.",
+          "Add an explicit reminder early in the formula application sections (Seg 2 and 6) about checking and converting units (e.g., ensuring mass is in kg, velocity in m/s) before plugging values into the formula.",
+          "Introduce a brief 'problem translation' challenge in the checks or after Segment 6, asking the student to set up the initial equation from a word problem (without necessarily solving it) to address their 'Problem Translation' risk.",
+          "Include a brief, overarching summary segment at the very end of the lesson to reinforce the key takeaways (motion inertia, momentum formula, isolated systems, conservation principle) and help manage overall cognitive load."
+        ],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": false,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": "The script did a truly excellent job of making sure every formula was preceded by clear, relatable analogies, which is a huge relief for me! Even the longer conservation of momentum formula in seg06 was built up logically from previously analogized concepts. However, despite the amazing scaffolding and clear step-by-step breakdown in seg06, the sheer length and visual complexity of the full equation `(m1 * v1_initial) + (m2 * v2_initial) = (m1 * v1_final) + (m2 * v2_final)` and the subsequent multi-step algebraic example still made my anxiety levels rise a bit. My one suggestion would be to introduce the complex numerical example in seg06 even more gradually. Perhaps, after showing the long formula, spend a moment just *verbally* walking through a *very simple* numeric example first (e.g., 'If the total hard-to-stop-ness before was 10, then it must be 10 after, even if the individual parts changed'), before diving into the full detailed calculation with multiple variables. This might ease into the heavy math just a tiny bit more gently for someone truly scared of equations."
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": false,
+            "gaps": [
+              "The distinction between speed and velocity regarding direction is introduced a bit quickly in segment 2. Previously, 'speed or velocity' was used, so clarifying that 'velocity' specifically includes direction and why that's important for momentum (a vector quantity) would be helpful. For a beginner, speed is often the only thing they think about when something is moving.",
+              "The reason for combining units (kg\u00b7m/s) isn't explained; it's just stated. While I can see it comes from the formula, it would be cool to know if this combination *means* anything conceptually, like how Newtons are kg\u00b7m/s\u00b2.",
+              "When introducing the 'net (total) external force acting on it is zero' for an isolated system in segment 3, it's clarified that it doesn't mean *no* forces, but that they balance out. A very simple, non-collision example of balanced external forces (like a book resting on a table, where gravity and the table's push cancel out) would make the 'net zero' concept clearer before jumping to the complex collision scenario.",
+              "The convention of using positive/negative signs for direction (right = positive, left = negative) in segment 6 is introduced without a brief explanation of *why* this convention exists or its importance in calculations. It feels like an arbitrary rule instead of a tool.",
+              "In the algebraic example in segment 6, some very small calculation steps are skipped (e.g., `4 + 0` simplifies to `4` without explicitly showing it, or `4 + 2` simplifies to `6` without showing `6` first). For someone with low math prior knowledge, showing every single, tiny step would be reassuring and help avoid confusion."
+            ],
+            "confusing_quotes": [
+              "\"Because velocity has a direction, momentum also has a direction.\" (From seg02) - Why does this matter? How does 'direction' change the 'hard-to-stop-ness' feeling? I understand speed, but what is different about velocity having a direction?",
+              "\"If an object moves to the left, we usually assign its velocity a negative sign. Moving to the right is positive.\" (From seg06) - Why negative for left and positive for right? Is it just a rule we have to memorize, or is there a reason?",
+              "\"4 + 0 = -2 + (3 * v2_final)\" and then the next line directly states \"4 = -2 + (3 * v2_final)\" (From seg06) - I get that `+0` doesn't change `4`, but seeing it explicitly written out would be clearer for a beginner.",
+              "\"4 + 2 = 3 * v2_final\" and then the next line directly states \"6 = 3 * v2_final\" (From seg06) - Again, I can do `4+2`, but if you're showing all the steps, why skip this one?"
+            ],
+            "suggested_improvement": "The biggest help would be to make the explanation of 'direction' for velocity and momentum more prominent and explicit early on, possibly with a visual (like an arrow length representing speed and the arrow's way representing direction). Also, for the example calculation, show *every single* step of the algebra to make sure no one gets lost, even if it's a simple `+0` or `4+2`."
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 43,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 9,
+          "depth": 9,
+          "practicality": 10,
+          "pertinence": 7
+        },
+        "revisions": [
+          "**Split `seg06` into multiple, shorter segments** to align with the student's cognitive load budget (0.5) and address their procedural knowledge gap in formula application and algebraic manipulation. This is the most critical revision for pertinence and clarity in execution:",
+          "    *   **New `seg06a_formula_intro` (e.g., 180 seconds):** Focus *only* on introducing the `(m1 * v1_before) + (m2 * v2_before) = (m1 * v1_after) + (m2 * v2_after)` formula. Clearly label each term and reiterate units. Emphasize the principle of summing individual momentums. Keep the initial numerical example brief, focusing on setting up the positive/negative signs for velocity.",
+          "    *   **New `seg06b_simple_application` (e.g., 240 seconds):** Dedicate this segment to a *simple application* where all but one variable (e.g., the total momentum after a collision, or one known velocity after if the other is zero/known) are given. Walk through the *step-by-step substitution* of values, explicitly highlighting how positive/negative signs are handled. Calculate the final answer.",
+          "    *   **New `seg06c_algebraic_manipulation` (e.g., 240 seconds):** Create a dedicated segment for *algebraic manipulation*. Use an example where an *unknown final velocity* needs to be solved for. Walk through the rearrangement of the formula *step-by-step*, showing each algebraic operation (e.g., subtracting a term from both sides, dividing by mass) with clear visual cues. Explicitly mention common pitfalls for students weak in symbolic reasoning (e.g., 'don't forget to do it to both sides').",
+          "**Revise the citation in `seg05`:** The citation 'Educational Standard' is not a source for factual accuracy. If the claim about core concepts forming a foundation needs external justification, find a reputable pedagogical source or a physics education research paper. Otherwise, consider rephrasing the sentence to be a self-evident statement or removing the citation.",
+          "**Enhance visual content specifications for the new formula segments:** For `seg06b_simple_application` and `seg06c_algebraic_manipulation`, specify animations or progressive highlighting that clearly show each number substitution and *each algebraic step* (e.g., `(m2 * v2_before)` term fading out on one side and appearing as `- (m2 * v2_before)` on the other), directly supporting the student's weakness in procedural and symbolic manipulation.",
+          "**Add a brief, explicit reminder about vector quantities:** Before `seg02`, or early within it, add a very concise statement or quick visual cue reinforcing that velocity (and thus momentum) is a vector quantity, meaning it has both magnitude *and* direction, and how that direction will be represented (e.g., 'positive for right, negative for left'). This proactively addresses the `p=mv` directional understanding which is crucial for correct application."
+        ]
+      },
+      {
+        "strategy": "Intuition-First",
+        "total_score": 34,
+        "breakdown": {
+          "clarity": 7,
+          "integrity": 6,
+          "depth": 7,
+          "practicality": 8,
+          "pertinence": 6
+        },
+        "revisions": [
+          "In Segment 1, clarify the distinction between 'inertia' (resistance to change in motion, due to mass) and 'momentum' (quantity of motion, or 'hard-to-stop-ness', due to mass AND velocity). Rephrase the sentence, 'And as we just saw, this 'oomph' depends on two main things: how much *stuff* the object is made of, which we call **mass**, and how *fast* it's actually moving, which we call **velocity**.' to explicitly state this 'oomph' is momentum.",
+          "Remove the generic citation in Segment 5 (`\"Educational Standard\"`). General statements about foundational principles do not require such citations. If specific curriculum alignment is intended, it should be presented as an instructional note, not a factual citation.",
+          "In Segment 6, revise the narration and visual content spec for the example problem. Given the student's weakness in algebraic manipulation and low cognitive load budget, focus heavily on setting up the initial equation correctly (`(m\u2081v\u2081\u1d62 + m\u2082v\u2082\u1d62) = (m\u2081v\u2081f + m\u2082v\u2082f)`). Guide the student through substituting values (emphasizing sign conventions for velocity), but *do not walk through the step-by-step algebraic solving*. Instead, state the final answer for `v\u2082f` and reiterate that the setup is the key conceptual step. The visual should mirror this, showing the setup and substitution clearly, then jumping directly to the final solution without detailed intermediate algebraic steps.",
+          "In Segment 5, briefly expand on the practical implications of momentum conservation to strengthen its 'foundational' claim. For example, mention its role in designing safe vehicles, understanding rocket propulsion, or analyzing collisions in sports.",
+          "Add a new 'check for understanding' question that specifically differentiates between 'inertia' and 'momentum' to address potential conceptual confusion stemming from Segment 1's initial phrasing."
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "be6cbcfc-5c71-420a-b194-41a9eecc06e5",
+    "data": {
+      "request": {
+        "course_requirement": "Conservation of Momentum",
+        "student_persona": "10th grade student with high curiosity but struggles with math formulas",
+        "model_override": "google/gemini-2.0-flash-exp:free",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Conservation of Momentum",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_be6cbcfc-5c71-420a-b194-41a9eecc06e5.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_be6cbcfc-5c71-420a-b194-41a9eecc06e5.srt",
+      "generation_time_seconds": 49
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "44c3ee24-23b5-4d77-8d20-673f222a8538",
+    "data": {
+      "request": {
+        "course_requirement": "Recursion in Computer Science",
+        "student_persona": "An visual-heavy learner who needs clear diagrams and analogies to understand abstract code concepts.",
+        "model_override": "models/gemini-1.5-flash",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Recursion in Computer Science",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_44c3ee24-23b5-4d77-8d20-673f222a8538.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_44c3ee24-23b5-4d77-8d20-673f222a8538.srt",
+      "generation_time_seconds": 27
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "8dd9a090-2567-48dc-8f0f-789c6af69c2b",
+    "data": {
+      "request": {
+        "course_requirement": "Recursion in Computer Science",
+        "student_persona": "An visual-heavy learner who needs clear diagrams and analogies to understand abstract code concepts.",
+        "model_override": "models/gemini-1.5-flash",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Recursion in Computer Science",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_8dd9a090-2567-48dc-8f0f-789c6af69c2b.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_8dd9a090-2567-48dc-8f0f-789c6af69c2b.srt",
+      "generation_time_seconds": 41
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "99633bbe-f8d3-442d-b3f4-a641aa7d81a8",
+    "data": {
+      "request": {
+        "course_requirement": "Recursion in Computer Science",
+        "student_persona": "An visual-heavy learner who needs clear diagrams and analogies to understand abstract code concepts.",
+        "model_override": "models/gemini-1.5-flash",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Recursion in Computer Science",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_99633bbe-f8d3-442d-b3f4-a641aa7d81a8.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_99633bbe-f8d3-442d-b3f4-a641aa7d81a8.srt",
+      "generation_time_seconds": 25
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "7d654632-8e47-4ef7-aa6f-f2ca389f1d43",
+    "data": {
+      "request": {
+        "course_requirement": "Recursion in Computer Science",
+        "student_persona": "An visual-heavy learner who needs clear diagrams and analogies to understand abstract code concepts.",
+        "model_override": "models/gemini-1.5-flash",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "Beginner in programming concepts",
+          "Relies heavily on visual aids and analogies for understanding",
+          "Has difficulty grasping abstract ideas without concrete representations",
+          "Possesses strong visual memory and processing capabilities"
+        ],
+        "misconception_risk": {
+          "Memory Management": [
+            "Misunderstanding the difference between value and reference types due to lack of visual distinction in memory",
+            "Difficulty visualizing stack vs. heap allocation, leading to errors in understanding scope or object lifetimes",
+            "Confusing pointers/references with direct data storage if not clearly diagrammed"
+          ],
+          "Object-Oriented Programming (OOP)": [
+            "Taking analogies for inheritance or polymorphism too literally, failing to grasp the underlying abstract relationships",
+            "Struggling to visualize encapsulation or abstract classes without clear conceptual diagrams",
+            "Misinterpreting class diagrams (UML) as direct code rather than a structural blueprint"
+          ],
+          "Abstract Data Structures": [
+            "Confusing the visual representation of a data structure (e.g., a linked list diagram) with its underlying memory implementation or dynamic behavior",
+            "Difficulty understanding the 'linking' mechanism in linked lists or 'tree' structure without dynamic visualization"
+          ],
+          "Recursion": [
+            "Getting lost in recursive call stacks without a clear, step-by-step visual trace of execution flow and state changes"
+          ]
+        },
+        "cognitive_load_budget": 0.4,
+        "modality_preference": "visual",
+        "abstraction_tolerance": 0.3
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Recursion in Computer Science",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_7d654632-8e47-4ef7-aa6f-f2ca389f1d43.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_7d654632-8e47-4ef7-aa6f-f2ca389f1d43.srt",
+      "generation_time_seconds": 29
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "0ee0e8c6-423e-48e7-a4cf-5e15405e6840",
+    "data": {
+      "request": {
+        "course_requirement": "Recursion in Computer Science",
+        "student_persona": "An visual-heavy learner who needs clear diagrams and analogies to understand abstract code concepts.",
+        "model_override": "models/gemini-1.5-flash",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Recursion in Computer Science",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_0ee0e8c6-423e-48e7-a4cf-5e15405e6840.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_0ee0e8c6-423e-48e7-a4cf-5e15405e6840.srt",
+      "generation_time_seconds": 26
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "5d895846-c17f-4890-8150-ee01b86b0117",
+    "data": {
+      "request": {
+        "course_requirement": "Recursion in Computer Science",
+        "student_persona": "An visual-heavy learner who needs clear diagrams and analogies to understand abstract code concepts.",
+        "model_override": "models/gemini-1.5-flash",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Recursion in Computer Science",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_5d895846-c17f-4890-8150-ee01b86b0117.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_5d895846-c17f-4890-8150-ee01b86b0117.srt",
+      "generation_time_seconds": 26
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
   }
 ]

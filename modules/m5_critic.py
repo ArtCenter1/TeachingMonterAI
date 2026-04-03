@@ -102,7 +102,10 @@ class CIDPPCritic:
         
         # Phase 4 - Part 2: Synthetic Student Testing on the winner
         logger.info(f"Running synthetic student tests on selected variant: {scored_data[0]['strategy']}")
-        student_feedback = await self.tester.test_script(best_variant)
+        feedback = await self.tester.test_script(best_variant)
+        
+        # Phase 4 - Part 3: Refinement Loop (The "Gold Standard" step)
+        refined_script = await self.refine_script(best_variant, student_model, feedback, model_override)
         
         selection_log = [
             {
@@ -122,11 +125,79 @@ class CIDPPCritic:
         # Attach synthetic feedback to the winning selection log entry
         for entry in selection_log:
             if entry["strategy"] == scored_data[0]["strategy"]:
-                entry["synthetic_student_feedback"] = student_feedback
+                entry["synthetic_student_feedback"] = feedback
                 break
 
         logger.info(f"Selected strategy: {scored_data[0]['strategy']} with score {scored_data[0]['total_score']}")
-        return best_variant, selection_log
+        return refined_script, selection_log
+
+    async def refine_script(self, script: FullScript, student_model: StudentModel, 
+                          feedback: List[Dict[str, Any]], model_override: str = None) -> FullScript:
+        """Refine the script based on synthetic student feedback."""
+        
+        # Filter for critical gaps
+        critical_gaps = []
+        for f in feedback:
+            if not f.get("is_perfect", True):
+                if f.get("gaps"):
+                    critical_gaps.extend(f.get("gaps", []))
+                if f.get("suggested_improvement"):
+                    critical_gaps.append(f["suggested_improvement"])
+        
+        if not critical_gaps:
+            logger.info("No critical gaps identified by synthetic students. Skipping refinement.")
+            return script
+
+        logger.info(f"Refining script to address {len(critical_gaps)} identified gaps.")
+        
+        prompt = f"""
+        Refine the following educational script based on student feedback.
+        
+        ORIGINAL SCRIPT:
+        {script.json()}
+        
+        STUDENT FEEDBACK (Identified Gaps):
+        {json.dumps(critical_gaps, indent=2)}
+        
+        STUDENT PROFILE:
+        {student_model.json()}
+        
+        Goal:
+        - Address all identified gaps (improve clarity, technical depth, or visual cues).
+        - Maintain the original strategy ({script.scaffolding_strategy}).
+        - Ensure JSON schema matches exactly.
+        
+        Return the refined data as a JSON object matching the schema:
+        {{
+            "title": "Lesson Title",
+            "scaffolding_strategy": "{script.scaffolding_strategy}",
+            "hook": "The opening curiosity trigger",
+            "segments": [
+                {{
+                    "segment_id": "string",
+                    "concept": "concept name",
+                    "narration": "Full narration text",
+                    "visual_type": "Animation" | "Diagram" | etc.,
+                    "visual_content_spec": "Detailed visual description",
+                    "duration_seconds": float,
+                    "citations": [{{"claim": "string", "source": "string"}}]
+                }}
+            ],
+            "checks": ["question 1", "question 2"]
+        }}
+        """
+        
+        try:
+            response_text = await self.llm.generate_text(
+                prompt=prompt,
+                model_override=model_override,
+                system_instruction="You are a meticulous editor improving an educational script based on direct student feedback."
+            )
+            data = extract_json(response_text)
+            return FullScript(**data)
+        except Exception as e:
+            logger.error(f"Error refining script: {str(e)}")
+            return script
 
     async def review(self, script: FullScript, student_model: StudentModel, model_override: str = None) -> CIDPPScores:
         if not self.google_api_key and not self.openrouter_api_key:

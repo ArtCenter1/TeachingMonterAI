@@ -80,16 +80,26 @@ class LLMClient:
         raise last_exception
 
     async def _execute_request(self, model_name: str, prompt: str, system_instruction: str, temperature: float, max_tokens: int) -> str:
-        """Internal router for specific provider SDKs."""
+        """Internal router for specific provider SDKs.
         
-        # Scenario A: OpenRouter (if model name has / and not explicitly google SDK target)
-        if "/" in model_name and "google/" not in model_name:
+        Routing rules:
+        - OpenRouter: any model name containing ":" (e.g., :free, :nitro) OR any
+          slash-separated provider path (e.g., google/gemini-..., qwen/qwen-...)
+          that is NOT a native Gemini SDK path (models/...).
+        - Gemini SDK: plain names like "gemini-1.5-flash" or "models/gemini-1.5-flash".
+        """
+        # OpenRouter models use a "provider/model:variant" format.
+        # The ":" variant qualifier is the clearest signal it's an OpenRouter model.
+        # e.g. google/gemini-2.0-flash-exp:free, qwen/qwen-2.5-7b-instruct:free
+        is_openrouter_style = ":" in model_name or (
+            "/" in model_name and not model_name.startswith("models/")
+        )
+        
+        if is_openrouter_style and self.openrouter_client:
             return await self._call_openrouter(model_name, prompt, system_instruction, temperature, max_tokens)
-        
-        # Scenario B: Google Gemini SDK
         else:
-            # Strip OpenRouter prefix if it leaked in
-            clean_name = model_name.replace("google/", "")
+            # Native Gemini SDK path — strip any leading path prefix
+            clean_name = model_name.split("/")[-1]
             return await self._call_gemini_sdk(clean_name, prompt, system_instruction, temperature, max_tokens)
 
     @retry(
@@ -109,7 +119,7 @@ class LLMClient:
             
             model = genai.GenerativeModel(
                 model_name=clean_model_name,
-                system_instruction=system_instruction
+                **({"system_instruction": system_instruction} if system_instruction else {})
             )
             
             # Wrap synchronous call

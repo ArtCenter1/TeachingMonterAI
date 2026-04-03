@@ -3,9 +3,9 @@ import json
 
 url = "http://localhost:8000/generate"
 payload = {
-    "course_requirement": "Conservation of Momentum",
-    "student_persona": "10th grade student with high curiosity but struggles with math formulas",
-    "model_override": "google/gemini-2.0-flash-exp:free"
+    "course_requirement": "Recursion in Computer Science",
+    "student_persona": "An visual-heavy learner who needs clear diagrams and analogies to understand abstract code concepts.",
+    "model_override": "models/gemini-1.5-flash"
 }
 
 headers = {
@@ -14,7 +14,8 @@ headers = {
 
 print(f"Sending request to {url}...")
 try:
-    response = requests.post(url, json=payload, headers=headers, timeout=300)
+    # Increased timeout for refinement loop
+    response = requests.post(url, json=payload, headers=headers, timeout=600)
     print(f"Status Code: {response.status_code}")
     if response.status_code == 200:
         print("Success! Response:")

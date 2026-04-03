@@ -4,8 +4,15 @@ Following the success of the A/B selection framework, we will now implement the 
 
 ## Proposed Changes
 
+### 0. Fix LLM Router (Blocker)
+We encountered an `HTTP 400` error because `google/gemini-2.0-flash-exp:free` was being routed to the Google SDK instead of OpenRouter.
+- Update `llm_client.py` to allow `google/` models to go to OpenRouter if they have the `:free` suffix or if OpenRouter is preferred.
+- Ensure `system_instruction` handling in `_call_gemini_sdk` is robust against `None`.
+
 ### 1. Synthetic Student Testing (M5 Enhancement)
-We will implement the "pre-commit" testing loop (PRD 2.3). Before a script is finalized, it will be "watched" by 4 synthetic student personas.
+Already partially implemented, but needs:
+- Robust error handling for the parallel persona calls.
+- Integration test to ensure the "winning" script actually gets modified if the students find major gaps.
 - **Cost Optimization**: Per user request, these 4 parallel calls will use a **free/cheap model** (e.g., `google/gemini-2.0-flash-exp:free` via OpenRouter) to minimize development costs.
 - **Personas**:
     - **Persona A**: Confused visual learner (needs diagrams before words).

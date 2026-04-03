@@ -12,6 +12,11 @@ from loguru import logger
 
 # Load environment variables
 load_dotenv()
+
+# Required for Windows subprocess/rendering (FFmpeg)
+if os.name == 'nt':
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # Add a file logger for persistent debugging

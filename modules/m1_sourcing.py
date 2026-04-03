@@ -4,11 +4,13 @@ import asyncio
 import aiohttp
 import time
 from typing import Dict, Any, Optional, List
+from dotenv import load_dotenv
 from .schemas import FactBundle
 from loguru import logger
 
 class SourcingModule:
     def __init__(self):
+        load_dotenv()
         self.notebooklm_mcp_endpoint = os.getenv("NOTEBOOKLM_MCP_ENDPOINT")
         self.fallback_search_api_key = os.getenv("SEARCH_API_KEY")
         self.search_cx = os.getenv("SEARCH_CX", "017576662512468239146:omuauf_lfve")
@@ -61,8 +63,19 @@ class SourcingModule:
                 
         except Exception as e:
             logger.error(f"Web search fallback failed: {str(e)}")
+            
+        # Stage 3: AI Research Fallback (NEW)
+        # If real-time search fails, use the LLM's internal knowledge to ground the lesson
+        try:
+            logger.info("Triggering AI Research Fallback (Internal Knowledge)...")
+            fact_bundle = await self._ai_research_fallback(topic)
+            if fact_bundle and fact_bundle.facts:
+                logger.info(f"AI Research Fallback successful: {len(fact_bundle.facts)} facts retrieved")
+                return await self._verify_and_enhance_facts(fact_bundle, topic)
+        except Exception as e:
+            logger.error(f"AI Research Fallback failed: {str(e)}")
         
-        # Stage 3: Final fallback to mock data (should rarely happen)
+        # Stage 4: Final fallback to mock data (should very rarely happen)
         logger.warning("All sourcing methods failed, using mock data")
         return self.get_mock_data(topic)
 
@@ -280,6 +293,45 @@ class SourcingModule:
             })
         
         return FactBundle(facts=verified_facts, study_guide_url=fact_bundle.study_guide_url)
+
+    async def _ai_research_fallback(self, topic: str) -> FactBundle:
+        """
+        Uses the LLM to retrieve foundational educational facts if real-time search is unavailable.
+        Uses a separate LLMClient instance to avoid circular imports.
+        """
+        from .llm_client import LLMClient
+        client = LLMClient()
+        
+        prompt = f"""
+        Act as a senior educational researcher. Provide a list of 5-7 authoritative, 
+        technically accurate facts about '{topic}' for a secondary education audience.
+        
+        For each fact, provide:
+        - claim: The factual statement (including any relevant formulas).
+        - citation: The likely authoritative source (e.g., 'National Science Foundation', 'Khan Academy', 'MIT Courseware').
+        - confidence: A value between 0.0 and 1.0.
+        
+        Return ONLY a JSON array of objects.
+        """
+        
+        try:
+            response_text = await client.generate_text(prompt, temperature=0.3)
+            # Find the JSON array in the response
+            start = response_text.find("[")
+            end = response_text.rfind("]") + 1
+            if start != -1 and end != -1:
+                facts_data = json.loads(response_text[start:end])
+                facts = []
+                for f in facts_data:
+                    facts.append({
+                        "claim": f.get("claim", ""),
+                        "citation": f.get("citation", "AI Internal Knowledge"),
+                        "confidence": float(f.get("confidence", 0.9))
+                    })
+                return FactBundle(facts=facts)
+        except Exception as e:
+            logger.error(f"AI Research Fallback LLM call failed: {str(e)}")
+            return None
 
     def get_mock_data(self, topic: str) -> FactBundle:
         """Mock data for when all sourcing methods fail"""

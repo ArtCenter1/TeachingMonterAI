@@ -72,6 +72,8 @@ class VideoRenderer:
                     # Ensuring model_id and voice are passed if the SDK version requires them again
                     # but typically they are in connection.context()
                     ctx.send(
+                        model_id="sonic-english",
+                        voice={"mode": "id", "id": self.voice_id},
                         transcript=segment.narration,
                         continue_=False,
                         add_timestamps=True
@@ -138,12 +140,21 @@ class VideoRenderer:
             ]
             
             logger.info(f"Rendering segment {segment.segment_id}")
-            process = await asyncio.create_subprocess_exec(
-                *cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-            stdout, stderr = await process.communicate()
             
-            if process.returncode == 0:
+            # Use asyncio.to_thread with subprocess.run for Windows compatibility
+            def run_ffmpeg():
+                return subprocess.run(
+                    cmd, 
+                    stdout=subprocess.PIPE, 
+                    stderr=subprocess.PIPE,
+                    check=False
+                )
+
+            result = await asyncio.to_thread(run_ffmpeg)
+            stdout, stderr = result.stdout, result.stderr
+            returncode = result.returncode
+            
+            if returncode == 0:
                 segment_files.append(video_path)
                 global_offset += audio_duration
             else:
@@ -169,10 +180,17 @@ class VideoRenderer:
         ]
         
         logger.info(f"Concatenating all segments into {final_filename}")
-        concat_process = await asyncio.create_subprocess_exec(
-            *concat_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        await concat_process.communicate()
+        
+        def run_concat():
+            return subprocess.run(
+                concat_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False
+            )
+
+        concat_result = await asyncio.to_thread(run_concat)
+        # We don't strictly need to wait for result.stdout if we don't log it
         
         # SRT Generation
         subtitle_filename = f"subtitles_{run_id}.srt"
