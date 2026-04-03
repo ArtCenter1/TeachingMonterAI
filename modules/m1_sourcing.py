@@ -24,7 +24,7 @@ class SourcingModule:
         except ImportError:
             logger.debug("NotebookLM native library not found, will rely on MCP endpoint")
         
-    async def source(self, topic: str) -> FactBundle:
+    async def source(self, topic: str, search_cx: Optional[str] = None, search_api_key: Optional[str] = None) -> FactBundle:
         """
         Main sourcing method with timeout and fallback chain:
         1. Attempt NotebookLM MCP sourcing (timeout: 90 seconds)
@@ -55,7 +55,7 @@ class SourcingModule:
         # Stage 2: Fallback to web_search + web_fetch
         try:
             logger.info("Falling back to web_search + web_fetch...")
-            fact_bundle = await self._web_search_fallback(topic)
+            fact_bundle = await self._web_search_fallback(topic, search_cx, search_api_key)
             
             if fact_bundle and fact_bundle.facts and len(fact_bundle.facts) > 0:
                 logger.info(f"Web search fallback successful: {len(fact_bundle.facts)} facts retrieved")
@@ -124,9 +124,12 @@ class SourcingModule:
                 
                 return FactBundle(facts=facts, study_guide_url=study_guide_url)
 
-    async def _web_search_fallback(self, topic: str) -> FactBundle:
+    async def _web_search_fallback(self, topic: str, search_cx: Optional[str] = None, search_api_key: Optional[str] = None) -> FactBundle:
         """Fallback sourcing using web search + web fetch"""
-        if not self.fallback_search_api_key or "your_" in self.fallback_search_api_key:
+        api_key = search_api_key or self.fallback_search_api_key
+        cx = search_cx or self.search_cx
+        
+        if not api_key or "your_" in api_key:
             logger.warning("SEARCH_API_KEY not configured. Search fallback will use mock data.")
             return self.get_mock_data(topic)
             
@@ -135,8 +138,8 @@ class SourcingModule:
         
         search_url = "https://www.googleapis.com/customsearch/v1"
         search_params = {
-            "key": self.fallback_search_api_key,
-            "cx": self.search_cx,
+            "key": api_key,
+            "cx": cx,
             "q": search_query,
             "num": 5
         }

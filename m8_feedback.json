@@ -3760,5 +3760,429 @@
         "revisions": []
       }
     ]
+  },
+  {
+    "run_id": "9e615a31-56de-4599-865d-ad9e67db7284",
+    "data": {
+      "request": {
+        "course_requirement": "Binary Numbers",
+        "student_persona": "Middle school student with zero coding knowledge",
+        "model_override": null,
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Binary Numbers",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_9e615a31-56de-4599-865d-ad9e67db7284.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_9e615a31-56de-4599-865d-ad9e67db7284.srt",
+      "generation_time_seconds": 20
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "ab29c2cb-18b1-49ff-818b-21178dddb8c8",
+    "data": {
+      "request": {
+        "course_requirement": "The Water Cycle",
+        "student_persona": "A 5th grade student who likes Minecraft and wants a simple explanation.",
+        "model_override": null,
+        "age_group": "8-12",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null,
+        "topic": "The Water Cycle"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to The Water Cycle",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_ab29c2cb-18b1-49ff-818b-21178dddb8c8.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_ab29c2cb-18b1-49ff-818b-21178dddb8c8.srt",
+      "generation_time_seconds": 32
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "7d89ab95-cf99-4f42-910b-d1baccd3da2f",
+    "data": {
+      "request": {
+        "course_requirement": "The Water Cycle",
+        "student_persona": "A 5th grade student who likes Minecraft and wants a simple explanation.",
+        "model_override": null,
+        "age_group": "8-12",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null,
+        "topic": "The Water Cycle"
+      },
+      "student_model": {
+        "level": "middle_school",
+        "knowledge_embedding": [
+          "3D spatial reasoning (blocks, building, structures)",
+          "Resource management (gathering, crafting, inventory)",
+          "Basic algorithmic thinking (crafting recipes, redstone logic)",
+          "Problem-solving within a defined system (surviving, building goals)",
+          "Understanding of virtual environments and digital tools",
+          "Concepts of exploration and discovery",
+          "Creative design and iterative building processes",
+          "Basic literacy and numeracy expected of a 5th-grade student"
+        ],
+        "misconception_risk": {
+          "Analogy over-extension": [
+            "Confusing game mechanics (e.g., Minecraft physics, inventory limits) with real-world principles.",
+            "Assuming simplicity of real-world systems because analogous concepts in Minecraft are simple."
+          ],
+          "Oversimplification": [
+            "Forming an incomplete understanding if foundational complexities are entirely omitted for the sake of 'simple'.",
+            "Struggling to connect simplified concepts to more complex, real-world applications later."
+          ],
+          "Abstract concepts": [
+            "Difficulty grasping ideas that lack immediate, concrete, or visual representation.",
+            "Misinterpreting conceptual models without direct, tangible examples."
+          ]
+        },
+        "cognitive_load_budget": 0.25,
+        "modality_preference": "visual",
+        "abstraction_tolerance": 0.3
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Water in Different Forms (States of Matter)",
+            "prerequisites": [],
+            "misconceptions": [
+              "Minecraft water source blocks are infinite, like real water.",
+              "Water vapor is visible steam or smoke.",
+              "Ice and water are different substances, not just different forms."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Evaporation: Water to Vapor",
+            "prerequisites": [
+              "Water in Different Forms (States of Matter)"
+            ],
+            "misconceptions": [
+              "Water just 'disappears' forever when it evaporates.",
+              "Evaporation only happens when water is boiling."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Condensation: Vapor to Liquid",
+            "prerequisites": [
+              "Water in Different Forms (States of Matter)",
+              "Evaporation: Water to Vapor"
+            ],
+            "misconceptions": [
+              "Clouds are made of smoke or gas, not water droplets.",
+              "Clouds are just empty space."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "Precipitation: Water Falling Down",
+            "prerequisites": [
+              "Condensation: Vapor to Liquid"
+            ],
+            "misconceptions": [
+              "All precipitation is rain.",
+              "Clouds 'burst' to release water."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Collection: Where Water Gathers",
+            "prerequisites": [
+              "Precipitation: Water Falling Down"
+            ],
+            "misconceptions": [
+              "All rainwater goes directly into the ocean.",
+              "Water just sits in one place and doesn't move after it falls."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "The Continuous Water Cycle (The Big Picture)",
+            "prerequisites": [
+              "Evaporation: Water to Vapor",
+              "Condensation: Vapor to Liquid",
+              "Precipitation: Water Falling Down",
+              "Collection: Where Water Gathers"
+            ],
+            "misconceptions": [
+              "The water cycle has a specific beginning and end.",
+              "Water is 'lost' or 'used up' during the cycle.",
+              "The cycle always happens in the same exact sequence without variation."
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 6.0
+          }
+        ],
+        "total_duration_minutes": 22.0
+      },
+      "selected_strategy": "Inductive",
+      "video_url": "http://localhost:8000/output/final_video_7d89ab95-cf99-4f42-910b-d1baccd3da2f.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_7d89ab95-cf99-4f42-910b-d1baccd3da2f.srt",
+      "generation_time_seconds": 88
+    },
+    "selection_log": [
+      {
+        "strategy": "Inductive",
+        "total_score": 47,
+        "breakdown": {
+          "clarity": 9,
+          "integrity": 9,
+          "depth": 9,
+          "practicality": 10,
+          "pertinence": 10
+        },
+        "revisions": [
+          "Consider splitting Segment 1.6 ('The Continuous Water Cycle') into two shorter segments or integrating an interactive pause/question mid-segment. At 360 seconds (6 minutes), it significantly exceeds the typical attention span for a middle school student with a low cognitive load budget, especially when synthesizing complex information.",
+          "Add an explicit cautionary statement early in the lesson (e.g., within the hook or after the first Minecraft analogy in Segment 1.1) to proactively address the 'analogy over-extension' misconception risk. While analogies are used well, a direct reminder like 'Remember, Minecraft's rules are for the game; the real world has its own amazing, sometimes different, scientific rules!' can reinforce the distinction.",
+          "Enhance the 'checks' section by including at least one question that requires deeper application, problem-solving, or critical thinking beyond simple recall. For example, 'If a large area was covered in pavement, how might that change how water gets back into the ground or rivers?' or 'Why is the sun so important for the water cycle to keep going?'"
+        ],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
   }
 ]

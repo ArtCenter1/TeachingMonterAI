@@ -97,7 +97,11 @@ async def generate_video(
 
         # 1. Parallel call M1 (Sourcing) and M2 (Persona)
         logger.info("Stage 1 & 2: Sourcing and Persona Parsing")
-        m1_task = asyncio.create_task(m1.source(request_data.course_requirement))
+        m1_task = asyncio.create_task(m1.source(
+            request_data.course_requirement,
+            search_cx=request_data.search_cx,
+            search_api_key=request_data.search_api_key
+        ))
         m2_task = asyncio.create_task(m2.parse(request_data.student_persona, model_override=request_data.model_override))
         
         fact_bundle, student_model = await asyncio.gather(m1_task, m2_task)
