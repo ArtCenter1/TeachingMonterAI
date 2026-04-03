@@ -6,6 +6,7 @@ from .schemas import FullScript, ScriptSegment, ConceptGraph, StudentModel, Fact
 from .utils import extract_json
 from .llm_client import LLMClient
 from loguru import logger
+from utils.analogy_store import analogy_store
 
 class ScriptGenerator:
     def __init__(self):
@@ -43,6 +44,9 @@ class ScriptGenerator:
         Student Model: {student_model.json()}
         Facts: {fact_bundle.json()}
         Concept Graph: {concept_graph.json()}
+
+        PEDAGOGICAL ANALOGIES (Use if relevant):
+        {json.dumps(self.get_relevant_analogies(concept_graph), indent=2)}
 
         SCAFFOLDING STRATEGY: {strategy_name} ({strategy_desc})
 
@@ -105,3 +109,18 @@ class ScriptGenerator:
             hook="Ready to learn?",
             checks=[]
         )
+
+    def get_relevant_analogies(self, concept_graph: ConceptGraph) -> Dict[str, str]:
+        """Fetch pre-curated analogies for concepts in the graph."""
+        found = {}
+        # We don't have 'subject' in concept_graph yet, 
+        # so we check all subjects for matching concept keywords.
+        subjects = ["Computer Science", "Physics", "Biology", "Mathematics"]
+        
+        for node in concept_graph.nodes:
+            for subject in subjects:
+                analogy = analogy_store.get_analogy(subject, node.concept)
+                if analogy:
+                    found[node.concept] = analogy
+                    break # Move to next node
+        return found

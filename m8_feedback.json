@@ -2233,5 +2233,523 @@
       "subtitle_url": "http://33b2-118-150-70-62.ngrok-free.app/output/subtitles_4135268c-ea10-4b12-a61c-49b08b9f892b.srt",
       "generation_time_seconds": 1
     }
+  },
+  {
+    "run_id": "7c10764b-4b16-4ea4-a69f-2533b57c99cd",
+    "data": {
+      "request": {
+        "course_requirement": "Quantum Mechanics for Beginners",
+        "student_persona": "A 10-year-old who loves Minecraft",
+        "model_override": "google/gemini-2.0-flash-exp:free",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Quantum Mechanics for Beginners",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_7c10764b-4b16-4ea4-a69f-2533b57c99cd.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_7c10764b-4b16-4ea4-a69f-2533b57c99cd.srt",
+      "generation_time_seconds": 2
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "eb2ea10f-495b-414e-ab23-ff8687fcab72",
+    "data": {
+      "request": {
+        "course_requirement": "Conservation of Momentum",
+        "student_persona": "10th grade student with high curiosity but struggles with math formulas",
+        "model_override": "google/gemini-2.0-flash-exp:free",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Conservation of Momentum",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_eb2ea10f-495b-414e-ab23-ff8687fcab72.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_eb2ea10f-495b-414e-ab23-ff8687fcab72.srt",
+      "generation_time_seconds": 3
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "b9e7a19f-8be1-4601-9095-69045eaee88f",
+    "data": {
+      "request": {
+        "course_requirement": "Conservation of Momentum",
+        "student_persona": "10th grade student with high curiosity but struggles with math formulas",
+        "model_override": "google/gemini-2.0-flash-exp:free",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Conservation of Momentum",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_b9e7a19f-8be1-4601-9095-69045eaee88f.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_b9e7a19f-8be1-4601-9095-69045eaee88f.srt",
+      "generation_time_seconds": 36
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "b0aab3ae-a469-4a95-ad2a-489cccc2c27f",
+    "data": {
+      "request": {
+        "course_requirement": "Conservation of Momentum",
+        "student_persona": "10th grade student with high curiosity but struggles with math formulas",
+        "model_override": "google/gemini-2.0-flash-exp:free",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "Foundational arithmetic and basic algebra (up to pre-algebra/algebra 1 concepts)",
+          "General high school curriculum knowledge (e.g., history, literature, general science concepts)",
+          "Broad conceptual understanding in various subjects due to high curiosity",
+          "Conceptual understanding of mathematical principles (without strong formulaic application)",
+          "Limited proficiency in advanced algebraic manipulation and formula derivation/application"
+        ],
+        "misconception_risk": {
+          "Algebraic Manipulation": [
+            "Sign errors during rearrangement of equations",
+            "Incorrect order of operations within formulas",
+            "Misapplication of properties (e.g., distributive property)",
+            "Difficulty isolating variables in complex formulas"
+          ],
+          "Formula Interpretation": [
+            "Confusion between variables and constants within a formula",
+            "Misunderstanding the meaning or units of variables in context",
+            "Difficulty connecting formulas to real-world scenarios or physical phenomena",
+            "Relying on rote memorization without grasping underlying concepts or derivations"
+          ],
+          "Problem Solving": [
+            "Difficulty selecting the appropriate formula for a given problem",
+            "Errors in substituting values into formulas",
+            "Inability to derive a formula or adapt a known formula to a slightly different problem"
+          ],
+          "Geometric/Trigonometric Formulas": [
+            "Mixing up formulas for perimeter, area, and volume for various shapes",
+            "Incorrect application of trigonometric ratios or theorems"
+          ]
+        },
+        "cognitive_load_budget": 0.5,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.4
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Review: Mass and Velocity (Vector Nature)",
+            "prerequisites": [
+              "General high school curriculum knowledge (e.g., general science concepts)"
+            ],
+            "misconceptions": [
+              "Confusing speed with velocity",
+              "Forgetting velocity includes direction"
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "Introduction to Momentum (p = mv)",
+            "prerequisites": [
+              "Review: Mass and Velocity (Vector Nature)",
+              "Foundational arithmetic and basic algebra (up to pre-algebra/algebra 1 concepts)"
+            ],
+            "misconceptions": [
+              "Confusing momentum with force",
+              "Forgetting momentum is a vector quantity (direction matters)",
+              "Incorrect units for momentum"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "Newton's Third Law (Action-Reaction Forces)",
+            "prerequisites": [
+              "Broad conceptual understanding in various subjects due to high curiosity",
+              "General high school curriculum knowledge (e.g., general science concepts)"
+            ],
+            "misconceptions": [
+              "Believing action-reaction forces act on the same object",
+              "Confusing action-reaction pairs with balanced forces"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "Concept of an 'Isolated System'",
+            "prerequisites": [
+              "Newton's Third Law (Action-Reaction Forces)",
+              "Broad conceptual understanding in various subjects due to high curiosity"
+            ],
+            "misconceptions": [
+              "Assuming all systems are isolated",
+              "Difficulty distinguishing internal vs. external forces"
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Conservation of Momentum - The Conceptual Idea",
+            "prerequisites": [
+              "Introduction to Momentum (p = mv)",
+              "Newton's Third Law (Action-Reaction Forces)",
+              "Concept of an 'Isolated System'"
+            ],
+            "misconceptions": [
+              "Thinking momentum is always conserved, even with external forces",
+              "Not understanding *why* it's conserved (due to internal forces canceling)"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "Conservation of Momentum - The Formula (\u03a3p_initial = \u03a3p_final)",
+            "prerequisites": [
+              "Conservation of Momentum - The Conceptual Idea",
+              "Foundational arithmetic and basic algebra (up to pre-algebra/algebra 1 concepts)"
+            ],
+            "misconceptions": [
+              "Sign errors for velocities (direction)",
+              "Forgetting to sum momentum for *all* objects in the system",
+              "Difficulty connecting formulas to real-world scenarios or physical phenomena",
+              "Relying on rote memorization without grasping underlying concepts or derivations"
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 7.0
+          }
+        ],
+        "total_duration_minutes": 25.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_b0aab3ae-a469-4a95-ad2a-489cccc2c27f.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_b0aab3ae-a469-4a95-ad2a-489cccc2c27f.srt",
+      "generation_time_seconds": 119
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 44,
+        "breakdown": {
+          "clarity": 9,
+          "integrity": 9,
+          "depth": 9,
+          "practicality": 10,
+          "pertinence": 7
+        },
+        "revisions": [
+          "**Reduce Applied Algebraic Complexity in Segment 6:** The narration for Segment 6 states, 'if you know most of these values, you can solve for an unknown, like a final velocity.' This expectation of algebraic manipulation directly conflicts with the student model's 'limited proficiency in advanced algebraic manipulation and formula derivation/application' and 'difficulty isolating variables in complex formulas.' Instead, Segment 6 should prioritize reinforcing the *conceptual meaning* of the conservation of momentum formula and the importance of vector direction. If a numerical example is used in the visuals (as specified), the narration should *walk through substituting numbers* to demonstrate the principle of equality (e.g., showing that `\u03a3p_initial` numerically equals `\u03a3p_final`), rather than focusing on the process of algebraically solving for an unknown variable.",
+          "**Manage Cognitive Load:** The lesson's overall duration (25 minutes) and dense introduction of multiple new, interconnected physics concepts (momentum, vector nature, Newton's Third Law, isolated systems, internal/external forces, conceptual conservation, mathematical conservation) likely exceed the student's 0.5 cognitive load budget. Consider breaking this lesson into two distinct parts (e.g., Part 1: Understanding Momentum and Newton's Third Law; Part 2: Isolated Systems and Conservation of Momentum) or significantly shortening Segments 4, 5, and 6 to focus purely on high-level conceptual understanding for this introductory lesson.",
+          "**Refine Citation Strategy:** Remove the single citation in Segment 6. For a high school lesson covering foundational physics principles, specific academic citations for these concepts are not typically required. Its isolated presence creates an inconsistent standard without adding significant value to the factual accuracy of this type of content."
+        ],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": false,
+            "gaps": [
+              "I found it hard to picture what 'net external forces' meant and how they 'cancel each other out' in the billiard ball example (S4) until the visual description was fully realized. I needed to see those forces immediately.",
+              "The conceptual explanation of conservation of momentum (S5), particularly how individual momentum changes but total momentum remains the same, was a bit text-heavy. I was waiting for the animation to truly show the 'before' and 'after' sums, and found it hard to follow just by listening.",
+              "The mention of the ice skater (S5) felt like a quick jump to angular momentum, which, while related to conservation, slightly pulled me away from the core linear momentum idea being explained. It was a fleeting moment, but as a visual learner, it briefly made me wonder if I missed a concept."
+            ],
+            "confusing_quotes": [
+              "S3: \"It means that whenever one object exerts a force on a second object, the second object simultaneously exerts a force that is equal in magnitude and opposite in direction on the first object.\"",
+              "S4: \"It means that any forces coming from *outside* our imaginary bubble are either zero, or they perfectly cancel each other out, or they're so tiny that we can ignore them.\"",
+              "S4: \"Gravity and the normal force from the table are external, but they cancel each other out vertically. So, for the horizontal motion, the system of two billiard balls is nearly isolated.\"",
+              "S5: \"What this means is that while the individual momentum of each ball changes, the *total momentum* of the entire system \u2013 the sum of their momenta \u2013 remains exactly the same *before* and *after* the collision!\""
+            ],
+            "suggested_improvement": "For any segment explaining an abstract concept or a multi-step process, ensure the visual is animated or built *concurrently* with the narration. Instead of explaining a concept fully and then showing a visual, break down the explanation so that each part of the verbal description directly corresponds to an unfolding or highlighted element in the visual. This would greatly help in segments like S4 (isolated system and cancelling forces) and S5 (the before-during-after of momentum conservation) where the narration can get ahead of my ability to visualize."
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": false,
+            "gaps": [
+              "The expanded formula for conservation of momentum in Segment 6, while conceptually introduced, was still a lot of symbols at once and could be overwhelming.",
+              "The lesson assumed a higher comfort level with algebraic expressions involving multiple variables and subscripts than I possess."
+            ],
+            "confusing_quotes": [
+              "m1 * v1_initial + m2 * v2_initial = m1 * v1_final + m2 * v2_final"
+            ],
+            "suggested_improvement": "For the expanded conservation of momentum formula (m1 * v1_initial + m2 * v2_initial = m1 * v1_final + m2 * v2_final), break it down more slowly. Instead of just listing the variables, immediately follow up with a very simple numerical example *in the narration* (not just the visual spec) to show how it works with actual numbers, like 'Let's say ball 1 is 1kg and goes at 5 m/s, and ball 2 is 2kg and goes at -2 m/s...'. This would make it feel less abstract and less scary."
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": false,
+            "gaps": [
+              "The language used for fundamental definitions (mass, momentum) was overly simplified and informal ('stuff,' 'oomph'), which feels condescending and lacks the precision expected at this level.",
+              "The pacing in the initial segments (S1, S3) was too slow, re-explaining concepts that are typically well-understood by high-performing students moving on to conservation of momentum.",
+              "There's a significant missed opportunity to connect Newton's Third Law more directly and mathematically to the conservation of momentum. A brief, elegant derivation or conceptual link (e.g., how the sum of internal forces leads to dP/dt = 0 for the system) would significantly enhance the technical depth.",
+              "The video assumed an understanding of 'net force' but then questioned 'What does 'net external forces' mean?' without providing a direct, concise definition of 'net force' itself. This created an odd inconsistency in assumed knowledge versus explanation."
+            ],
+            "confusing_quotes": [
+              "\"Which one has more 'stuff' in it? The boulder, right? That 'stuff' is what we call **mass**.\"",
+              "\"This 'quantity of motion' \u2013 how much 'oomph' an object has \u2013 is what we call momentum.\"",
+              "\"What does 'net external forces' mean?\" (This isn't confusing in itself, but the *implication* that I might not know what 'net external forces' means, without providing a clear, concise definition of 'net force', is jarring.)"
+            ],
+            "suggested_improvement": "Elevate the technical depth and precision of the language throughout the script. Replace informal analogies like 'stuff' and 'oomph' with more accurate scientific terminology and explanations. Specifically, integrate a more robust, perhaps even briefly mathematical, connection between Newton's Third Law and the conservation of momentum, demonstrating how internal forces cancel out to ensure the total system's momentum remains constant. This would cater better to a high-performer's expectation for rigor and efficiency."
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": false,
+            "gaps": [
+              "The script assumes I understand what 'normal force' is and why it cancels out with gravity in the context of an isolated system. This wasn't explicitly defined for a beginner.",
+              "There's a logical leap in S5 from 'equal and opposite forces' (Newton's Third Law) to 'equal and opposite change in momentum' without explaining the connection through force acting over time (impulse). While I can follow it, the 'why' isn't explicitly clear for a low-prior learner."
+            ],
+            "confusing_quotes": [
+              "\"Gravity and the normal force from the table are external, but they cancel each other out vertically.\" (S4) - I don't know what 'normal force' is, and why these specific forces would cancel out when others don't.",
+              "\"The same logic applies to an ice skater pulling their arms in to spin faster; the total angular momentum is conserved.\" (S5) - This introduces 'angular momentum,' which I've never heard of, and it's about spinning, which is different from the straight-line motion we've been discussing. It felt out of place and confusing."
+            ],
+            "suggested_improvement": "Remove the reference to 'angular momentum' and the ice skater example in S5. It introduces an undefined concept and distracts from the core topic of linear momentum conservation for a beginner."
+          }
+        ]
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 41,
+        "breakdown": {
+          "clarity": 9,
+          "integrity": 8,
+          "depth": 8,
+          "practicality": 9,
+          "pertinence": 7
+        },
+        "revisions": [
+          "**Segment 1, 2, 3, 4, 5 (General):** Clarify or remove the 'ice skater pulling arms in to spin faster' example. While it illustrates conservation, it refers to angular momentum, which is distinct from the linear momentum being taught and could confuse a student with low abstraction tolerance and limited formula application skills. If kept, explicitly state it's an analogy for a different *type* of momentum conservation.",
+          "**Segment 5:** Revise or remove the citation 'Educational Standard'. The current citation is vague and does not refer to a specific claim or standard. If no direct claims requiring external citation exist, it's better to remove it.",
+          "**Segment 6:** Add explicit scaffolding or a simple, step-by-step numerical example demonstrating how to algebraically rearrange the Conservation of Momentum formula (`m1v1_initial + m2v2_initial = m1v1_final + m2v2_final`) to solve for an unknown variable (e.g., `v1_final`). This directly addresses the student's documented 'Limited proficiency in advanced algebraic manipulation and formula derivation/application' and 'Difficulty isolating variables in complex formulas'.",
+          "**Segment 6:** To address the misconception risk of 'Sign errors during rearrangement of equations,' explicitly demonstrate how negative velocity values are substituted into the formula and how these signs are handled during the algebraic manipulation process in the new example.",
+          "**Checks:** Add at least one check question that requires the student to apply the `\u03a3p_initial = \u03a3p_final` formula with given numerical values and solve for a single unknown (e.g., 'A 2 kg ball moving at +5 m/s collides with a 3 kg ball at rest. If the 2 kg ball bounces back at -1 m/s, what is the final velocity of the 3 kg ball?'). This will assess their ability to perform the algebraic manipulation for problem-solving."
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 38,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 7,
+          "depth": 9,
+          "practicality": 7,
+          "pertinence": 7
+        },
+        "revisions": [
+          "Break down Segments 04, 06, 10, and 12 into shorter segments (ideally under 120 seconds each) to better align with the student's cognitive load budget of 0.5. For example, Segment 12 (270s) could be split into two or three distinct parts.",
+          "Introduce a simple, step-by-step worked example demonstrating the application of the conservation of momentum formula (\u03a3p_initial = \u03a3p_final) with actual numbers. This example should explicitly show the substitution of values, including proper sign conventions, and basic algebraic manipulation to solve for an unknown. This directly addresses the student's 'limited proficiency in advanced algebraic manipulation' and 'difficulty isolating variables'.",
+          "Add explicit citations for fundamental physics claims (e.g., definitions of mass, velocity, momentum, Newton's Third Law, Law of Conservation of Momentum) to satisfy the rubric's requirement for 'citations present for all claims'. These could reference standard high school physics textbooks or educational bodies.",
+          "Refine the 'flowchart' terminology in Segments 11 and 12. If the visual content is a sequence of steps, rename it to 'Problem-Solving Steps' or 'Sequence for Applying the Momentum Conservation Formula' to be more precise than 'flowchart'.",
+          "Enhance the narration in Segments 11 and 12 to more directly address the student's 'Misconception Risk: Sign errors during rearrangement of equations'. Emphasize the *process* of assigning signs and how these signs are carried through the calculation, perhaps with a visual cue highlighting the +/- in the equations.",
+          "Consider adding a very brief numerical example of calculating momentum (p=mv) in Segment 04, for instance, comparing the momentum of a 0.01 kg bullet at 500 m/s vs. a 1000 kg train at 0.1 m/s, to reinforce the quantitative aspect of momentum before introducing the conservation principle."
+        ]
+      }
+    ]
   }
 ]
