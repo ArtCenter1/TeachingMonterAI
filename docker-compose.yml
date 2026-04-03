@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  # ── Teaching Monster FastAPI Backend ──────────────────────────────────────
+  app:
+    build: .
+    container_name: teaching-monster-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./temp:/app/temp
+      - ./m8_feedback.json:/app/m8_feedback.json
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── ngrok Public Tunnel ───────────────────────────────────────────────────
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: teaching-monster-ngrok
+    restart: unless-stopped
+    command:
+      - "http"
+      - "http://app:8000"
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    ports:
+      - "4040:4040"
+    depends_on:
+      - app

@@ -1,20 +1,19 @@
 import os
 import json
-import google.generativeai as genai
 from .schemas import ConceptNode, ConceptGraph, StudentModel
 from .utils import extract_json
+from .llm_client import LLMClient
 from loguru import logger
 
 class ConceptPlanner:
     def __init__(self):
-        self.api_key = os.getenv("GOOGLE_API_KEY")
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("models/gemini-2.5-flash")
+        self.llm = LLMClient()
+        self.google_api_key = os.getenv("GOOGLE_API_KEY")
+        self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
-    async def plan(self, topic: str, student_model: StudentModel) -> ConceptGraph:
-        if not self.api_key:
-            logger.warning("No API key found for ConceptPlanner, falling back to mock data.")
+    async def plan(self, topic: str, student_model: StudentModel, model_override: str = None) -> ConceptGraph:
+        if not self.google_api_key and not self.openrouter_api_key:
+            logger.warning("No LLM API keys found, falling back to mock data.")
             return self.get_mock_data(topic)
 
         prompt = f"""
@@ -43,11 +42,15 @@ class ConceptPlanner:
         """
 
         try:
-            response = self.model.generate_content(prompt)
-            data = extract_json(response.text)
+            response_text = await self.llm.generate_text(
+                prompt=prompt,
+                model_override=model_override,
+                system_instruction="You are a pedagogical lesson planner who specializes in concept mapping and scaffolding."
+            )
+            data = extract_json(response_text)
             return ConceptGraph(**data)
         except Exception as e:
-            logger.error(f"Error planning concepts with Gemini: {str(e)}")
+            logger.error(f"Error planning concepts: {str(e)}")
             return self.get_mock_data(topic)
 
     def get_mock_data(self, topic: str) -> ConceptGraph:

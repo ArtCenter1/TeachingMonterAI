@@ -6,6 +6,7 @@ import traceback
 from dotenv import load_dotenv
 from fastapi import FastAPI, BackgroundTasks, HTTPException, Header, Request
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 from loguru import logger
 
@@ -28,6 +29,14 @@ from modules.m8_logger import FeedbackLogger
 
 app = FastAPI(title="Teaching Monster AI Agent API")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Mount the output directory to serve static video files
 app.mount("/output", StaticFiles(directory="temp/output"), name="output")
 
@@ -42,8 +51,22 @@ m7 = VideoRenderer()
 m8 = FeedbackLogger()
 
 @app.get("/health")
+@app.head("/health")
 def health_check():
     return {"status": "ok"}
+
+@app.get("/")
+def read_root():
+    return {"message": "Teaching Monster AI Agent is running. Use /generate for API requests."}
+
+@app.post("/")
+async def root_post_proxy(
+    request_data: GenerationRequest,
+    request: Request,
+    x_dry_run: Optional[str] = Header(None, alias="X-Dry-Run")
+):
+    """Proxy root POST requests to the generate endpoint for compatibility."""
+    return await generate_video(request_data, request, x_dry_run)
 
 @app.post("/generate", response_model=GenerationResponse)
 async def generate_video(
@@ -70,21 +93,21 @@ async def generate_video(
         # 1. Parallel call M1 (Sourcing) and M2 (Persona)
         logger.info("Stage 1 & 2: Sourcing and Persona Parsing")
         m1_task = asyncio.create_task(m1.source(request_data.course_requirement))
-        m2_task = asyncio.create_task(m2.parse(request_data.student_persona))
+        m2_task = asyncio.create_task(m2.parse(request_data.student_persona, model_override=request_data.model_override))
         
         fact_bundle, student_model = await asyncio.gather(m1_task, m2_task)
 
         # 3. Concept Planning
         logger.info("Stage 3: Concept Planning")
-        concept_graph = await m3.plan(request_data.course_requirement, student_model)
+        concept_graph = await m3.plan(request_data.course_requirement, student_model, model_override=request_data.model_override)
 
         # 4. Script Generation
         logger.info("Stage 4: Script Generation")
-        script = await m4.generate(concept_graph, student_model, fact_bundle)
+        script = await m4.generate(concept_graph, student_model, fact_bundle, model_override=request_data.model_override)
 
         # 5. CIDPP Critic Review
         logger.info("Stage 5: CIDPP Critic Review")
-        critic_scores = await m5.review(script, student_model)
+        critic_scores = await m5.review(script, student_model, model_override=request_data.model_override)
 
         # 6. Multimodal Planning
         logger.info("Stage 6: Multimodal Planning")

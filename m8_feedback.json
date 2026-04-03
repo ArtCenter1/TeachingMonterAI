@@ -1833,5 +1833,309 @@
       "subtitle_url": "http://127.0.0.1:8000/output/subtitles_62a817ec-ea47-4e00-a337-38216a784d82.srt",
       "generation_time_seconds": 8
     }
+  },
+  {
+    "run_id": "6b076040-007d-4b32-b089-2cb05235de72",
+    "data": {
+      "request": {
+        "course_requirement": "Quantum Mechanics for Beginners",
+        "student_persona": "A high school student curious about physics but with no prior knowledge of calculus."
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "arithmetic",
+          "algebra (solving linear and quadratic equations, manipulating variables, functions, graphing linear/quadratic relationships)",
+          "basic geometry (area, volume, angles, Pythagorean theorem)",
+          "basic trigonometry (SOH CAH TOA for right triangles)",
+          "basic scientific literacy (e.g., scientific method, basic units of measurement)",
+          "fundamental physics concepts introduced without calculus (e.g., average velocity, average acceleration, basic forces, work, energy conservation, power, Ohm's law, simple wave properties)"
+        ],
+        "misconception_risk": {
+          "Rate of Change": [
+            "Confusing average rate of change with instantaneous rate of change.",
+            "Difficulty conceptualizing continuous, non-linear changes without the mathematical tools of calculus."
+          ],
+          "Kinematics": [
+            "Struggling to understand the derivation and underlying principles of kinematic equations (e.g., v = v0 + at, x = x0 + v0t + 0.5at^2) as they often arise from calculus."
+          ],
+          "Work and Energy": [
+            "Difficulty understanding or calculating work done by a variable force (e.g., a spring) or understanding the concept of potential energy as an integral without calculus."
+          ],
+          "Abstract Concepts": [
+            "Struggling with physics concepts that are fundamentally defined or best understood through calculus (e.g., electric flux, magnetic fields from current distributions, complex wave phenomena, fields, potentials)."
+          ]
+        },
+        "cognitive_load_budget": 0.65,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Why Quantum Mechanics? (The 'Strange' World of the Very Small)",
+            "prerequisites": [
+              "basic scientific literacy",
+              "fundamental physics concepts introduced without calculus"
+            ],
+            "misconceptions": [
+              "General expectation that classical physics applies everywhere, implicitly resisting the need for new theories."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 1.5
+          },
+          {
+            "concept": "Energy is Quantized (Stairs, Not a Ramp)",
+            "prerequisites": [
+              "Why Quantum Mechanics? (The 'Strange' World of the Very Small)",
+              "energy conservation",
+              "algebra (manipulating variables)"
+            ],
+            "misconceptions": [
+              "Confusing average rate of change with instantaneous rate of change (indirectly addressed by emphasizing discrete steps).",
+              "Thinking energy changes are always continuous.",
+              "Assuming electrons can exist at any energy level around an atom."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Light Behaves as Both a Wave and a Particle (Photons)",
+            "prerequisites": [
+              "Energy is Quantized (Stairs, Not a Ramp)",
+              "simple wave properties",
+              "basic scientific literacy"
+            ],
+            "misconceptions": [
+              "Light is *only* a wave.",
+              "The energy of light depends on its intensity, not its frequency or wavelength (e.g., higher intensity light will always eject electrons)."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 3.5
+          },
+          {
+            "concept": "Matter Behaves as Both a Particle and a Wave (De Broglie)",
+            "prerequisites": [
+              "Light Behaves as Both a Wave and a Particle (Photons)",
+              "fundamental physics concepts introduced without calculus (e.g., momentum, mass)"
+            ],
+            "misconceptions": [
+              "Matter is *only* a particle.",
+              "Wave properties are only for light, sound, or water, not for tangible objects."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "The Electron 'Cloud' and Probability (Wave Function Idea)",
+            "prerequisites": [
+              "Matter Behaves as Both a Particle and a Wave (De Broglie)",
+              "basic geometry (areas as regions)",
+              "basic scientific literacy"
+            ],
+            "misconceptions": [
+              "The electron is physically 'smeared out' like a cloud, rather than having a probability of being found at a specific point.",
+              "Quantum mechanics tells us the exact trajectory of a particle, but it's just very hard to measure.",
+              "An electron follows a distinct, but perhaps very wiggly, path within the cloud."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "The Uncertainty Principle (Knowing Position vs. Momentum)",
+            "prerequisites": [
+              "The Electron 'Cloud' and Probability (Wave Function Idea)",
+              "fundamental physics concepts introduced without calculus (e.g., position, velocity, momentum)"
+            ],
+            "misconceptions": [
+              "The uncertainty is solely due to the limitations or clumsiness of our measuring devices, rather than being a fundamental property of nature.",
+              "It's just 'hard' to observe tiny things without disturbing them, implying a perfect measurement is theoretically possible.",
+              "We can eventually overcome this uncertainty with better technology."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          }
+        ],
+        "total_duration_minutes": 21.0
+      },
+      "critic_scores": {
+        "clarity": 9,
+        "integrity": 9,
+        "depth": 10,
+        "practicality": 8,
+        "pertinence": 9,
+        "revisions": [
+          "Remove the explicit 'Educational Standard' citation from the narration in `seg01`, as it breaks the narrative flow and is not intended for direct student consumption. Rephrase the statement to integrate it naturally, for example: 'Understanding these core concepts forms the crucial foundation for exploring more advanced topics in this subject area.'",
+          "Enhance the 'Practicality' by briefly mentioning the real-world impact or applications of quantum mechanics. Integrate a sentence or two into the `hook` or the final segment's narration (e.g., at the end of `seg06`) to highlight how these 'strange' rules underpin modern technologies like lasers, transistors, or future quantum computing, showing its relevance beyond historical discovery."
+        ]
+      },
+      "video_url": "http://127.0.0.1:8000/output/final_video_6b076040-007d-4b32-b089-2cb05235de72.mp4",
+      "subtitle_url": "http://127.0.0.1:8000/output/subtitles_6b076040-007d-4b32-b089-2cb05235de72.srt",
+      "generation_time_seconds": 348
+    }
+  },
+  {
+    "run_id": "9b858e81-f107-4d28-ae90-584999fc0af7",
+    "data": {
+      "request": {
+        "course_requirement": "unit: Energy and Momentum of Rotating Systems\n\ntopic: Conservation of Angular Momentum\n\nlearning objective: Use conservation of angular momentum to describe system behavior.\n\nessential knowledge: The total angular momentum of a system about a rotational axis is the sum of constituent angular momenta. Angular momentum is conserved unless an external torque acts; angular impulses exerted between interacting objects are equal and opposite (Newton\u2019s third law).",
+        "student_persona": "Education Level: Elementary school | Learning Pace: Medium | Timeline Urgency: Normal | Depth Preference: Application-first"
+      },
+      "student_model": {
+        "level": "middle_school",
+        "knowledge_embedding": [
+          "basic arithmetic operations (addition, subtraction, multiplication, division)",
+          "reading comprehension and basic writing skills",
+          "fundamental science concepts (e.g., life cycles, weather patterns, states of matter)",
+          "basic social studies (e.g., local history, community roles, geography basics)",
+          "identifying and describing basic geometric shapes"
+        ],
+        "misconception_risk": {
+          "Number Sense": [
+            "difficulty understanding fractions and decimals as parts of a whole",
+            "conservation of quantity (e.g., thinking the amount changes if spread out)",
+            "confusing digit placement with magnitude in large numbers"
+          ],
+          "Science Concepts": [
+            "animistic thinking (attributing human feelings or intentions to inanimate objects)",
+            "misinterpreting simple cause-and-effect relationships in natural phenomena",
+            "difficulty distinguishing between living and non-living things based on scientific criteria"
+          ],
+          "Time and Space": [
+            "difficulty grasping abstract time concepts (e.g., decades, centuries)",
+            "egocentric perception of spatial relationships"
+          ]
+        },
+        "cognitive_load_budget": 0.45,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.25
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "What is Spinning? (Rotation Basics)",
+            "prerequisites": [],
+            "misconceptions": [
+              "animistic thinking (attributing human feelings or intentions to inanimate objects)"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "How Much 'Spinny-ness' Does Something Have?",
+            "prerequisites": [
+              "What is Spinning? (Rotation Basics)"
+            ],
+            "misconceptions": [
+              "conservation of quantity (e.g., thinking the amount changes if spread out)",
+              "misinterpreting simple cause-and-effect relationships in natural phenomena"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "'Spinny-ness' Stays the Same (Conservation Principle)",
+            "prerequisites": [
+              "How Much 'Spinny-ness' Does Something Have?"
+            ],
+            "misconceptions": [
+              "misinterpreting simple cause-and-effect relationships in natural phenomena",
+              "conservation of quantity (e.g., thinking the amount changes if spread out)"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 6.0
+          },
+          {
+            "concept": "What Changes 'Spinny-ness'? (External Twisting Push)",
+            "prerequisites": [
+              "'Spinny-ness' Stays the Same (Conservation Principle)"
+            ],
+            "misconceptions": [
+              "misinterpreting simple cause-and-effect relationships in natural phenomena",
+              "animistic thinking (attributing human feelings or intentions to inanimate objects)"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "Sharing 'Spinny-ness' (Interactions)",
+            "prerequisites": [
+              "What Changes 'Spinny-ness'? (External Twisting Push)"
+            ],
+            "misconceptions": [
+              "misinterpreting simple cause-and-effect relationships in natural phenomena",
+              "animistic thinking (attributing human feelings or intentions to inanimate objects)"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          }
+        ],
+        "total_duration_minutes": 23.0
+      },
+      "critic_scores": {
+        "clarity": 7,
+        "integrity": 9,
+        "depth": 7,
+        "practicality": 9,
+        "pertinence": 6,
+        "revisions": [
+          "**Crucial: Reduce Abstraction & Cognitive Load** - Throughout the entire script, especially in Segments 3 and 5, replace or heavily rephrase any direct quotes of 'Educational Standard' or similar formal academic language. Break down these ideas into simple, concise sentences using the 'spinny-ness' terminology. For example, in Segment 3, replace the standard quote with: 'This fancy science rule means that your total 'spinny-ness' stays the same unless an outside twisting push (a 'torque') changes it. We call this the 'Conservation of Spinny-ness' or, in science, 'Conservation of Angular Momentum'.' In Segment 5, rephrase the Newton's third law part to: 'When one object gives a 'twisting push' (or 'torque') to another, it also receives an equal and opposite 'twisting push' back. This is like how pushing a wall makes the wall push back on you, but for spinning!'",
+          "**Reinforce 'Spinny-ness' as the Primary Term** - Consistently use 'spinny-ness' as the primary term throughout the lesson. When introducing the formal scientific terms ('angular momentum,' 'torque'), always pair them immediately with 'spinny-ness' as a clear synonym. For example, in Segment 2, when saying 'It's a real, measurable property,' add 'This measurable property is what scientists call 'angular momentum'.'",
+          "**Enhance Explanation of Ice Skater Mechanism (Depth)** - In Segment 2, when explaining the ice skater, clarify *why* pulling arms in makes her spin faster: 'When she pulls her arms in, her 'stuff' is closer to the axis. It's like she's making herself 'skinnier' for spinning, so her body can turn around the axis with less effort. To keep her total 'spinny-ness' the same, her speed has to increase!' In Segment 3, after the water analogy, explicitly link it back to the skater: 'Just like the amount of water didn't change, the *total amount* of her 'spinny-ness' didn't change. She just rearranged how it was distributed \u2013 less spread out, so faster spin!'",
+          "**Introduce Formal Terms More Gently** - In Segment 4, introduce 'torque' more gently: 'This twisting push has a special name in science: *torque*. Say it with me: 'torrr-que'. Torque is what changes an object's 'spinny-ness'.'"
+        ]
+      },
+      "video_url": "http://33b2-118-150-70-62.ngrok-free.app/output/final_video_9b858e81-f107-4d28-ae90-584999fc0af7.mp4",
+      "subtitle_url": "http://33b2-118-150-70-62.ngrok-free.app/output/subtitles_9b858e81-f107-4d28-ae90-584999fc0af7.srt",
+      "generation_time_seconds": 73
+    }
+  },
+  {
+    "run_id": "d3edc1fd-d41c-4f5c-8833-d39b12488a07",
+    "data": {
+      "request": {
+        "course_requirement": "Basic Addition",
+        "student_persona": "7 year old who likes dinosaurs",
+        "model_override": "gemini-1.5-flash",
+        "age_group": "10-15"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Basic Addition",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "critic_scores": {
+        "clarity": 8,
+        "integrity": 10,
+        "depth": 7,
+        "practicality": 7,
+        "pertinence": 8,
+        "revisions": []
+      },
+      "video_url": "http://33b2-118-150-70-62.ngrok-free.app/output/final_video_d3edc1fd-d41c-4f5c-8833-d39b12488a07.mp4",
+      "subtitle_url": "http://33b2-118-150-70-62.ngrok-free.app/output/subtitles_d3edc1fd-d41c-4f5c-8833-d39b12488a07.srt",
+      "generation_time_seconds": 0
+    }
   }
 ]

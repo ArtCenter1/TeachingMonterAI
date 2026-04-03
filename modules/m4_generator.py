@@ -1,21 +1,20 @@
 import os
 import json
-import google.generativeai as genai
 from typing import List
 from .schemas import FullScript, ScriptSegment, ConceptGraph, StudentModel, FactBundle
 from .utils import extract_json
+from .llm_client import LLMClient
 from loguru import logger
 
 class ScriptGenerator:
     def __init__(self):
-        self.api_key = os.getenv("GOOGLE_API_KEY")
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("models/gemini-2.5-flash")
+        self.llm = LLMClient()
+        self.google_api_key = os.getenv("GOOGLE_API_KEY")
+        self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
-    async def generate(self, concept_graph: ConceptGraph, student_model: StudentModel, fact_bundle: FactBundle) -> FullScript:
-        if not self.api_key:
-            logger.warning("No API key found for ScriptGenerator, falling back to mock data.")
+    async def generate(self, concept_graph: ConceptGraph, student_model: StudentModel, fact_bundle: FactBundle, model_override: str = None) -> FullScript:
+        if not self.google_api_key and not self.openrouter_api_key:
+            logger.warning("No LLM API keys found, falling back to mock data.")
             return self.get_mock_data(concept_graph)
 
         prompt = f"""
@@ -54,11 +53,15 @@ class ScriptGenerator:
         """
 
         try:
-            response = self.model.generate_content(prompt)
-            data = extract_json(response.text)
+            response_text = await self.llm.generate_text(
+                prompt=prompt,
+                model_override=model_override,
+                system_instruction="You are an expert educational content creator who turns lesson plans into engaging video scripts."
+            )
+            data = extract_json(response_text)
             return FullScript(**data)
         except Exception as e:
-            logger.error(f"Error generating script with Gemini: {str(e)}")
+            logger.error(f"Error generating script: {str(e)}")
             return self.get_mock_data(concept_graph)
 
     def get_mock_data(self, concept_graph: ConceptGraph) -> FullScript:

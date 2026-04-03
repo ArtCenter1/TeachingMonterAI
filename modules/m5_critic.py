@@ -1,20 +1,19 @@
 import os
 import json
-import google.generativeai as genai
 from .schemas import FullScript, StudentModel, CIDPPScores
 from .utils import extract_json
+from .llm_client import LLMClient
 from loguru import logger
 
 class CIDPPCritic:
     def __init__(self):
-        self.api_key = os.getenv("GOOGLE_API_KEY")
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("models/gemini-2.5-flash")
+        self.llm = LLMClient()
+        self.google_api_key = os.getenv("GOOGLE_API_KEY")
+        self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
-    async def review(self, script: FullScript, student_model: StudentModel) -> CIDPPScores:
-        if not self.api_key:
-            logger.warning("No API key found for CIDPPCritic, falling back to mock data.")
+    async def review(self, script: FullScript, student_model: StudentModel, model_override: str = None) -> CIDPPScores:
+        if not self.google_api_key and not self.openrouter_api_key:
+            logger.warning("No LLM API keys found, falling back to mock data.")
             return self.get_mock_data()
 
         prompt = f"""
@@ -41,11 +40,15 @@ class CIDPPCritic:
         """
 
         try:
-            response = self.model.generate_content(prompt)
-            data = extract_json(response.text)
+            response_text = await self.llm.generate_text(
+                prompt=prompt,
+                model_override=model_override,
+                system_instruction="You are a rigorous educational critic who scores scripts based on clarity, integrity, depth, practicality, and pertinence (CIDPP)."
+            )
+            data = extract_json(response_text)
             return CIDPPScores(**data)
         except Exception as e:
-            logger.error(f"Error reviewing script with Gemini: {str(e)}")
+            logger.error(f"Error reviewing script: {str(e)}")
             return self.get_mock_data()
 
     def get_mock_data(self) -> CIDPPScores:

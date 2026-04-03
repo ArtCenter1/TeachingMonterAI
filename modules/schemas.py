@@ -59,6 +59,8 @@ class CIDPPScores(BaseModel):
 class GenerationRequest(BaseModel):
     course_requirement: str
     student_persona: str
+    model_override: Optional[str] = None
+    age_group: Optional[str] = "10-15"
 
 class GenerationResponse(BaseModel):
     video_url: str

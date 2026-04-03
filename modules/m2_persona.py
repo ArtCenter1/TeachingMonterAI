@@ -1,20 +1,19 @@
 import os
 import json
-import google.generativeai as genai
 from .schemas import StudentModel, StudentLevel, ModalityPreference
 from .utils import extract_json
+from .llm_client import LLMClient
 from loguru import logger
 
 class PersonaParser:
     def __init__(self):
-        self.api_key = os.getenv("GOOGLE_API_KEY")
-        if self.api_key:
-            genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("models/gemini-2.5-flash")
+        self.llm = LLMClient()
+        self.google_api_key = os.getenv("GOOGLE_API_KEY")
+        self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
-    async def parse(self, persona_string: str) -> StudentModel:
-        if not self.api_key:
-            logger.warning("No API key found for PersonaParser, falling back to mock data.")
+    async def parse(self, persona_string: str, model_override: str = None) -> StudentModel:
+        if not self.google_api_key and not self.openrouter_api_key:
+            logger.warning("No LLM API keys found, falling back to mock data.")
             return self.get_mock_data()
 
         prompt = f"""
@@ -24,22 +23,26 @@ class PersonaParser:
         Return the data as a JSON object matching this schema:
         {{
             "level": "IB" | "AP" | "high_school" | "middle_school",
-            "knowledge_embedding": ["string", "string"],  // Implied known concepts
+            "knowledge_embedding": ["string", "string"],
             "misconception_risk": {{"concept_name": ["list of common errors"]}},
-            "cognitive_load_budget": 0.0 to 1.0,  // 0.3 = low, 0.7 = high
+            "cognitive_load_budget": 0.0 to 1.0,
             "modality_preference": "visual" | "verbal" | "mixed",
-            "abstraction_tolerance": 0.0 to 1.0  // 0.0 = concrete, 1.0 = abstract
+            "abstraction_tolerance": 0.0 to 1.0
         }}
 
-        Be specific and reason about implied knowledge (e.g., 'no calculus' implies algebra but not limits).
+        Be specific and reason about implied knowledge.
         """
 
         try:
-            response = self.model.generate_content(prompt)
-            data = extract_json(response.text)
+            response_text = await self.llm.generate_text(
+                prompt=prompt,
+                model_override=model_override,
+                system_instruction="You are a pedagogical expert who extracts student mental models."
+            )
+            data = extract_json(response_text)
             return StudentModel(**data)
         except Exception as e:
-            logger.error(f"Error parsing persona with Gemini: {str(e)}")
+            logger.error(f"Error parsing persona: {str(e)}")
             return self.get_mock_data()
 
     def get_mock_data(self) -> StudentModel:
