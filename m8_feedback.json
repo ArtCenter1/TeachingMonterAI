@@ -4184,5 +4184,256 @@
         "revisions": []
       }
     ]
+  },
+  {
+    "run_id": "c1f98f7b-e60b-4caf-863a-db6fee4586fb",
+    "data": {
+      "request": {
+        "course_requirement": "Binary Numbers",
+        "student_persona": "Beginner",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "Everyday understanding of related phenomena (unformalized and potentially incorrect)",
+          "Basic literacy and numeracy skills (context-dependent, not domain-specific)",
+          "Ability to follow simple, explicit, step-by-step instructions",
+          "Limited to no domain-specific vocabulary or foundational principles",
+          "No established mental models or schema for the subject matter"
+        ],
+        "misconception_risk": {
+          "General": [
+            "Oversimplification of complex concepts",
+            "Generalizing from insufficient or non-representative examples",
+            "Confusing everyday language with precise academic terminology",
+            "Difficulty in identifying core principles versus peripheral details",
+            "Relying on intuitive but incorrect prior beliefs or analogies",
+            "Struggling to connect new information to existing, often unrelated, knowledge frameworks",
+            "Belief that learning is about memorizing facts rather than understanding connections"
+          ]
+        },
+        "cognitive_load_budget": 0.2,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.1
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Binary Numbers",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_c1f98f7b-e60b-4caf-863a-db6fee4586fb.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_c1f98f7b-e60b-4caf-863a-db6fee4586fb.srt",
+      "generation_time_seconds": 21
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "7081ca08-71f1-4a8e-a81b-b03d95d6ceeb",
+    "data": {
+      "request": {
+        "course_requirement": "Binary Numbers",
+        "student_persona": "Beginner",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "No formal prior knowledge in the specific domain",
+          "Limited intuitive understanding based on common sense or everyday experiences",
+          "Lacks foundational vocabulary and conceptual frameworks",
+          "May possess general academic skills (e.g., reading, basic math) but not specialized domain skills"
+        ],
+        "misconception_risk": {
+          "Foundational Concepts": [
+            "Overgeneralization from a single example",
+            "Confusing everyday meanings of words with their technical definitions",
+            "Misinterpreting analogies literally rather than figuratively",
+            "Difficulty distinguishing core principles from minor details",
+            "Attributing cause-effect relationships incorrectly due to superficial observations"
+          ],
+          "Problem Solving": [
+            "Attempting to apply procedures without understanding underlying principles",
+            "Struggling with multi-step processes; getting lost after the first step",
+            "Difficulty identifying relevant information in a problem statement",
+            "Focusing on surface features rather than underlying structure of problems"
+          ],
+          "Self-assessment": [
+            "Overestimating understanding due to superficial familiarity",
+            "Underestimating understanding due to lack of confidence with new material"
+          ]
+        },
+        "cognitive_load_budget": 0.2,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.2
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Binary Numbers",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_7081ca08-71f1-4a8e-a81b-b03d95d6ceeb.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_7081ca08-71f1-4a8e-a81b-b03d95d6ceeb.srt",
+      "generation_time_seconds": 42
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
   }
 ]

@@ -8,6 +8,6 @@ aiohttp
 jinja2
 python-dotenv
 pillow
-cartesia
+cartesia[websockets][websockets]
 loguru
 tenacity
