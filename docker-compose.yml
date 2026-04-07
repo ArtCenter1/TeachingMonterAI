@@ -4,6 +4,8 @@ services:
   # ── Teaching Monster FastAPI Backend ──────────────────────────────────────
   app:
     build: .
+    image: teachingmonsterai-app:0.1.0
+
     container_name: teaching-monster-app
     restart: unless-stopped
     ports:
@@ -13,6 +15,7 @@ services:
     volumes:
       - ./temp:/app/temp
       - ./m8_feedback.json:/app/m8_feedback.json
+      - ./m8_errors.json:/app/m8_errors.json
     environment:
       - PYTHONUNBUFFERED=1
     healthcheck:
