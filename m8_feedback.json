@@ -4637,5 +4637,231 @@
         ]
       }
     ]
+  },
+  {
+    "run_id": "75ee49b5-e298-453c-a259-a85d51ebfa87",
+    "data": {
+      "request": {
+        "course_requirement": "Teach Python loops",
+        "student_persona": "Beginner coder",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Teach Python loops",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_75ee49b5-e298-453c-a259-a85d51ebfa87.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_75ee49b5-e298-453c-a259-a85d51ebfa87.srt",
+      "generation_time_seconds": 215
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "eff4be7e-e380-4307-afe7-77bf95646095",
+    "data": {
+      "request": {
+        "course_requirement": "Photosynthesis",
+        "student_persona": "friendly_monster",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null,
+        "topic": "Photosynthesis",
+        "persona": "friendly_monster"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Photosynthesis",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_eff4be7e-e380-4307-afe7-77bf95646095.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_eff4be7e-e380-4307-afe7-77bf95646095.srt",
+      "generation_time_seconds": 731
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
   }
 ]

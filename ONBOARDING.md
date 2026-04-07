@@ -57,4 +57,31 @@ Check this if the video generated successfully but the **Scores** are low. It co
 - **FFmpeg**: Required on the system for video rendering.
 
 ---
+## 6. Maintenance & Workspace Cleanup
+
+The pipeline generates several gigabytes of temporary data (Docker images, PCM audio, and frame sequences). To maintain a fast development cycle, run the following cleanup commands regularly:
+
+### A. Purge Stale Docker Images
+Each new version tag (e.g., `0.1.4`) creates a large image (~1.5GB). Delete unused tags to free disk space:
+```powershell
+# List images to find old tags
+docker images "teachingmonsterai-app"
+# Delete specific old tags
+docker rmi teachingmonsterai-app:0.1.0 teachingmonsterai-app:0.1.1
+```
+
+### B. Clear Temporary Pipeline Artifacts
+Rendered PNG frames and raw audio in `temp/` persist after failure. Clear them manually or via the cleanup script:
+```powershell
+# PowerShell: Delete frames, audio, and raw data
+Remove-Item -Path temp -Include *.png,*.raw,*.wav,*.mp3 -Recurse -Force
+```
+
+### C. Persistent Error Reset
+If `m8_errors.json` becomes too large or contains irrelevant historical data, you can reset it by simply deleting the file:
+```powershell
+Remove-Item m8_errors.json
+```
+
+---
 *Created by Antigravity AI Agent — April 2026*
