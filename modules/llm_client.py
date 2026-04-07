@@ -98,13 +98,13 @@ class LLMClient:
         if is_openrouter_style and self.openrouter_client:
             return await self._call_openrouter(model_name, prompt, system_instruction, temperature, max_tokens)
         else:
-            # Native Gemini SDK path — strip any leading path prefix
-            clean_name = model_name.split("/")[-1]
-            return await self._call_gemini_sdk(clean_name, prompt, system_instruction, temperature, max_tokens)
+            # Native Gemini SDK path — ensure "models/" prefix if missing
+            full_model_path = model_name if model_name.startswith("models/") else f"models/{model_name}"
+            return await self._call_gemini_sdk(full_model_path, prompt, system_instruction, temperature, max_tokens)
 
     @retry(
-        stop=stop_after_attempt(2),
-        wait=wait_exponential(multiplier=1, min=1, max=4),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=2, min=5, max=60),
         retry=retry_if_exception_type(Exception),
         reraise=True
     )
