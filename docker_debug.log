@@ -1,0 +1,34 @@
+INFO:     172.19.0.1:33882 - "POST /generate HTTP/1.1" 422 Unprocessable Entity
+/app/modules/llm_client.py:5: FutureWarning: 
+INFO:     127.0.0.1:53650 - "GET /health HTTP/1.1" 200 OK
+
+INFO:     172.19.0.1:50678 - "POST /generate HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:48444 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42102 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40308 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46650 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53176 - "GET /health HTTP/1.1" 200 OK
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+INFO:     127.0.0.1:49990 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.19.0.1:39806 - "POST /generate HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:49860 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40810 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.19.0.1:52412 - "POST /generate HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:60852 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41332 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49966 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45152 - "GET /health HTTP/1.1" 200 OK
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai
+2026-04-07 20:39:19.685 | DEBUG    | modules.m1_sourcing:__init__:25 - NotebookLM native library not found, will rely on MCP endpoint
+2026-04-07 20:39:19.720 | INFO     | modules.m7_renderer:__init__:26 - Using system FFmpeg
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:41424 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50982 - "GET /health HTTP/1.1" 200 OK

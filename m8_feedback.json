@@ -4184,5 +4184,684 @@
         "revisions": []
       }
     ]
+  },
+  {
+    "run_id": "121a7510-c8ba-4e54-bed7-292a3d33717a",
+    "data": {
+      "request": {
+        "course_requirement": "Introduction to Photosynthesis",
+        "student_persona": "Visual learning",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null,
+        "run_id": "test_debugger_01"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "Processes and retains information effectively through visual aids such as diagrams, charts, graphs, maps, videos, and demonstrations.",
+          "Strong ability to identify patterns, relationships, and structures when presented visually.",
+          "Often excels in tasks requiring spatial reasoning or visual memory.",
+          "Benefits from seeing concepts illustrated, demonstrated, or organized visually (e.g., mind maps, flowcharts)."
+        ],
+        "misconception_risk": {
+          "Abstract Concepts": [
+            "Difficulty grasping concepts that lack clear visual representation (e.g., purely theoretical frameworks, highly abstract mathematical proofs without geometric interpretation, non-observable phenomena without analogy).",
+            "Struggles to form mental models for ideas that cannot be easily 'seen' or imagined."
+          ],
+          "Incomplete/Misleading Visuals": [
+            "Over-reliance on simplified diagrams can lead to an incomplete or superficial understanding of complex topics.",
+            "Misinterpreting information if visual aids are poorly designed, ambiguous, or present a biased perspective.",
+            "Forming incorrect mental models from static images when a dynamic process is being described."
+          ],
+          "Detail Oversight": [
+            "May overlook important textual or auditory details if the primary focus is on visual summaries or demonstrations, potentially missing nuances or specific conditions."
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "visual",
+        "abstraction_tolerance": 0.4
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Life's Energy Needs",
+            "prerequisites": [],
+            "misconceptions": [
+              "Energy just 'appears' or is limitless.",
+              "Plants do not need energy."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "Autotrophs vs. Heterotrophs",
+            "prerequisites": [
+              "Life's Energy Needs"
+            ],
+            "misconceptions": [
+              "Plants 'eat' soil or absorb pre-made food from their surroundings.",
+              "Only animals require food/energy."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "Definition of Photosynthesis",
+            "prerequisites": [
+              "Life's Energy Needs",
+              "Autotrophs vs. Heterotrophs"
+            ],
+            "misconceptions": [
+              "Photosynthesis is the same as respiration/breathing for plants.",
+              "Plants get all their food from the soil."
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Importance of Photosynthesis",
+            "prerequisites": [
+              "Definition of Photosynthesis"
+            ],
+            "misconceptions": [
+              "Photosynthesis only benefits plants.",
+              "Plants only produce carbon dioxide."
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "Location: Chloroplasts within Plant Cells",
+            "prerequisites": [
+              "Definition of Photosynthesis"
+            ],
+            "misconceptions": [
+              "Photosynthesis occurs uniformly throughout the entire plant.",
+              "Chloroplasts are just responsible for a plant's green color and have no other function."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Reactants of Photosynthesis (Inputs)",
+            "prerequisites": [
+              "Location: Chloroplasts within Plant Cells"
+            ],
+            "misconceptions": [
+              "Soil/nutrients from the soil are major reactants for photosynthesis.",
+              "Plants 'absorb' their food directly from the air."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Products of Photosynthesis (Outputs)",
+            "prerequisites": [
+              "Reactants of Photosynthesis (Inputs)"
+            ],
+            "misconceptions": [
+              "Plants produce 'energy' directly, rather than storing it as sugar.",
+              "Oxygen is the primary goal of photosynthesis for the plant."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Overall Chemical Equation of Photosynthesis",
+            "prerequisites": [
+              "Reactants of Photosynthesis (Inputs)",
+              "Products of Photosynthesis (Outputs)"
+            ],
+            "misconceptions": [
+              "Forgetting light energy as an essential input.",
+              "Incorrectly balancing the equation or confusing reactants with products.",
+              "Believing the equation represents a single, instantaneous step."
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 4.0
+          }
+        ],
+        "total_duration_minutes": 22.0
+      },
+      "selected_strategy": "Inductive",
+      "video_url": "http://localhost:8000/output/final_video_121a7510-c8ba-4e54-bed7-292a3d33717a.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_121a7510-c8ba-4e54-bed7-292a3d33717a.srt",
+      "generation_time_seconds": 114
+    },
+    "selection_log": [
+      {
+        "strategy": "Inductive",
+        "total_score": 46,
+        "breakdown": {
+          "clarity": 10,
+          "integrity": 8,
+          "depth": 9,
+          "practicality": 9,
+          "pertinence": 10
+        },
+        "revisions": [
+          "In `seg01`, when introducing the 'money in a bank' analogy for energy, add a brief clarification that while energy can be stored and transformed, it is a fundamental property of matter, not a transactional currency, to prevent over-literal interpretation by the visual learner.",
+          "To enhance integrity, add a general biology textbook citation for foundational claims in `seg01` ('every living organism needs energy') and `seg02` (classification of autotrophs/heterotrophs) to ensure all core factual statements are grounded.",
+          "In `seg02` and `seg06`, when explaining that plants don't 'eat' soil, briefly add *why* this is the case (e.g., 'they build complex organic molecules from simple inorganic ones like CO\u2082 and H\u2082O, unlike heterotrophs who consume pre-made organic food') to deepen the understanding beyond just 'not eating soil'.",
+          "For `seg03` and `seg08`, ensure the visual specifications for 'Animation' and 'Flowchart building the chemical equation step-by-step' explicitly emphasize the *dynamic transformation process* rather than just showing before-and-after states, to mitigate the student's 'forming incorrect mental models from static images when a dynamic process is being described' risk."
+        ],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 43,
+        "breakdown": {
+          "clarity": 9,
+          "integrity": 8,
+          "depth": 9,
+          "practicality": 8,
+          "pertinence": 9
+        },
+        "revisions": [
+          "Add general citations or acknowledgements for the fundamental claims in segments s1 ('Life's Energy Needs') and s2 ('Autotrophs vs. Heterotrophs') for enhanced academic rigor.",
+          "In segment s4, expand on the importance of photosynthesis by briefly mentioning additional broad impacts, such as its role in the formation of fossil fuels, agriculture, and other ecosystem services, to further enhance practicality.",
+          "For segments with durations of 180 seconds or more (s3, s5, s6, s7, s8), consider breaking them into two shorter sub-segments or incorporating explicit interactive pauses to manage cognitive load and reduce the risk of visual learners overlooking auditory details.",
+          "Enhance the visual content specifications to include explicit text overlays or visual highlights for key terms and concepts as they are introduced verbally, to reinforce learning for students prone to 'Detail Oversight' (e.g., prominently display 'Heterotrophs' when it's first said).",
+          "For segment s5, refine the visual content specification to more actively combat the misconception that chloroplasts are 'just for color.' The visual should not only show their location but also depict their function (e.g., light absorption leading to a basic representation of chemical conversion within the chloroplast).",
+          "Ensure the narration in segments s3, s6, or s7 explicitly and repeatedly reinforces the distinction between 'energy' (as a general concept) and 'glucose' (as a specific stored chemical energy molecule/food) to fully address the potential misconception identified in the check question."
+        ]
+      },
+      {
+        "strategy": "Intuition-First",
+        "total_score": 41,
+        "breakdown": {
+          "clarity": 9,
+          "integrity": 6,
+          "depth": 9,
+          "practicality": 9,
+          "pertinence": 8
+        },
+        "revisions": [
+          "**Integrity (Citations):** Add appropriate citations for factual claims in segments 001 ('energy is the universal currency of life', 'doesn't just appear or disappear'), 002 (definitions of autotrophs/heterotrophs), and 006 (reactants: carbon dioxide, water, light energy). Ensure all significant factual claims are supported.",
+          "**Pertinence (Cognitive Load & Detail Oversight):** Many segments have narrations ranging from 120 to 240 seconds. For a visual learner with a risk of 'detail oversight' and a 0.7 cognitive load budget, consider breaking longer segments (e.g., seg001, seg003, seg005, seg006, seg007, seg008) into shorter, more focused chunks (e.g., 60-90 seconds max) with corresponding, frequently updating visuals. This can help maintain engagement and prevent information overload.",
+          "**Pertinence (Dynamic Visuals):** Enhance visual content specifications to include more dynamic and process-oriented animations. For example, in seg005, show a subtle animation of chlorophyll *absorbing* light within the chloroplast. In seg006/007, animate the CO2 and H2O *transforming* into glucose and O2 within the plant rather than just static arrows, explicitly illustrating the 'transformation' mentioned in seg003.",
+          "**Depth (Elaborate on Analogies):** In seg001, explicitly connect the 'energy doesn't just appear or disappear' statement to the principle of conservation of energy (even if just briefly stating 'like the law of conservation of energy'). This adds a touch more scientific depth without increasing abstraction too much.",
+          "**Clarity (Refine 'Magical' Description):** In seg003, for the visual content spec describing the transformation as 'magical', consider refining this to 'a complex chemical transformation' or 'a process of chemical rearrangement'. While 'magical' evokes wonder, a high school student benefits from language that reinforces the scientific nature of the process.",
+          "**Pertinence (Interactive Prompts):** To further mitigate the 'detail oversight' risk, consider embedding very brief, low-stakes questions or 'think about this' prompts directly within the narration of longer segments. For example, after defining autotrophs/heterotrophs, a quick 'Can you think of another common autotroph besides plants?' can prompt active listening."
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "6988b80e-0448-4732-b9d2-f14b77aea4e6",
+    "data": {
+      "request": {
+        "course_requirement": "Debugging 101",
+        "student_persona": "Technical Agent",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null,
+        "run_id": "test_v010"
+      },
+      "student_model": {
+        "level": "AP",
+        "knowledge_embedding": [
+          "Core programming concepts (variables, control flow, functions)",
+          "Data structures (arrays, lists, dictionaries)",
+          "Algorithms (searching, sorting, basic optimization)",
+          "Logical reasoning and problem decomposition",
+          "Understanding of state and state transitions in systems",
+          "Basic system architecture principles (input/output, processing)",
+          "Command-line interfaces and basic automation scripts",
+          "Formal logic and discrete mathematics concepts"
+        ],
+        "misconception_risk": {
+          "Human-Computer Interaction": [
+            "Over-simplifying complex human behaviors into simple input-output logic.",
+            "Underestimating the impact of non-technical factors like user psychology or ethical implications.",
+            "Assuming perfect rationality or optimal behavior from human users/stakeholders."
+          ],
+          "System Design": [
+            "Over-generalizing solutions from one technical domain to another without considering context.",
+            "Premature optimization without fully understanding the problem scope or bottlenecks.",
+            "Focusing solely on efficiency and neglecting maintainability, scalability, or readability."
+          ],
+          "Problem Solving": [
+            "Rigidity in problem-solving; sticking to known technical approaches even when less conventional solutions might be better.",
+            "Ignoring real-world edge cases or incomplete information due to a preference for fully specified systems.",
+            "Mistaking correlation for causation when analyzing data or system behaviors."
+          ]
+        },
+        "cognitive_load_budget": 0.9,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.9
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Introduction to Bugs & Debugging Philosophy",
+            "prerequisites": [
+              "Core programming concepts (variables, control flow, functions)",
+              "Logical reasoning and problem decomposition"
+            ],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          },
+          {
+            "concept": "The Debugging Mindset: Systematic Approach vs. Guesswork",
+            "prerequisites": [
+              "Introduction to Bugs & Debugging Philosophy",
+              "Logical reasoning and problem decomposition"
+            ],
+            "misconceptions": [
+              "Rigidity in problem-solving; sticking to known technical approaches even when less conventional solutions might be better.",
+              "Mistaking correlation for causation when analyzing data or system behaviors."
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Basic Debugging Techniques: Print Statements & Logging",
+            "prerequisites": [
+              "The Debugging Mindset: Systematic Approach vs. Guesswork",
+              "Core programming concepts (variables, control flow, functions)",
+              "Command-line interfaces and basic automation scripts"
+            ],
+            "misconceptions": [],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Using an Interactive Debugger: Breakpoints, Stepping, and State Inspection",
+            "prerequisites": [
+              "Basic Debugging Techniques: Print Statements & Logging",
+              "Understanding of state and state transitions in systems"
+            ],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "The Scientific Method of Debugging: Reproduce, Isolate, Hypothesize, Verify, Fix",
+            "prerequisites": [
+              "Using an Interactive Debugger: Breakpoints, Stepping, and State Inspection",
+              "Logical reasoning and problem decomposition"
+            ],
+            "misconceptions": [
+              "Rigidity in problem-solving; sticking to known technical approaches even when less conventional solutions might be better.",
+              "Mistaking correlation for causation when analyzing data or system behaviors.",
+              "Ignoring real-world edge cases or incomplete information due to a preference for fully specified systems."
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "Common Bug Categories and Diagnosis Strategies",
+            "prerequisites": [
+              "The Scientific Method of Debugging: Reproduce, Isolate, Hypothesize, Verify, Fix",
+              "Data structures (arrays, lists, dictionaries)",
+              "Algorithms (searching, sorting, basic optimization)"
+            ],
+            "misconceptions": [
+              "Over-generalizing solutions from one technical domain to another without considering context."
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 3.0
+          },
+          {
+            "concept": "Proactive Debugging: Error Handling, Logging Best Practices, and Testing",
+            "prerequisites": [
+              "Common Bug Categories and Diagnosis Strategies",
+              "Basic system architecture principles (input/output, processing)"
+            ],
+            "misconceptions": [
+              "Premature optimization without fully understanding the problem scope or bottlenecks.",
+              "Focusing solely on efficiency and neglecting maintainability, scalability, or readability."
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 4.0
+          }
+        ],
+        "total_duration_minutes": 25.0
+      },
+      "selected_strategy": "Inductive",
+      "video_url": "http://localhost:8000/output/final_video_6988b80e-0448-4732-b9d2-f14b77aea4e6.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_6988b80e-0448-4732-b9d2-f14b77aea4e6.srt",
+      "generation_time_seconds": 110
+    },
+    "selection_log": [
+      {
+        "strategy": "Inductive",
+        "total_score": 49,
+        "breakdown": {
+          "clarity": 10,
+          "integrity": 9,
+          "depth": 10,
+          "practicality": 10,
+          "pertinence": 10
+        },
+        "revisions": [
+          "Add explicit citations for the general claims and best practices discussed in the narration of Segment 7 ('Proactive Debugging: Error Handling, Logging Best Practices, and Testing') to maintain consistent academic rigor throughout the lesson. For example, cite sources for the benefits of robust error handling, systematic logging, and automated testing."
+        ],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": "No improvements needed for this persona. The visual scaffolding described for each segment is exceptionally clear, detailed, and directly illustrates the narrated concepts. As a visual learner, I would feel completely supported and engaged throughout this video."
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 47,
+        "breakdown": {
+          "clarity": 9,
+          "integrity": 8,
+          "depth": 10,
+          "practicality": 10,
+          "pertinence": 10
+        },
+        "revisions": [
+          "**Integrity (seg07):** Add specific citations for the claims made in segment 7 regarding the benefits and necessity of error handling, logging best practices, and comprehensive testing (e.g., \"True efficiency comes from building robust software from the start,\" \"indispensable for building reliable software\"). Sources could include reputable software engineering texts or standards (e.g., IEEE standards, 'Clean Code' by Robert C. Martin, or academic sources on software quality/maintenance).",
+          "**Clarity & Practicality (seg07 Visual):** Enhance the `visual_content_spec` for `seg07` to explicitly and visually contrast 'Proactive Debugging' with 'Reactive Debugging'. Add a distinct visual pathway or section illustrating the 'Reactive Debugging' pitfalls mentioned in the narration (e.g., 'Develop' -> 'Deploy' -> 'Crash!' -> 'Panic Debugging / Ad-Hoc Fixes' -> 'Repeated Failures'), making the cognitive conflict visually explicit for this segment.",
+          "**Depth & Practicality (General):** Consider a brief mention, possibly integrated into `seg05` (Isolate its Cause) or `seg07` (Proactive Debugging), about the role of version control systems (like Git) in debugging. Emphasize their utility for isolating changes by comparing different versions or reverting to a known stable state, which is a highly practical skill for AP CS students."
+        ]
+      },
+      {
+        "strategy": "Intuition-First",
+        "total_score": 45,
+        "breakdown": {
+          "clarity": 9,
+          "integrity": 7,
+          "depth": 10,
+          "practicality": 9,
+          "pertinence": 10
+        },
+        "revisions": [
+          "**Integrity:** Add specific citations for all claims made in segment `seg07_proactive_debugging`, particularly regarding error handling, logging best practices, comprehensive testing (unit, integration, system tests), and the benefits of these practices (e.g., maintainability, scalability, readability). These are fundamental software engineering concepts that require academic or industry-standard sources.",
+          "**Clarity/Depth:** In segment `seg07`, consider slightly expanding on the connection between 'system architecture principles' and 'proactive debugging'. For example, explain how understanding input/output flows and processing stages allows for strategic placement of error handling and logging, directly leveraging the student's existing knowledge embedding.",
+          "**Depth/Practicality (Optional for AP level):** In segment `seg04_interactive_debugger`, for an AP-level student with high abstraction tolerance, briefly mention (perhaps in a side note or as a challenging thought) that debuggers typically work by interacting with the operating system or CPU's debugging facilities (e.g., breakpoints implemented via special instructions or memory writes). This adds a layer of technical understanding beyond 'magic tool' and aligns with their interest in system architecture."
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "75ee49b5-e298-453c-a259-a85d51ebfa87",
+    "data": {
+      "request": {
+        "course_requirement": "Teach Python loops",
+        "student_persona": "Beginner coder",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Teach Python loops",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_75ee49b5-e298-453c-a259-a85d51ebfa87.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_75ee49b5-e298-453c-a259-a85d51ebfa87.srt",
+      "generation_time_seconds": 215
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "eff4be7e-e380-4307-afe7-77bf95646095",
+    "data": {
+      "request": {
+        "course_requirement": "Photosynthesis",
+        "student_persona": "friendly_monster",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null,
+        "topic": "Photosynthesis",
+        "persona": "friendly_monster"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Photosynthesis",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_eff4be7e-e380-4307-afe7-77bf95646095.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_eff4be7e-e380-4307-afe7-77bf95646095.srt",
+      "generation_time_seconds": 731
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
   }
 ]

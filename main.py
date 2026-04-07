@@ -30,7 +30,7 @@ from modules.m4_generator import ScriptGenerator
 from modules.m5_critic import CIDPPCritic
 from modules.m6_multimodal import MultimodalPlanner
 from modules.m7_renderer import VideoRenderer
-from modules.m8_logger import FeedbackLogger
+from modules.m8_logger import FeedbackLogger, ErrorLogger
 
 app = FastAPI(title="Teaching Monster AI Agent API")
 
@@ -54,6 +54,7 @@ m5 = CIDPPCritic()
 m6 = MultimodalPlanner()
 m7 = VideoRenderer()
 m8 = FeedbackLogger()
+err_log = ErrorLogger()
 
 @app.get("/health")
 @app.head("/health")
@@ -91,11 +92,13 @@ async def generate_video(
 
     run_id = str(uuid.uuid4())
     start_time = time.time()
-    
+    current_stage = "startup"  # updated as we progress through pipeline stages
+
     try:
         logger.info(f"Starting generation for run_id: {run_id}")
 
         # 1. Parallel call M1 (Sourcing) and M2 (Persona)
+        current_stage = "m1_sourcing + m2_persona"
         logger.info("Stage 1 & 2: Sourcing and Persona Parsing")
         m1_task = asyncio.create_task(m1.source(
             request_data.course_requirement,
@@ -103,26 +106,31 @@ async def generate_video(
             search_api_key=request_data.search_api_key
         ))
         m2_task = asyncio.create_task(m2.parse(request_data.student_persona, model_override=request_data.model_override))
-        
+
         fact_bundle, student_model = await asyncio.gather(m1_task, m2_task)
 
         # 3. Concept Planning
+        current_stage = "m3_planner"
         logger.info("Stage 3: Concept Planning")
         concept_graph = await m3.plan(request_data.course_requirement, student_model, model_override=request_data.model_override)
 
         # 4. Script Generation (Variants)
+        current_stage = "m4_generator"
         logger.info("Stage 4: Multi-Variant Script Generation")
         scripts = await m4.generate_variants(concept_graph, student_model, fact_bundle, model_override=request_data.model_override)
 
         # 5. CIDPP Critic Selection (Best-of-N)
+        current_stage = "m5_critic"
         logger.info("Stage 5: CIDPP Critic Selection (Best-of-3)")
         script, selection_log = await m5.score_variants(scripts, student_model, model_override=request_data.model_override)
 
         # 6. Multimodal Planning
+        current_stage = "m6_multimodal"
         logger.info("Stage 6: Multimodal Planning")
         visual_plan = await m6.plan_visuals(script)
 
         # 7. Video & Subtitle Rendering
+        current_stage = "m7_renderer"
         logger.info("Stage 7: Video/Subtitle Rendering")
         render_results = await m7.render(visual_plan, script, run_id=run_id)
         
@@ -157,9 +165,14 @@ async def generate_video(
         )
 
     except Exception as e:
-        logger.exception(f"FATAL PIPELINE ERROR for run_id {run_id}: {str(e)}")
-        # We still return a valid response object if possible, or raise
-        raise HTTPException(status_code=500, detail=f"Internal Pipeline Error: {str(e)}")
+        logger.exception(f"FATAL PIPELINE ERROR for run_id {run_id} at stage [{current_stage}]: {str(e)}")
+        err_log.log_error(
+            run_id=run_id,
+            exc=e,
+            request_data=request_data.model_dump(),
+            failed_stage=current_stage,
+        )
+        raise HTTPException(status_code=500, detail=f"Internal Pipeline Error at [{current_stage}]: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
