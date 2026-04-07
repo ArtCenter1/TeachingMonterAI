@@ -2,7 +2,8 @@ import os
 import time
 import asyncio
 from typing import Optional, List, Dict, Any
-import google.generativeai as genai
+from google import genai
+from google.genai import types as genai_types
 from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from loguru import logger
@@ -17,16 +18,19 @@ class LLMClient:
         self.primary_model = os.getenv("PRIMARY_MODEL", "google/gemini-2.0-flash-exp:free")
         # Update fallback to a more stable OpenRouter free model (Qwen 2.5 7B is highly stable)
         self.fallback_model = os.getenv("FALLBACK_MODEL", "qwen/qwen-2.5-7b-instruct:free")
-        # Last resort fallback for Gemini SDK
-        self.gemini_last_resort = "gemini-1.5-flash"
+        # Last resort fallback for Gemini SDK — confirmed model from API discovery
+        self.gemini_last_resort = "models/gemini-2.0-flash"
 
         # Initialize Clients
         if self.google_api_key:
             try:
-                genai.configure(api_key=self.google_api_key)
+                self.gemini_client = genai.Client(api_key=self.google_api_key)
+                logger.info("Gemini client (google.genai) initialized successfully.")
             except Exception as e:
-                logger.error(f"Failed to configure Gemini SDK: {e}")
-            
+                self.gemini_client = None
+                logger.error(f"Failed to configure Gemini client: {e}")
+        else:
+            self.gemini_client = None
         self.openrouter_client = None
         if self.openrouter_api_key:
             self.openrouter_client = AsyncOpenAI(
@@ -98,60 +102,62 @@ class LLMClient:
         if is_openrouter_style and self.openrouter_client:
             return await self._call_openrouter(model_name, prompt, system_instruction, temperature, max_tokens)
         else:
-            # Native Gemini SDK path — strip any leading path prefix
-            clean_name = model_name.split("/")[-1]
-            return await self._call_gemini_sdk(clean_name, prompt, system_instruction, temperature, max_tokens)
+            # Native Gemini SDK path — ensure "models/" prefix if missing
+            full_model_path = model_name if model_name.startswith("models/") else f"models/{model_name}"
+            return await self._call_gemini_sdk(full_model_path, prompt, system_instruction, temperature, max_tokens)
 
     @retry(
-        stop=stop_after_attempt(2),
-        wait=wait_exponential(multiplier=1, min=1, max=4),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=2, min=5, max=60),
         retry=retry_if_exception_type(Exception),
         reraise=True
     )
     async def _call_gemini_sdk(self, model_name: str, prompt: str, system_instruction: str, temperature: float, max_tokens: int) -> str:
-        """Call Gemini via direct SDK with robust model discovery."""
-        if not self.google_api_key:
-            raise ValueError("GOOGLE_API_KEY is missing for Gemini SDK call.")
-            
+        """Call Gemini via the new google.genai client (v1 API — no more v1beta 404s)."""
+        if not self.gemini_client:
+            raise ValueError("Gemini client is not initialized. Check GOOGLE_API_KEY.")
+        
+        # Use name directly as provided (typically models/... or already clean)
+        clean_name = model_name.strip()
+        
+        config = genai_types.GenerateContentConfig(
+            temperature=temperature,
+            max_output_tokens=max_tokens,
+            system_instruction=system_instruction if system_instruction else None,
+        )
+        
         try:
-            # Clean up model name
-            clean_model_name = model_name.split("/")[-1]
-            
-            model = genai.GenerativeModel(
-                model_name=clean_model_name,
-                **({"system_instruction": system_instruction} if system_instruction else {})
-            )
-            
-            # Wrap synchronous call
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None, 
-                lambda: model.generate_content(
-                    prompt,
-                    generation_config=genai.types.GenerationConfig(
-                        temperature=temperature,
-                        max_output_tokens=max_tokens
-                    )
+            response = await asyncio.get_event_loop().run_in_executor(
+                None,
+                lambda: self.gemini_client.models.generate_content(
+                    model=clean_name,
+                    contents=prompt,
+                    config=config,
                 )
             )
             
-            if not response or not hasattr(response, "text") or not response.text:
+            if not response or not response.text:
                 return "[Empty or blocked response]"
-                
             return response.text
-
+            
         except Exception as e:
             err_msg = str(e)
             if "404" in err_msg or "not found" in err_msg.lower():
-                logger.warning(f"Gemini model {model_name} not found. Attempting discovery...")
-                # Try to discovery available models
-                available = [m.name for m in genai.list_models() if "generateContent" in m.supported_generation_methods]
-                if available:
-                    alt_name = next((m for m in available if "flash" in m.lower()), available[0]).split("/")[-1]
-                    logger.info(f"Retrying with discovered model: {alt_name}")
-                    model = genai.GenerativeModel(model_name=alt_name, system_instruction=system_instruction)
-                    response = await asyncio.get_event_loop().run_in_executor(None, lambda: model.generate_content(prompt))
-                    return response.text if (response and hasattr(response, "text") and response.text) else "[Retry failed]"
+                logger.warning(f"Gemini model '{clean_name}' not found. Falling back to models/gemini-2.0-flash...")
+                config_fallback = genai_types.GenerateContentConfig(
+                    temperature=temperature,
+                    max_output_tokens=max_tokens,
+                    system_instruction=system_instruction if system_instruction else None,
+                )
+                response = await asyncio.get_event_loop().run_in_executor(
+                    None,
+                    lambda: self.gemini_client.models.generate_content(
+                        model="models/gemini-2.0-flash",
+                        contents=prompt,
+                        config=config_fallback,
+                    )
+                )
+                return response.text if (response and response.text) else "[Fallback failed]"
             raise e
 
     async def _call_openrouter(self, model_name: str, prompt: str, system_instruction: str, temperature: float, max_tokens: int) -> str:

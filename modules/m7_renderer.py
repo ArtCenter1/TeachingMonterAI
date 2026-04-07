@@ -61,55 +61,39 @@ class VideoRenderer:
             
             segment_audio_data = b""
             try:
-                # Use WebSocket with robust Cartesia v3 approach
-                with self.client.tts.websocket_connect() as connection:
-                    ctx = connection.context(
+                # Use direct WebSocket send() with all required keyword args per Cartesia SDK spec.
+                # The context() helper approach is version-sensitive and has been removed.
+                with self.client.tts.websocket_connect() as ws:
+                    for response in ws.send(
                         model_id="sonic-english",
-                        voice={"mode": "id", "id": self.voice_id},
-                        output_format={"container": "raw", "encoding": "pcm_s16le", "sample_rate": 44100},
-                    )
-
-                    # Cartesia 3.0.2: model_id, voice, output_format, and transcript are ALL required
-                    ctx.send(
-                        model_id="sonic-english",
-                        voice={"mode": "id", "id": self.voice_id},
-                        output_format={"container": "raw", "encoding": "pcm_s16le", "sample_rate": 44100},
                         transcript=segment.narration,
-                        continue_=False,
-                        add_timestamps=True
-                    )
+                        voice={"mode": "id", "id": self.voice_id},
+                        output_format={"container": "raw", "encoding": "pcm_s16le", "sample_rate": 44100},
+                        stream=True,
+                    ):
+                        # Collect audio bytes
+                        chunk = getattr(response, "audio", None)
+                        if chunk:
+                            if isinstance(chunk, str):
+                                segment_audio_data += base64.b64decode(chunk)
+                            else:
+                                segment_audio_data += chunk
 
-                    # Robust check if 'receive' exists
-                    if hasattr(ctx, "receive"):
-                        for response in ctx.receive():
-                            if response.type == "chunk":
-                                if response.data:
-                                    # Fix: Cartesia sometimes returns base64 strings instead of raw bytes
-                                    if isinstance(response.data, str):
-                                        segment_audio_data += base64.b64decode(response.data)
-                                    else:
-                                        segment_audio_data += response.data
-                            elif response.type == "timestamps":
-                                    ts_obj = response.word_timestamps
-                                    words = getattr(ts_obj, "words", [])
-                                    starts = getattr(ts_obj, "start", getattr(ts_obj, "starts", []))
-                                    ends = getattr(ts_obj, "end", getattr(ts_obj, "ends", []))
-                                    for word, start, end in zip(words, starts, ends):
-                                        all_timestamps.append({
-                                            "word": str(word),
-                                            "start": float(start) + global_offset,
-                                            "end": float(end) + global_offset
-                                        })
-                            elif response.type == "error":
-                                logger.error(f"Cartesia error: {response.message}")
-                    else:
-                        # Fallback for SDK versions where ctx itself is an iterator
-                        for response in ctx:
-                            if hasattr(response, "data") and response.data:
-                                if isinstance(response.data, str):
-                                    segment_audio_data += base64.b64decode(response.data)
-                                else:
-                                    segment_audio_data += response.data
+                        # Collect word timestamps
+                        if getattr(response, "type", None) == "timestamps":
+                            ts_obj = getattr(response, "word_timestamps", None)
+                            if ts_obj:
+                                words  = getattr(ts_obj, "words", [])
+                                starts = getattr(ts_obj, "start", getattr(ts_obj, "starts", []))
+                                ends   = getattr(ts_obj, "end",   getattr(ts_obj, "ends", []))
+                                for word, start, end in zip(words, starts, ends):
+                                    all_timestamps.append({
+                                        "word":  str(word),
+                                        "start": float(start) + global_offset,
+                                        "end":   float(end)   + global_offset,
+                                    })
+                        elif getattr(response, "type", None) == "error":
+                            logger.error(f"Cartesia stream error on {segment.segment_id}: {response}")
 
                 # Write raw PCM data
                 if not segment_audio_data:
@@ -175,7 +159,8 @@ class VideoRenderer:
         
         with open(concat_list_path, "w") as f:
             for sf in segment_files:
-                f.write(f"file '{os.path.abspath(sf).replace('\\', '/')}'\n")
+                abs_path = os.path.abspath(sf).replace('\\', '/')
+                f.write(f"file '{abs_path}'\n")
 
         concat_cmd = [
             self.ffmpeg_path, "-y",

@@ -21,17 +21,16 @@ def test_cartesia():
     audio_data = b""
     try:
         with client.tts.websocket_connect() as connection:
-            ctx = connection.context()
-            
-            ctx.send(
+            ctx = connection.context(
                 model_id="sonic-english",
-                transcript=transcript,
                 voice={"mode": "id", "id": voice_id},
                 output_format={"container": "raw", "encoding": "pcm_s16le", "sample_rate": 44100},
-                end_of_stream=True
             )
             
-            for response in connection:
+            ctx.push(transcript)
+            ctx.no_more_inputs()
+            
+            for response in ctx.receive():
                 if response.type == "chunk":
                     if response.audio:
                         audio_data += response.audio

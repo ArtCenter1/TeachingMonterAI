@@ -94,3 +94,10 @@ app (container) :8000
 ## Output Files
 
 Generated videos appear in `./temp/output/` on your machine (Docker mounts this folder).
+
+---
+*Created by Teaching Monster AI Team — April 2026*
+
+## Next Steps
+For detailed system architecture and a guide on fixing errors, see [ONBOARDING.md](file:///d:/My_Projects/TeachingMonsterAI/ONBOARDING.md).
+
