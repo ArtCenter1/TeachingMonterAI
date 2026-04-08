@@ -3,9 +3,11 @@ from pydantic import BaseModel
 import sys
 import os
 
+
 class MockRequest(BaseModel):
     topic: str = "Test Subject"
     persona: str = "Persona A"
+
 
 def test_failure():
     logger = ErrorLogger("m8_errors.json")
@@ -17,11 +19,12 @@ def test_failure():
         print(f"Caught error: {e}")
         logger.log_error(
             run_id="test_run_123",
+            exc=e,
             failed_stage="m5_critic",
-            exception=e,
-            request=MockRequest()
+            request_data={"topic": "Test Subject", "persona": "Persona A"},
         )
         print("Error successfully logged to m8_errors.json")
+
 
 if __name__ == "__main__":
     test_failure()

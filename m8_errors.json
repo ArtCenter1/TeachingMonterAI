@@ -1,0 +1,14 @@
+[
+  {
+    "run_id": "test_run_123",
+    "timestamp": "2026-04-08T01:05:23.475872+00:00",
+    "failed_stage": "m5_critic",
+    "error_type": "ZeroDivisionError",
+    "error_message": "division by zero",
+    "traceback": "Traceback (most recent call last):\n  File \"D:\\My_Projects\\TeachingMonsterAI\\test_m8.py\", line 17, in test_failure\n    x = 1 / 0\n        ~~^~~\nZeroDivisionError: division by zero\n",
+    "request": {
+      "topic": "Test Subject",
+      "persona": "Persona A"
+    }
+  }
+]

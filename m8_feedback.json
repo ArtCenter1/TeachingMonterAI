@@ -4863,5 +4863,511 @@
         "revisions": []
       }
     ]
+  },
+  {
+    "run_id": "8b1b9f33-8aab-41c8-8ae1-952a30835bcb",
+    "data": {
+      "request": {
+        "course_requirement": "Photosynthesis",
+        "student_persona": "friendly_monster",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null,
+        "topic": "Photosynthesis",
+        "persona": "friendly_monster"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Photosynthesis",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_8b1b9f33-8aab-41c8-8ae1-952a30835bcb.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_8b1b9f33-8aab-41c8-8ae1-952a30835bcb.srt",
+      "generation_time_seconds": 126
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "89caa7b7-5b83-49c7-9925-11889079e80d",
+    "data": {
+      "request": {
+        "course_requirement": "Photosynthesis",
+        "student_persona": "friendly_monster",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null,
+        "topic": "Photosynthesis",
+        "persona": "friendly_monster"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Photosynthesis",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_89caa7b7-5b83-49c7-9925-11889079e80d.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_89caa7b7-5b83-49c7-9925-11889079e80d.srt",
+      "generation_time_seconds": 103
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "db6e32cc-a109-4022-a7c8-9944e3e676d3",
+    "data": {
+      "request": {
+        "course_requirement": "Photosynthesis",
+        "student_persona": "friendly_monster",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null,
+        "topic": "Photosynthesis",
+        "persona": "friendly_monster"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "Intro to Photosynthesis",
+            "prerequisites": [],
+            "misconceptions": [],
+            "visual_type": "Animation",
+            "duration_minutes": 2.0
+          }
+        ],
+        "total_duration_minutes": 2.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_db6e32cc-a109-4022-a7c8-9944e3e676d3.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_db6e32cc-a109-4022-a7c8-9944e3e676d3.srt",
+      "generation_time_seconds": 191
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
+  },
+  {
+    "run_id": "7d903f08-37fa-41ca-a3b1-ffa62b2dd9b5",
+    "data": {
+      "request": {
+        "course_requirement": "Photosynthesis",
+        "student_persona": "friendly_monster",
+        "model_override": null,
+        "age_group": "10-15",
+        "google_api_key": null,
+        "search_cx": null,
+        "search_api_key": null,
+        "topic": "Photosynthesis",
+        "persona": "friendly_monster"
+      },
+      "student_model": {
+        "level": "high_school",
+        "knowledge_embedding": [
+          "basic algebra"
+        ],
+        "misconception_risk": {
+          "forces": [
+            "force causes motion"
+          ]
+        },
+        "cognitive_load_budget": 0.7,
+        "modality_preference": "mixed",
+        "abstraction_tolerance": 0.5
+      },
+      "concept_graph": {
+        "nodes": [
+          {
+            "concept": "What is Photosynthesis?",
+            "prerequisites": [],
+            "misconceptions": [
+              "Photosynthesis is the process of plants making food"
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 5.0
+          },
+          {
+            "concept": "What are the inputs of Photosynthesis?",
+            "prerequisites": [
+              "What is Photosynthesis?"
+            ],
+            "misconceptions": [
+              "Water is the only input for Photosynthesis"
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 6.0
+          },
+          {
+            "concept": "What are the outputs of Photosynthesis?",
+            "prerequisites": [
+              "What are the inputs of Photosynthesis?"
+            ],
+            "misconceptions": [
+              "Oxygen is not a byproduct of Photosynthesis"
+            ],
+            "visual_type": "Diagram",
+            "duration_minutes": 6.0
+          },
+          {
+            "concept": "The Light-Dependent Reactions",
+            "prerequisites": [
+              "What are the outputs of Photosynthesis?"
+            ],
+            "misconceptions": [
+              "The Light-Dependent Reactions do not produce ATP"
+            ],
+            "visual_type": "Animation",
+            "duration_minutes": 4.0
+          },
+          {
+            "concept": "The Calvin Cycle",
+            "prerequisites": [
+              "The Light-Dependent Reactions"
+            ],
+            "misconceptions": [
+              "The Calvin Cycle is the same as the Light-Dependent Reactions"
+            ],
+            "visual_type": "Flowchart",
+            "duration_minutes": 4.0
+          }
+        ],
+        "total_duration_minutes": 25.0
+      },
+      "selected_strategy": "Intuition-First",
+      "video_url": "http://localhost:8000/output/final_video_7d903f08-37fa-41ca-a3b1-ffa62b2dd9b5.mp4",
+      "subtitle_url": "http://localhost:8000/output/subtitles_7d903f08-37fa-41ca-a3b1-ffa62b2dd9b5.srt",
+      "generation_time_seconds": 146
+    },
+    "selection_log": [
+      {
+        "strategy": "Intuition-First",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": [],
+        "synthetic_student_feedback": [
+          {
+            "persona": "Persona A (Confused Visual)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona B (Math-Anxious)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona C (High-Performer)",
+            "is_perfect": true,
+            "gaps": [],
+            "confusing_quotes": [],
+            "suggested_improvement": ""
+          },
+          {
+            "persona": "Persona D (Low-Prior/High-Curiosity)",
+            "is_perfect": false,
+            "gaps": [
+              "What knowledge did the lesson assume you had that you didn't?"
+            ],
+            "confusing_quotes": [
+              "Welcome to this Intuition-First lesson."
+            ],
+            "suggested_improvement": "Provide a brief overview of what photosynthesis is and why it's important before diving into the concept."
+          }
+        ]
+      },
+      {
+        "strategy": "Cognitive-Conflict",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      },
+      {
+        "strategy": "Inductive",
+        "total_score": 40,
+        "breakdown": {
+          "clarity": 8,
+          "integrity": 10,
+          "depth": 7,
+          "practicality": 7,
+          "pertinence": 8
+        },
+        "revisions": []
+      }
+    ]
   }
 ]
