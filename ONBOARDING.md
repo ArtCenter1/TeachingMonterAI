@@ -84,4 +84,20 @@ Remove-Item m8_errors.json
 ```
 
 ---
+## 7. Repository Structure & Global Services
+
+To keep the `TeachingMonsterAI` repository clean and focused solely on the generation pipeline, the following structural rules are strictly enforced:
+
+### A. OpenSpace Integration is Global
+This project interacts with an [OpenSpace](https://open-space.cloud/) agent and engine, but **no OpenSpace configuration files reside in this local repository**.
+- All OpenSpace services (Docker configuration, environment variables, SQLite workspaces, and the global skills library) are located in **`d:/My_Projects/openspace/`**.
+- If you need to debug or edit OpenSpace config (e.g., `docker-compose.openspace.yml`, `.env.openspace`, or `sync_skills.py`), you must navigate to the global directory. Do not re-create these files in the local TeachingMonster project.
+
+### B. Local Testing & Debug Scripts
+Do not commit ad-hoc test scripts to the remote repository. 
+- All temporary Python scripts used for testing triggers, listing models, and quick API requests must be kept in the **`temp/local_tests/`** directory.
+- This directory, along with major local logs (`pipeline.log`, `docker_debug.log`, `m8_errors.json`, `m8_feedback.json`), is excluded via `.gitignore` or safely untracked to prevent cluttering the Git history.
+- Existing debug scripts include `test_generate.py`, `test_m8.py`, and `trigger_gen.py`. Look for them in `temp/local_tests/` before creating a new script.
+
+---
 *Created by Antigravity AI Agent — April 2026*
