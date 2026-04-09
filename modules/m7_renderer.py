@@ -61,16 +61,17 @@ class VideoRenderer:
             
             segment_audio_data = b""
             try:
-                # Use direct WebSocket send() with all required keyword args per Cartesia SDK spec.
-                # The context() helper approach is version-sensitive and has been removed.
-                with self.client.tts.websocket_connect() as ws:
-                    for response in ws.send(
+                # Use connection.context() for v3.x SDK compatibility (fixes TypeError in send)
+                with self.client.tts.websocket_connect() as connection:
+                    context = connection.context()
+                    context.send(
                         model_id="sonic-english",
-                        transcript=segment.narration,
                         voice={"mode": "id", "id": self.voice_id},
                         output_format={"container": "raw", "encoding": "pcm_s16le", "sample_rate": 44100},
+                        transcript=segment.narration,
                         stream=True,
-                    ):
+                    )
+                    for response in context.receive():
                         # Collect audio bytes
                         chunk = getattr(response, "audio", None)
                         if chunk:
