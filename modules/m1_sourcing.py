@@ -6,23 +6,39 @@ import time
 from typing import Dict, Any, Optional, List
 from dotenv import load_dotenv
 from .schemas import FactBundle
+from .mcp_client import OpenSpaceMCPClient
 from loguru import logger
+
+
+def _extract_json_from_text(text: str) -> Any:
+    """
+    Extract the first valid JSON object or array embedded in `text`.
+    Returns the parsed object/array, or raises ValueError if none found.
+    """
+    for start_char, end_char in ("{", "}"), ("[", "]"):
+        start = text.find(start_char)
+        if start == -1:
+            continue
+        # Walk backwards from the last occurrence of the closing char
+        end = text.rfind(end_char)
+        if end == -1 or end <= start:
+            continue
+        candidate = text[start : end + 1]
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            pass
+    raise ValueError(f"No valid JSON found in text: {text[:200]!r}")
+
 
 class SourcingModule:
     def __init__(self):
         load_dotenv()
-        self.notebooklm_mcp_endpoint = os.getenv("NOTEBOOKLM_MCP_ENDPOINT")
+        # Legacy direct-endpoint key is kept for backwards-compat env files but
+        # is no longer used for the primary sourcing path.
         self.fallback_search_api_key = os.getenv("SEARCH_API_KEY")
         self.search_cx = os.getenv("SEARCH_CX", "017576662512468239146:omuauf_lfve")
-        
-        # Attempt to initialize NotebookLM client if library is present
-        self.notebooklm_client = None
-        try:
-            from notebooklm import NotebookLMClient
-            self.notebooklm_client = NotebookLMClient
-            logger.info("NotebookLM native library detected")
-        except ImportError:
-            logger.debug("NotebookLM native library not found, will rely on MCP endpoint")
+        logger.debug("SourcingModule initialised (primary path: OpenSpace MCP → web_search → AI → mock)")
         
     async def source(self, topic: str, search_cx: Optional[str] = None, search_api_key: Optional[str] = None) -> FactBundle:
         """
@@ -80,49 +96,89 @@ class SourcingModule:
         return self.get_mock_data(topic)
 
     async def _notebooklm_mcp_source(self, topic: str) -> FactBundle:
-        """Source facts using NotebookLM MCP or native library"""
-        if not self.notebooklm_mcp_endpoint:
-            if self.notebooklm_client:
-                logger.info("Using native NotebookLM library for sourcing")
-                return await self._notebooklm_library_source(topic)
-            raise ValueError("NotebookLM MCP endpoint not configured and native library unavailable")
-            
-        # Prepare MCP request for NotebookLM
-        mcp_request = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "notebooklm/query",
-            "params": {
-                "query": f"Provide detailed, authoritative educational facts about {topic} for secondary education (AP/IB level). Identify core concepts, key formulas, and standard definitions with citations.",
-                "context": "educational",
-                "max_facts": 10
+        """
+        Source facts via the OpenSpace Evolution Engine.
+
+        OpenSpace auto-discovers locally installed skills.  When the
+        ``notebooklm`` skill is present (installed via ``notebooklm-py``),
+        it will create a notebook, add authoritative IB/AP sources, and
+        return grounded facts with citations.  Without the skill, OpenSpace
+        falls back to its own web-search and reasoning capabilities.
+
+        Per the PRD (§4.2), the MCP Server is the PRIMARY sourcing path.
+        This method honours the 90-second budget set by the caller's
+        ``asyncio.wait_for`` wrapper in ``source()``.
+        """
+        client = OpenSpaceMCPClient()
+
+        # Fail fast if engine is not reachable — triggers Stage 2 fallback
+        if not await client.health_check():
+            raise ConnectionError(
+                "OpenSpace engine unreachable at %s" % client.base_url
+            )
+
+        # Infer subject domain from topic keywords for source-hint injection
+        topic_lower = topic.lower()
+        if any(k in topic_lower for k in ("physics", "force", "motion", "wave", "energy", "quantum")):
+            source_hint = "IB Physics textbook, AP Physics CED, Khan Academy physics"
+        elif any(k in topic_lower for k in ("biology", "cell", "dna", "gene", "evolution", "organism")):
+            source_hint = "IB Biology textbook, AP Biology CED, reviewed .edu biology sources"
+        elif any(k in topic_lower for k in ("algorithm", "programming", "data structure", "network",
+                                            "attention", "machine learning", "recursion", "sorting")):
+            source_hint = "IB CS guide, CS50 transcripts, official language documentation"
+        elif any(k in topic_lower for k in ("calculus", "algebra", "geometry", "statistics",
+                                            "probability", "trigonometry", "derivative", "integral")):
+            source_hint = "IB Math AA/AI guide, AP Calculus CED, standard textbook chapters"
+        else:
+            source_hint = "IB/AP curriculum guides, Khan Academy, .edu educational resources"
+
+        task = (
+            f"Research the educational topic '{topic}' for a secondary education audience "
+            f"(AP/IB level). "
+            f"Use the following as primary authoritative sources: {source_hint}. "
+            f"Return a JSON object with this exact structure — no markdown, no extra keys:\n"
+            f'{{\n'
+            f'  "facts": [\n'
+            f'    {{"claim": "The factual statement", "citation": "Source title / URL / page", "confidence": 0.9}}\n'
+            f'  ],\n'
+            f'  "study_guide_url": null\n'
+            f'}}\n'
+            f"Provide at least 5 unique, verifiable facts with citations. "
+            f"If a fact is uncertain, lower the confidence score. "
+            f"Do NOT hallucinate citations."
+        )
+
+        logger.info("Delegating M1 sourcing to OpenSpace (topic: %s)", topic[:60])
+        raw = await client.execute_task(task, max_iterations=15, search_scope="local")
+        logger.debug("OpenSpace raw sourcing result (first 400 chars): %s", raw[:400])
+
+        # Parse the returned JSON
+        data = _extract_json_from_text(raw)
+
+        facts_raw = data.get("facts", []) if isinstance(data, dict) else []
+        study_guide_url = data.get("study_guide_url") if isinstance(data, dict) else None
+
+        facts = [
+            {
+                "claim": str(f.get("claim", "")),
+                "citation": str(f.get("citation", "OpenSpace + NotebookLM")),
+                "confidence": min(1.0, max(0.0, float(f.get("confidence", 0.8)))),
             }
-        }
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                self.notebooklm_mcp_endpoint,
-                json=mcp_request,
-                timeout=aiohttp.ClientTimeout(total=85)  # Leave 5s buffer
-            ) as response:
-                if response.status != 200:
-                    raise Exception(f"NotebookLM MCP returned status {response.status}")
-                
-                result = await response.json()
-                
-                # Extract facts from MCP response
-                facts = []
-                if "result" in result and "facts" in result["result"]:
-                    for fact in result["result"]["facts"]:
-                        facts.append({
-                            "claim": fact.get("claim", ""),
-                            "citation": fact.get("citation", "NotebookLM Source"),
-                            "confidence": float(fact.get("confidence", 0.8))
-                        })
-                
-                study_guide_url = result.get("result", {}).get("study_guide_url", None)
-                
-                return FactBundle(facts=facts, study_guide_url=study_guide_url)
+            for f in facts_raw
+            if f.get("claim")
+        ]
+
+        if not facts:
+            raise ValueError(
+                "OpenSpace returned no usable facts for topic: %s" % topic
+            )
+
+        logger.info(
+            "OpenSpace sourcing returned %d facts (study_guide_url=%s)",
+            len(facts),
+            study_guide_url,
+        )
+        return FactBundle(facts=facts, study_guide_url=study_guide_url)
 
     async def _web_search_fallback(self, topic: str, search_cx: Optional[str] = None, search_api_key: Optional[str] = None) -> FactBundle:
         """Fallback sourcing using web search + web fetch"""
