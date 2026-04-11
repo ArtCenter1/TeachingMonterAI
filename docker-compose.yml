@@ -38,3 +38,8 @@ services:
       - "4040:4040"
     depends_on:
       - app
+
+networks:
+  default:
+    name: openspace_default
+    external: true

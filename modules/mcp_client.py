@@ -31,6 +31,7 @@ OPENSPACE_MCP_URL = os.getenv("OPENSPACE_MCP_URL", _DEFAULT_MCP_URL)
 _POST_HEADERS = {
     "Content-Type": "application/json",
     "Accept": "application/json, text/event-stream",
+    "Host": "localhost:8081",
 }
 
 
