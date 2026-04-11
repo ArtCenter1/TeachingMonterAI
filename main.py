@@ -33,7 +33,7 @@ from modules.m7_renderer import VideoRenderer
 from modules.m8_logger import FeedbackLogger, ErrorLogger
 from keyrotator import KeyPool, KeyRotatorRouter
 
-app = FastAPI(title="Teaching Monster AI Agent API")
+app = FastAPI(title="Teaching Monster AI Agent API", version="0.2.0")
 
 # ── Dev Key Pool Router ──────────────────────────────────────────────────
 def _parse_pool(pool_env: str, single_key_env: str) -> list[str]:

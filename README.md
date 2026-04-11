@@ -1,7 +1,7 @@
-# 🤖 Teaching Monster AI Agent (v0.1.4)
+# 🤖 Teaching Monster AI Agent (v0.2.0)
 
 [![Status](https://img.shields.io/badge/Status-Stabilized-success.svg)](https://teaching.monster)
-[![Version](https://img.shields.io/badge/Version-0.1.4-blue.svg)](https://github.com/artcenter/TeachingMonsterAI)
+[![Version](https://img.shields.io/badge/Version-0.2.0-blue.svg)](https://github.com/artcenter/TeachingMonsterAI)
 [![Docker](https://img.shields.io/badge/Docker-Ready-0db7ed.svg)](https://www.docker.com/)
 
 An autonomous pedagogical video generation system built for the **Teaching Monster Challenge**. This agent receives a topic and a student persona, then delivers a high-quality, grounded educational video in under 30 minutes with zero human intervention.
