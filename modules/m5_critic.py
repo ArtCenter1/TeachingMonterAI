@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Tuple
 from .schemas import FullScript, StudentModel, CIDPPScores
 from .utils import extract_json
 from .llm_client import LLMClient
+from .mcp_client import OpenSpaceMCPClient
 from loguru import logger
 
 class SyntheticStudentTester:
@@ -200,6 +201,46 @@ class CIDPPCritic:
             return script
 
     async def review(self, script: FullScript, student_model: StudentModel, model_override: str = None) -> CIDPPScores:
+        """
+        Score a script on the CIDPP rubric.
+
+        Attempt order:
+          1. OpenSpace ``pedagogical_critic`` skill (senior review pass)
+          2. Local LLM with CIDPP prompt (fallback)
+          3. Mock data (if no API keys configured)
+        """
+        # ── Attempt 1: OpenSpace pedagogical_critic skill ────────────────────
+        try:
+            client = OpenSpaceMCPClient()
+            if await client.health_check():
+                logger.info("Delegating CIDPP review to OpenSpace pedagogical_critic skill")
+                task = (
+                    f"Use the pedagogical_critic skill to evaluate this educational script "
+                    f"on the CIDPP rubric (1–10 for each dimension: "
+                    f"Clarity, Integrity, Depth, Practicality, Pertinence). "
+                    f"Student persona level: {student_model.level}, "
+                    f"modality preference: {student_model.modality_preference}. "
+                    f"Script (first 3000 chars):\n{json.dumps(script.dict())[:3000]}\n\n"
+                    f"Return ONLY a JSON object with this exact structure — no markdown:\n"
+                    f'{{"clarity": int, "integrity": int, "depth": int, '
+                    f'"practicality": int, "pertinence": int, "revisions": ["..."]}}'
+                )
+                raw = await client.execute_task(task, max_iterations=5, search_scope="local")
+                logger.debug("OpenSpace CIDPP raw result (first 300 chars): %s", raw[:300])
+                data = extract_json(raw)
+                scores = CIDPPScores(**data)
+                logger.info(
+                    "OpenSpace CIDPP scores — C:%d I:%d D:%d P:%d Pe:%d revisions:%d",
+                    scores.clarity, scores.integrity, scores.depth,
+                    scores.practicality, scores.pertinence, len(scores.revisions),
+                )
+                return scores
+        except Exception as exc:
+            logger.warning(
+                "OpenSpace pedagogical_critic unavailable, using local LLM fallback: %s", exc
+            )
+
+        # ── Attempt 2: Local LLM CIDPP scoring ───────────────────────────────
         if not self.google_api_key and not self.openrouter_api_key:
             logger.warning("No LLM API keys found, falling back to mock data.")
             return self.get_mock_data()
