@@ -106,7 +106,7 @@ class LLMClient:
             "/" in model_name and not model_name.startswith("models/")
         )
         
-        if is_openrouter_style and self.openrouter_client:
+        if is_openrouter_style:
             return await self._call_openrouter(model_name, prompt, system_instruction, temperature, max_tokens)
         else:
             # Native Gemini SDK path — ensure "models/" prefix if missing
