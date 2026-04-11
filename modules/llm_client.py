@@ -8,39 +8,46 @@ from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from loguru import logger
 
+from keyrotator.pool import KeyPool, AllKeysExhaustedError
+from keyrotator.providers import gemini as gemini_provider
+from keyrotator.providers import openrouter as openrouter_provider
+
+def _parse_pool(pool_env: str, single_key_env: str) -> list[str]:
+    """
+    Returns a list of keys from pool_env (comma-separated).
+    Falls back to single_key_env if pool_env is not set or empty.
+    """
+    pool_raw = os.getenv(pool_env, "").strip()
+    if pool_raw:
+        return [k.strip() for k in pool_raw.split(",") if k.strip()]
+    single = os.getenv(single_key_env, "").strip()
+    return [single] if single else []
+
 class LLMClient:
     def __init__(self):
-        # API Keys
-        self.google_api_key = os.getenv("GOOGLE_API_KEY")
+        self.google_api_key   = os.getenv("GOOGLE_API_KEY")
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
-        
-        # Primary & Fallback Models
-        self.primary_model = os.getenv("PRIMARY_MODEL", "google/gemini-2.0-flash-exp:free")
-        # Update fallback to a more stable OpenRouter free model (Qwen 2.5 7B is highly stable)
-        self.fallback_model = os.getenv("FALLBACK_MODEL", "qwen/qwen-2.5-7b-instruct:free")
-        # Last resort fallback for Gemini SDK — confirmed model from API discovery
+
+        # Primary & Fallback model names (unchanged)
+        self.primary_model    = os.getenv("PRIMARY_MODEL", "google/gemini-2.0-flash-exp:free")
+        self.fallback_model   = os.getenv("FALLBACK_MODEL", "qwen/qwen-2.5-7b-instruct:free")
         self.gemini_last_resort = "models/gemini-2.0-flash"
 
-        # Initialize Clients
-        if self.google_api_key:
-            try:
-                self.gemini_client = genai.Client(api_key=self.google_api_key)
-                logger.info("Gemini client (google.genai) initialized successfully.")
-            except Exception as e:
-                self.gemini_client = None
-                logger.error(f"Failed to configure Gemini client: {e}")
-        else:
-            self.gemini_client = None
+        # Build key pools (auto-falls-back to single key if pool env not set)
+        gemini_keys = _parse_pool("GOOGLE_API_KEY_POOL", "GOOGLE_API_KEY")
+        router_keys = _parse_pool("OPENROUTER_API_KEY_POOL", "OPENROUTER_API_KEY")
+
+        self.gemini_pool  = KeyPool("gemini", gemini_keys)
+        self.router_pool  = KeyPool("openrouter", router_keys)
+
+        # Keep legacy single clients for backward compat (used nowhere after this change)
+        self.gemini_client = None
         self.openrouter_client = None
-        if self.openrouter_api_key:
-            self.openrouter_client = AsyncOpenAI(
-                base_url="https://openrouter.ai/api/v1",
-                api_key=self.openrouter_api_key,
-                default_headers={
-                    "HTTP-Referer": "https://teaching.monster",
-                    "X-Title": "Teaching Monster AI",
-                }
-            )
+
+        logger.info(
+            f"LLMClient ready | gemini pool: {len(gemini_keys)} keys "
+            f"| openrouter pool: {len(router_keys)} keys"
+        )
 
     async def generate_text(
         self, 
@@ -106,78 +113,38 @@ class LLMClient:
             full_model_path = model_name if model_name.startswith("models/") else f"models/{model_name}"
             return await self._call_gemini_sdk(full_model_path, prompt, system_instruction, temperature, max_tokens)
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=2, min=5, max=60),
-        retry=retry_if_exception_type(Exception),
-        reraise=True
-    )
-    async def _call_gemini_sdk(self, model_name: str, prompt: str, system_instruction: str, temperature: float, max_tokens: int) -> str:
-        """Call Gemini via the new google.genai client (v1 API — no more v1beta 404s)."""
-        if not self.gemini_client:
-            raise ValueError("Gemini client is not initialized. Check GOOGLE_API_KEY.")
-        
-        # Use name directly as provided (typically models/... or already clean)
-        clean_name = model_name.strip()
-        
-        config = genai_types.GenerateContentConfig(
-            temperature=temperature,
-            max_output_tokens=max_tokens,
-            system_instruction=system_instruction if system_instruction else None,
-        )
-        
+    async def _call_gemini_sdk(
+        self, model_name: str, prompt: str, system_instruction: str,
+        temperature: float, max_tokens: int
+    ) -> str:
+        """Calls Gemini via rotating key pool."""
         try:
-            response = await asyncio.get_event_loop().run_in_executor(
-                None,
-                lambda: self.gemini_client.models.generate_content(
-                    model=clean_name,
-                    contents=prompt,
-                    config=config,
-                )
+            return await gemini_provider.call_with_pool(
+                pool=self.gemini_pool,
+                model_name=model_name,
+                prompt=prompt,
+                system_instruction=system_instruction,
+                temperature=temperature,
+                max_tokens=max_tokens,
             )
-            
-            if not response or not response.text:
-                return "[Empty or blocked response]"
-            return response.text
-            
-        except Exception as e:
-            err_msg = str(e)
-            if "404" in err_msg or "not found" in err_msg.lower():
-                logger.warning(f"Gemini model '{clean_name}' not found. Falling back to models/gemini-2.0-flash...")
-                config_fallback = genai_types.GenerateContentConfig(
-                    temperature=temperature,
-                    max_output_tokens=max_tokens,
-                    system_instruction=system_instruction if system_instruction else None,
-                )
-                response = await asyncio.get_event_loop().run_in_executor(
-                    None,
-                    lambda: self.gemini_client.models.generate_content(
-                        model="models/gemini-2.0-flash",
-                        contents=prompt,
-                        config=config_fallback,
-                    )
-                )
-                return response.text if (response and response.text) else "[Fallback failed]"
-            raise e
+        except AllKeysExhaustedError as e:
+            logger.error(f"[llm_client] {e}")
+            raise RuntimeError(str(e))
 
-    async def _call_openrouter(self, model_name: str, prompt: str, system_instruction: str, temperature: float, max_tokens: int) -> str:
-        """Calls OpenRouter via OpenAI-compatible SDK."""
-        if not self.openrouter_client:
-            raise ValueError("OPENROUTER_API_KEY is missing for OpenRouter call.")
-            
-        messages = []
-        if system_instruction:
-            messages.append({"role": "system", "content": system_instruction})
-        messages.append({"role": "user", "content": prompt})
-        
-        response = await self.openrouter_client.chat.completions.create(
-            model=model_name,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
-        
-        if not response.choices or not response.choices[0].message.content:
-            raise ValueError(f"OpenRouter ({model_name}) returned an empty response.")
-            
-        return response.choices[0].message.content
+    async def _call_openrouter(
+        self, model_name: str, prompt: str, system_instruction: str,
+        temperature: float, max_tokens: int
+    ) -> str:
+        """Calls OpenRouter via rotating key pool."""
+        try:
+            return await openrouter_provider.call_with_pool(
+                pool=self.router_pool,
+                model_name=model_name,
+                prompt=prompt,
+                system_instruction=system_instruction,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        except AllKeysExhaustedError as e:
+            logger.error(f"[llm_client] {e}")
+            raise RuntimeError(str(e))

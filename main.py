@@ -31,8 +31,21 @@ from modules.m5_critic import CIDPPCritic
 from modules.m6_multimodal import MultimodalPlanner
 from modules.m7_renderer import VideoRenderer
 from modules.m8_logger import FeedbackLogger, ErrorLogger
+from keyrotator import KeyPool, KeyRotatorRouter
 
 app = FastAPI(title="Teaching Monster AI Agent API")
+
+# ── Dev Key Pool Router ──────────────────────────────────────────────────
+def _parse_pool(pool_env: str, single_key_env: str) -> list[str]:
+    pool_raw = os.getenv(pool_env, "").strip()
+    if pool_raw:
+        return [k.strip() for k in pool_raw.split(",") if k.strip()]
+    single = os.getenv(single_key_env, "").strip()
+    return [single] if single else []
+
+_gemini_pool  = KeyPool("gemini",     _parse_pool("GOOGLE_API_KEY_POOL",     "GOOGLE_API_KEY"))
+_openrouter_pool = KeyPool("openrouter", _parse_pool("OPENROUTER_API_KEY_POOL", "OPENROUTER_API_KEY"))
+app.include_router(KeyRotatorRouter([_gemini_pool, _openrouter_pool]), prefix="/dev")
 
 app.add_middleware(
     CORSMiddleware,

@@ -101,3 +101,35 @@ Do not commit ad-hoc test scripts to the remote repository.
 
 ---
 *Created by Antigravity AI Agent — April 2026*
+
+---
+
+## Dev Key Pool — Adding Your API Key
+
+The project uses a **rotating key pool** during development so the team never hits a single key's quota. Each developer adds their own key to the pool.
+
+### Step 1 — Get your keys
+- **Gemini:** https://aistudio.google.com/app/apikey → Create a free key
+- **OpenRouter:** https://openrouter.ai/settings/keys → Create a free key
+
+### Step 2 — Add to `.env`
+Open `.env` and replace one of the `FILL_KEY_N` placeholders with your key:
+
+```dotenv
+GOOGLE_API_KEY_POOL=AIzaSyYOURKEY,AIzaSyTEAMMATEKEY,...
+OPENROUTER_API_KEY_POOL=sk-or-YOURKEY,sk-or-TEAMMATEKEY,...
+```
+
+### Step 3 — Restart the container
+```bash
+docker compose up -d app
+```
+
+### Step 4 — Monitor pool health
+Open the dashboard: http://localhost:8000/dev/pool-status/ui
+
+- 🟢 HEALTHY — key is working
+- 🟠 RATE LIMITED — hit per-minute limit, auto-recovers in 60s
+- 🔴 SPENT — hit daily spend cap, owner must raise billing limit then click **[Revive]**
+
+> **Never commit `.env` to git.** It's already in `.gitignore`. Share keys privately with your team lead.
