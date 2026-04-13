@@ -17,13 +17,17 @@ class VideoRenderer:
         self.voice_id = "cec7cae1-ac8b-4a59-9eac-ec48366f37ae"
         
         # Determine FFmpeg path
+        # [Environment Issue Fix] Use local .exe ONLY on Windows host.
+        # In Docker (Linux), always prefer system-installed 'ffmpeg'.
+        is_windows = os.name == 'nt'
         local_ffmpeg = os.path.join(os.getcwd(), "bin", "ffmpeg.exe")
-        if os.path.exists(local_ffmpeg):
+        
+        if is_windows and os.path.exists(local_ffmpeg):
             self.ffmpeg_path = local_ffmpeg
-            logger.info(f"Using local FFmpeg: {self.ffmpeg_path}")
+            logger.info(f"Using local Windows FFmpeg: {self.ffmpeg_path}")
         else:
-            self.ffmpeg_path = "ffmpeg"  # Fallback to system PATH
-            logger.info("Using system FFmpeg")
+            self.ffmpeg_path = "ffmpeg"  # Fallback to system PATH (correct for Linux Docker)
+            logger.info(f"Using system FFmpeg (Platform: {os.name})")
 
         os.makedirs(self.output_dir, exist_ok=True)
         os.makedirs(self.temp_audio_dir, exist_ok=True)
