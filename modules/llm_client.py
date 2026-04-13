@@ -90,28 +90,25 @@ class LLMClient:
         logger.error(f"All models failed for prompt. Last error: {str(last_exception)}")
         raise last_exception
 
-    async def _execute_request(self, model_name: str, prompt: str, system_instruction: str, temperature: float, max_tokens: int) -> str:
-        """Internal router for specific provider SDKs.
+        # Routing Rules:
+        # 1. OpenRouter: Any model name explicitly asking for :free, :nitro, etc.
+        #    OR non-Google providers (anthropic/, qwen/, etc.)
+        # 2. Gemini SDK: Direct names, models/ names, or google/ names (without OR variants).
         
-        Routing rules:
-        - OpenRouter: any model name containing ":" (e.g., :free, :nitro) OR any
-          slash-separated provider path (e.g., google/gemini-..., qwen/qwen-...)
-          that is NOT a native Gemini SDK path (models/...).
-        - Gemini SDK: plain names like "gemini-1.5-flash" or "models/gemini-1.5-flash".
-        """
-        # OpenRouter models use a "provider/model:variant" format.
-        # The ":" variant qualifier is the clearest signal it's an OpenRouter model.
-        # e.g. google/gemini-2.0-flash-exp:free, qwen/qwen-2.5-7b-instruct:free
-        is_openrouter_style = ":" in model_name or (
-            "/" in model_name and not model_name.startswith("models/")
-        )
+        is_explicit_openrouter = ":" in model_name
+        is_google_native = model_name.startswith("models/") or model_name.startswith("gemini-")
+        is_google_prefixed = model_name.startswith("google/") and not is_explicit_openrouter
         
-        if is_openrouter_style:
-            return await self._call_openrouter(model_name, prompt, system_instruction, temperature, max_tokens)
+        if is_google_native or is_google_prefixed:
+            # Native Gemini SDK path — ensure "models/" prefix
+            clean_name = model_name
+            if clean_name.startswith("google/"):
+                clean_name = clean_name.replace("google/", "models/")
+            if not clean_name.startswith("models/"):
+                clean_name = f"models/{clean_name}"
+            return await self._call_gemini_sdk(clean_name, prompt, system_instruction, temperature, max_tokens)
         else:
-            # Native Gemini SDK path — ensure "models/" prefix if missing
-            full_model_path = model_name if model_name.startswith("models/") else f"models/{model_name}"
-            return await self._call_gemini_sdk(full_model_path, prompt, system_instruction, temperature, max_tokens)
+            return await self._call_openrouter(model_name, prompt, system_instruction, temperature, max_tokens)
 
     async def _call_gemini_sdk(
         self, model_name: str, prompt: str, system_instruction: str,
