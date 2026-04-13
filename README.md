@@ -1,4 +1,11 @@
-# 🤖 Teaching Monster AI Agent (v0.2.0)
+# 🤖 Teaching Monster AI Agent (v0.2.1)
+
+> [!IMPORTANT]
+> **🤖 FOR AI AGENTS / ASSISTANTS**
+> Before taking any action, you MUST read **[ONBOARDING.md](file:///d:/My_Projects/TeachingMonsterAI/ONBOARDING.md)**. Use the `project_onboarding_check` skill to align with our pedagogical mission and 8-stage pipeline architecture.
+
+---
+
 
 [![Status](https://img.shields.io/badge/Status-Stabilized-success.svg)](https://teaching.monster)
 [![Version](https://img.shields.io/badge/Version-0.2.0-blue.svg)](https://github.com/artcenter/TeachingMonsterAI)
