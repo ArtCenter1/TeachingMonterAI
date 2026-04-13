@@ -217,63 +217,82 @@ class SourcingModule:
 
     async def _notebooklm_library_source(self, topic: str) -> FactBundle:
         """
-        Native implementation using the 'notebooklm' Python library.
-        Attempts to perform a research query and extract grounded facts.
+        Native implementation using the official 'notebooklm-py' Python library.
+
+        Auth: Reads from NOTEBOOKLM_AUTH_JSON env var (Docker) or
+              ~/.notebooklm/profiles/default/storage_state.json (host).
+              Run `notebooklm login` once on the host to generate auth,
+              then set NOTEBOOKLM_AUTH_JSON=<contents of storage_state.json>.
+
+        API reference: https://github.com/teng-lin/notebooklm-py
+        Documented methods used:
+            - client.notebooks.list()
+            - client.notebooks.create(title)
+            - client.sources.add_url(nb_id, url, wait=False)
+            - client.chat.ask(nb_id, query)   → result.answer
         """
         logger.info("Using native NotebookLM library for sourcing")
-        
+
         try:
             from notebooklm import NotebookLMClient
-            from notebooklm.exceptions import ValidationError
-            
+
             async with await NotebookLMClient.from_storage() as client:
-                # 1. Get or create a notebook for TeachingMonster
+                # ── Step 1: find or create the shared sourcing notebook ──────
                 notebooks = await client.notebooks.list()
-                target_notebook = next(
-                    (nb for nb in notebooks if "TeachingMonster" in nb.title), 
-                    None
+                nb = next(
+                    (n for n in notebooks if "TeachingMonster_Sourcing" in n.title),
+                    None,
                 )
-                
-                if not target_notebook:
-                    logger.info("Creating new TeachingMonster research notebook")
-                    target_notebook = await client.notebooks.create("TeachingMonster_Sourcing")
-                
-                notebook_id = target_notebook.id
-                
-                # 2. Start research session
-                logger.info(f"Starting NotebookLM research for: {topic}")
-                task = await client.research.start(notebook_id, topic, mode="fast")
-                
-                if not task:
+
+                if not nb:
+                    logger.info("Creating 'TeachingMonster_Sourcing' notebook in NotebookLM")
+                    nb = await client.notebooks.create("TeachingMonster_Sourcing")
+                    # Seed with Wikipedia so the LLM has a grounded source.
+                    # wait=False so we don't block — ask() still works with LLM knowledge.
+                    try:
+                        wiki_url = (
+                            f"https://en.wikipedia.org/wiki/{topic.replace(' ', '_')}"
+                        )
+                        await client.sources.add_url(nb.id, wiki_url, wait=False)
+                        logger.info(f"Seeded notebook with Wikipedia source for: {topic}")
+                    except Exception as seed_err:
+                        logger.warning(f"Could not seed Wikipedia source: {seed_err}")
+
+                # ── Step 2: ask NotebookLM for pedagogical facts ──────────────
+                query = (
+                    f"You are an educational expert. Provide 5–7 clear, accurate facts "
+                    f"about '{topic}' suitable for AP/IB secondary education students. "
+                    f"Include key formulas, definitions, and core concepts. "
+                    f"Format each fact on its own line starting with a dash (-)."
+                )
+                logger.info(f"Querying NotebookLM for facts on: {topic}")
+                result = await client.chat.ask(nb.id, query)
+
+                if not result or not getattr(result, "answer", None):
+                    logger.warning("NotebookLM returned an empty answer")
                     return None
-                    
-                # 3. Poll for results (timeout after 60s)
-                for _ in range(12): # 12 * 5s = 60s
-                    await asyncio.sleep(5)
-                    result = await client.research.poll(notebook_id)
-                    if result.get("status") == "completed":
-                        # Extract facts from summary or report
-                        content = result.get("report") or result.get("summary") or ""
-                        if content:
-                            logger.info("Successfully retrieved research from NotebookLM")
-                            return FactBundle(
-                                facts=[
-                                    {
-                                        "claim": f"Research summary for {topic}: {content[:500]}...",
-                                        "citation": "NotebookLM Research API",
-                                        "confidence": 0.95
-                                    }
-                                ]
-                            )
-                        break
-                return None
+
+                logger.info("NotebookLM sourcing successful")
+                return FactBundle(
+                    facts=[
+                        {
+                            "claim": result.answer,
+                            "citation": "Google NotebookLM",
+                            "confidence": 0.92,
+                        }
+                    ]
+                )
 
         except Exception as e:
             logger.error(f"NotebookLM library sourcing failed: {str(e)}")
-            if "Authentication expired" in str(e):
-                logger.warning("Action Required: Run 'notebooklm login' in your terminal.")
-            # Propagate error to trigger fallback in main source() method
-            raise e
+            if "auth" in str(e).lower() or "cookie" in str(e).lower() or "401" in str(e):
+                logger.warning(
+                    "NotebookLM auth error — ACTION REQUIRED: "
+                    "Run `notebooklm login` on the host, then copy "
+                    "~/.notebooklm/profiles/default/storage_state.json contents "
+                    "into NOTEBOOKLM_AUTH_JSON in .env. See ONBOARDING.md §8."
+                )
+            raise
 
     async def _verify_and_enhance_facts(self, fact_bundle: FactBundle, topic: str) -> FactBundle:
         """Verify facts using code interpreter and enhance with additional validation"""
