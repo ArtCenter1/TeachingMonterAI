@@ -11,3 +11,4 @@ pillow
 cartesia
 loguru
 tenacity
+notebooklm-py

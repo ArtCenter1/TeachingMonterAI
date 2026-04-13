@@ -184,6 +184,27 @@ def _render_dashboard(status_json: str) -> str:
     pointer-events: none;
   }}
   #toast.show {{ opacity: 1; }}
+
+  /* ── Quota Bar ── */
+  .quota-track {{
+    background: #0f1117;
+    border-radius: 4px;
+    height: 6px;
+    width: 60px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+  }}
+  .quota-fill {{
+    height: 100%;
+    transition: width 0.3s ease;
+  }}
+  .quota-val {{
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-family: monospace;
+  }}
 </style>
 </head>
 <body>
@@ -222,10 +243,23 @@ function renderPool(pool) {{
       ? `<button class="revive-btn" onclick="revive('${{pool.provider}}', ${{k.index}}, this)">Revive</button>`
       : "—";
 
+    const rpmPct = Math.min(100, (k.rpm_current / k.rpm_limit) * 100);
+    let rpmColor = "#4ade80"; // green
+    if (rpmPct > 80) rpmColor = "#f87171"; // red
+    else if (rpmPct > 50) rpmColor = "#fb923c"; // orange
+
+    const quotaHtml = `
+      <div class="quota-track">
+        <div class="quota-fill" style="width:${{rpmPct}}%; background:${{rpmColor}}"></div>
+      </div>
+      <span class="quota-val">${{k.rpm_current}}/${{k.rpm_limit}}</span>
+    `;
+
     return `<tr>
       <td style="color:#94a3b8">${{k.alias}}</td>
       <td><span class="badge badge-${{k.state}}">${{stateLabel}}</span></td>
       <td>${{ttlHtml}}</td>
+      <td>${{quotaHtml}}</td>
       <td style="color:#4ade80">✓ ${{k.total_success}}</td>
       <td style="color:#f87171">✗ ${{k.total_fail}}</td>
       <td>${{reviveHtml}}</td>
@@ -247,7 +281,7 @@ function renderPool(pool) {{
     <table>
       <thead>
         <tr>
-          <th>Key</th><th>State</th><th>TTL</th><th>✓ OK</th><th>✗ Fail</th><th>Action</th>
+          <th>Key</th><th>State</th><th>TTL</th><th>Quota (RPM)</th><th>✓ OK</th><th>✗ Fail</th><th>Action</th>
         </tr>
       </thead>
       <tbody>${{keysHtml}}</tbody>

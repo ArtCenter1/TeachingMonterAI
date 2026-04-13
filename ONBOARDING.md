@@ -89,9 +89,10 @@ Remove-Item m8_errors.json
 To keep the `TeachingMonsterAI` repository clean and focused solely on the generation pipeline, the following structural rules are strictly enforced:
 
 ### A. OpenSpace Integration is Global
-This project interacts with an [OpenSpace](https://open-space.cloud/) agent and engine, but **no OpenSpace configuration files reside in this local repository**.
-- All OpenSpace services (Docker configuration, environment variables, SQLite workspaces, and the global skills library) are located in **`d:/My_Projects/openspace/`**.
-- If you need to debug or edit OpenSpace config (e.g., `docker-compose.openspace.yml`, `.env.openspace`, or `sync_skills.py`), you must navigate to the global directory. Do not re-create these files in the local TeachingMonster project.
+This project leverages a **global** OpenSpace server (located at `D:\My_Projects\openspace\`) for development skills and autonomous evolution.
+- **MCP Only**: The local project only contains the MCP client configuration in `.env`.
+- **No Local Server**: Do **not** define an `openspace-server` service in the local `docker-compose.yml`. The server runs directly on the host machine.
+- **Networking**: The `app` container connects to the global server via `http://host.docker.internal:8081/mcp`. Ensure the global server is running before attempting to use OpenSpace skills.
 
 ### B. Local Testing & Debug Scripts
 Do not commit ad-hoc test scripts to the remote repository. 
@@ -133,3 +134,138 @@ Open the dashboard: http://localhost:8000/dev/pool-status/ui
 - 🔴 SPENT — hit daily spend cap, owner must raise billing limit then click **[Revive]**
 
 > **Never commit `.env` to git.** It's already in `.gitignore`. Share keys privately with your team lead.
+
+---
+## 8. NotebookLM Integration (M1 Sourcing)
+
+This section is the **permanent reference** for NotebookLM in this project. Read it once, follow the steps, and never revisit from scratch.
+
+### What NotebookLM Does in This Pipeline
+Module M1 (`modules/m1_sourcing.py`) queries **Google NotebookLM** to retrieve grounded, citable educational facts for a given topic. It is **Stage 1** in the sourcing chain:
+
+```
+NotebookLM  →  (fallback) Google Custom Search  →  (fallback) Gemini AI Research
+```
+
+The library used is [`notebooklm-py`](https://github.com/teng-lin/notebooklm-py) — an unofficial but stable Python API (v0.3.4+, 10k⭐).
+
+### The Auth Model — Read This First
+NotebookLM uses **Google OAuth browser cookies**, not an API key. The flow is:
+1. You log in once via a real browser on your host machine.
+2. The library saves your session cookies to `~/.notebooklm/profiles/default/storage_state.json`.
+3. You paste that file's contents into `NOTEBOOKLM_AUTH_JSON` in `.env`.
+4. The Docker container reads `NOTEBOOKLM_AUTH_JSON` automatically — **no browser needed inside Docker**.
+
+> [!IMPORTANT]
+> Sessions expire roughly every **2 weeks**. When M1 logs `"NotebookLM auth error"`, it's time to re-run Step 3 below and refresh the `.env` value.
+
+---
+
+### One-Time Host Setup (Windows PowerShell)
+
+**Step 1 — Install the package WITH browser support (host only, for login):**
+```powershell
+pip install "notebooklm-py[browser]"
+playwright install chromium
+```
+> If `playwright install chromium` fails with `TypeError: onExit is not a function`, update Node.js to v18+ first.
+
+**Step 2 — Authenticate (opens a real browser window):**
+```powershell
+notebooklm login
+```
+Sign in with your Google account. Close the browser when prompted. Verify it worked:
+```powershell
+notebooklm list      # Should show "Authenticated as: your@gmail.com"
+```
+
+**Step 3 — Export the auth cookie and add it to `.env`:**
+```powershell
+# Get the auth JSON (will be a long JSON string)
+$authJson = Get-Content "$env:USERPROFILE\.notebooklm\profiles\default\storage_state.json" -Raw
+
+# Print it (copy the output manually, or use the command below to write to a temp file)
+Write-Host $authJson
+```
+Copy that entire JSON string. Open `.env` and paste it as the value of `NOTEBOOKLM_AUTH_JSON`:
+```dotenv
+NOTEBOOKLM_AUTH_JSON={"cookies":[{"name":"SID","value":"..."},...]}
+```
+> **Important:** The JSON must be on a **single line** in `.env` (no newlines inside the value).
+
+**Step 4 — Rebuild the container so it picks up the new env:**
+```powershell
+docker compose up -d --build app
+```
+
+**Step 5 — Verify M1 is using NotebookLM:**
+```powershell
+# Trigger the pipeline and watch the log
+docker compose logs -f app | Select-String "NotebookLM"
+```
+You should see:
+```
+INFO | NotebookLM native library detected
+INFO | Querying NotebookLM for facts on: <topic>
+INFO | NotebookLM sourcing successful
+```
+
+---
+
+### Runtime Architecture (No Browser in Docker)
+
+Inside the Docker container, `notebooklm-py` is installed **without** browser support:
+```
+requirements.txt → notebooklm-py   (no [browser] extra)
+```
+This is intentional — `playwright` is heavyweight and not needed at runtime. Only `notebooklm login` needs the browser, and that runs on the host, not in Docker.
+
+The auth flow at runtime:
+```
+Docker container starts
+  ↓
+m1_sourcing.py → NotebookLMClient.from_storage()
+  ↓
+Library reads NOTEBOOKLM_AUTH_JSON env var
+  ↓
+Authenticates via cached Google cookies (no browser)
+  ↓
+Calls NotebookLM API over HTTPS
+```
+
+---
+
+### How M1 Uses the Library
+
+The implementation in `modules/m1_sourcing.py → _notebooklm_library_source()` does:
+
+1. **Finds or creates** a persistent `"TeachingMonster_Sourcing"` notebook in your Google NotebookLM account.
+2. If the notebook is **new**, seeds it with a Wikipedia article about the topic (non-blocking, `wait=False`).
+3. Calls `client.chat.ask(nb.id, query)` to get grounded educational facts.
+4. Returns the answer as a `FactBundle` with `confidence=0.92` and citation `"Google NotebookLM"`.
+
+The notebook is **reused** across runs — it accumulates sources over time and becomes a richer knowledge base.
+
+---
+
+### Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `"NotebookLM native library not found"` in logs | `notebooklm-py` not installed in container | Run `docker compose up -d --build app` |
+| `"NotebookLM auth error"` in logs | Cookies expired or `NOTEBOOKLM_AUTH_JSON` empty | Re-run Steps 2–4 above |
+| `"NotebookLM returned an empty answer"` | Notebook has no sources yet | First run seeds Wikipedia; wait 30s and retry |
+| M1 falls through to web search | Any exception in NotebookLM path | Normal fallback; check `pipeline.log` for root cause |
+| `playwright install` fails | Node.js < 18 | `winget install OpenJS.NodeJS.LTS` and retry |
+| JSON parse error for `NOTEBOOKLM_AUTH_JSON` | Newlines in `.env` value | Ensure the JSON is on a single line with no line breaks |
+
+### Session Renewal Checklist (every ~2 weeks)
+- [ ] Run `notebooklm login` on host
+- [ ] Run `notebooklm list` to verify
+- [ ] Copy new `storage_state.json` contents into `.env → NOTEBOOKLM_AUTH_JSON`
+- [ ] Run `docker compose up -d app` (no rebuild needed, just env reload)
+- [ ] Check `docker compose logs app | Select-String "NotebookLM"` shows success
+
+---
+*Section 8 added by Antigravity AI Agent — April 2026*
+
