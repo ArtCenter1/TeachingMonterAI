@@ -121,31 +121,37 @@ async def generate_video(
         m2_task = asyncio.create_task(m2.parse(request_data.student_persona, model_override=request_data.model_override))
 
         fact_bundle, student_model = await asyncio.gather(m1_task, m2_task)
+        logger.info(f"[HEARTBEAT] {run_id} | Stage: Sourcing completed | Facts: {len(fact_bundle.facts)}")
 
         # 3. Concept Planning
         current_stage = "m3_planner"
         logger.info("Stage 3: Concept Planning")
         concept_graph = await m3.plan(request_data.course_requirement, student_model, model_override=request_data.model_override)
+        logger.info(f"[HEARTBEAT] {run_id} | Stage: Planning completed | Nodes: {len(concept_graph.nodes)}")
 
         # 4. Script Generation (Variants)
         current_stage = "m4_generator"
         logger.info("Stage 4: Multi-Variant Script Generation")
         scripts = await m4.generate_variants(concept_graph, student_model, fact_bundle, model_override=request_data.model_override)
+        logger.info(f"[HEARTBEAT] {run_id} | Stage: Generation completed | Variants: {len(scripts)}")
 
         # 5. CIDPP Critic Selection (Best-of-N)
         current_stage = "m5_critic"
         logger.info("Stage 5: CIDPP Critic Selection (Best-of-3)")
         script, selection_log = await m5.score_variants(scripts, student_model, model_override=request_data.model_override)
+        logger.info(f"[HEARTBEAT] {run_id} | Stage: Critic completed | Selected: {script.title}")
 
         # 6. Multimodal Planning
         current_stage = "m6_multimodal"
         logger.info("Stage 6: Multimodal Planning")
         visual_plan = await m6.plan_visuals(script)
+        logger.info(f"[HEARTBEAT] {run_id} | Stage: Multimodal completed")
 
         # 7. Video & Subtitle Rendering
         current_stage = "m7_renderer"
         logger.info("Stage 7: Video/Subtitle Rendering")
         render_results = await m7.render(visual_plan, script, run_id=run_id)
+        logger.info(f"[HEARTBEAT] {run_id} | Stage: Rendering completed")
         
         video_filename = render_results.get("video", "error")
         subtitle_filename = render_results.get("subtitles", "error")

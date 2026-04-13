@@ -89,9 +89,10 @@ Remove-Item m8_errors.json
 To keep the `TeachingMonsterAI` repository clean and focused solely on the generation pipeline, the following structural rules are strictly enforced:
 
 ### A. OpenSpace Integration is Global
-This project interacts with an [OpenSpace](https://open-space.cloud/) agent and engine, but **no OpenSpace configuration files reside in this local repository**.
-- All OpenSpace services (Docker configuration, environment variables, SQLite workspaces, and the global skills library) are located in **`d:/My_Projects/openspace/`**.
-- If you need to debug or edit OpenSpace config (e.g., `docker-compose.openspace.yml`, `.env.openspace`, or `sync_skills.py`), you must navigate to the global directory. Do not re-create these files in the local TeachingMonster project.
+This project leverages a **global** OpenSpace server (located at `D:\My_Projects\openspace\`) for development skills and autonomous evolution.
+- **MCP Only**: The local project only contains the MCP client configuration in `.env`.
+- **No Local Server**: Do **not** define an `openspace-server` service in the local `docker-compose.yml`. The server runs directly on the host machine.
+- **Networking**: The `app` container connects to the global server via `http://host.docker.internal:8081/mcp`. Ensure the global server is running before attempting to use OpenSpace skills.
 
 ### B. Local Testing & Debug Scripts
 Do not commit ad-hoc test scripts to the remote repository. 

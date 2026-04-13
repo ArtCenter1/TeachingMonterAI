@@ -39,7 +39,7 @@ class SourcingModule:
             logger.info("Attempting NotebookLM MCP sourcing...")
             fact_bundle = await asyncio.wait_for(
                 self._notebooklm_mcp_source(topic), 
-                timeout=90.0
+                timeout=30.0
             )
             
             # Verify the sourcing succeeded

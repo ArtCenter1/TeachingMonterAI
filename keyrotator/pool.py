@@ -22,6 +22,8 @@ class KeyEntry:
     total_fail: int = 0
     last_error_code: Optional[int] = None
     last_error_msg: str = ""
+    # track timestamps of last successful calls (sliding window)
+    success_times: list[float] = field(default_factory=list)
 
 def _make_alias(index: int, key: str) -> str:
     # Shows first 8 and last 4 chars: "AIzaSyAB...9wk"
@@ -138,6 +140,7 @@ class KeyPool:
             entry.state = KeyState.HEALTHY
             entry.last_error_code = None
             entry.last_error_msg = ""
+            entry.success_times.append(time.time())
 
     def revive(self, key_index: int) -> bool:
         """
@@ -166,6 +169,11 @@ class KeyPool:
                 ttl = None
                 if e.state == KeyState.RATE_LIMITED and e.quarantine_until:
                     ttl = max(0, int(e.quarantine_until - now))
+                
+                # Prune old timestamps (> 60s)
+                e.success_times = [t for t in e.success_times if now - t < 60]
+                rpm = len(e.success_times)
+                
                 keys_status.append({
                     "index":          e.index,
                     "alias":          e.alias,
@@ -174,6 +182,8 @@ class KeyPool:
                     "total_success":  e.total_success,
                     "total_fail":     e.total_fail,
                     "last_error_code": e.last_error_code,
+                    "rpm_current":    rpm,
+                    "rpm_limit":      15 if "gemini" in self.provider.lower() else 50
                 })
 
             total = len(self._entries)
