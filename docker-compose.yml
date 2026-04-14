@@ -35,6 +35,7 @@ services:
     command:
       - "http"
       - "http://app:8000"
+      - "--domain=${NGROK_DOMAIN}"
     environment:
       - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
     ports:

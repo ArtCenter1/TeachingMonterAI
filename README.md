@@ -1,4 +1,4 @@
-# 🤖 Teaching Monster AI Agent (v0.2.1)
+# 🤖 Teaching Monster AI Agent (v0.2.2)
 
 > [!IMPORTANT]
 > **🤖 FOR AI AGENTS / ASSISTANTS**
@@ -52,6 +52,32 @@ graph TD
 | **M6** | **MM Planner** | Map script segments to optimal visual representations. |
 | **M7** | **Renderer** | Assemble TTS + visuals via FFmpeg into the final MP4. |
 | **M8** | **Logger** | Record persistent errors and training signals. |
+| **DASH** | **Mission Control** | Real-time observability and key quota management. |
+
+---
+
+## 🔍 Observability & Inspection
+
+The system includes dedicated tools for monitoring pipeline health and API utilization in real-time.
+
+### 🗝️ KeyRotator Dashboard (Mission Control)
+The Mission Control dashboard provides a high-fidelity view of your API key ecosystem and tunnel status.
+
+- **Access**: [http://localhost:8000/dev/pool-status/ui](http://localhost:8000/dev/pool-status/ui)
+- **Features**:
+    - **Live Public URL**: Automatically detects the current ngrok endpoint (useful for contest site updates).
+    - **Activity Log**: Tracks generation successes, 429 rate limits, and pool exhaustion events.
+    - **Pulse Test**: Trigger a "heartbeat" request to verify end-to-end connectivity across all modules.
+
+![Key Pool Dashboard](file:///d:/My_Projects/TeachingMonsterAI/docs/images/key_pool_dashboard.png)
+
+### 🔌 API Documentation (Swagger)
+For manual testing and schema exploration, the agent exposes a full OpenAPI documentation suite.
+
+- **Access**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Usage**: Use the `POST /generate` endpoint to trigger a pedagogical video build manually.
+
+![API Docs UI](file:///d:/My_Projects/TeachingMonsterAI/docs/images/api_docs_ui.png)
 
 ---
 
@@ -99,6 +125,8 @@ The pipeline generates temporary image sequences and large Docker images. To kee
 - [**ONBOARDING.md**](file:///d:/My_Projects/TeachingMonsterAI/ONBOARDING.md): Detailed technical guide for developers.
 - [**README-docker.md**](file:///d:/My_Projects/TeachingMonsterAI/README-docker.md): Granular Docker and ngrok networking setup.
 - [**PHASE_4_PLAN.md**](file:///d:/My_Projects/TeachingMonsterAI/PHASE_4_PLAN.md): Roadmap for future pedagogical improvements.
+- [**Mission Control**](http://localhost:8000/dev/pool-status/ui): Live Dashboard.
+- [**API Docs**](http://localhost:8000/docs): Interactive API Documentation.
 
 ---
 *Developed by Antigravity AI Agent for the Teaching Monster Challenge — April 2026*

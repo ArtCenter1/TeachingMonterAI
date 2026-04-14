@@ -29,9 +29,9 @@ class LLMClient:
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
         # Primary & Fallback model names (unchanged)
-        self.primary_model    = os.getenv("PRIMARY_MODEL", "google/gemini-2.0-flash-exp:free")
-        self.fallback_model   = os.getenv("FALLBACK_MODEL", "qwen/qwen-2.5-7b-instruct:free")
-        self.gemini_last_resort = "models/gemini-2.0-flash"
+        self.primary_model    = os.getenv("PRIMARY_MODEL", "models/gemini-2.5-flash")
+        self.fallback_model   = os.getenv("FALLBACK_MODEL", "models/gemini-2.5-pro")
+        self.gemini_last_resort = "models/gemini-2.5-flash"
 
         # Build key pools (auto-falls-back to single key if pool env not set)
         gemini_keys = _parse_pool("GOOGLE_API_KEY_POOL", "GOOGLE_API_KEY")
@@ -40,9 +40,10 @@ class LLMClient:
         self.gemini_pool  = KeyPool("gemini", gemini_keys)
         self.router_pool  = KeyPool("openrouter", router_keys)
 
-        # Keep legacy single clients for backward compat (used nowhere after this change)
-        self.gemini_client = None
-        self.openrouter_client = None
+        # Proactive discovery cache
+        self._discovered_models = []
+        self._last_discovery_time = 0
+        self._avoid_models = {} # model_name -> expiration_timestamp
 
         logger.info(
             f"LLMClient ready | gemini pool: {len(gemini_keys)} keys "
@@ -71,8 +72,8 @@ class LLMClient:
             models_to_try.append(self.fallback_model)
             
         # Hard-coded absolute fallback (using versioned name for stability)
-        if "gemini-1.5-flash-002" not in models_to_try:
-            models_to_try.append("gemini-1.5-flash-002")
+        if self.gemini_last_resort not in models_to_try:
+            models_to_try.append(self.gemini_last_resort)
 
         last_exception = None
         for model in models_to_try:
@@ -81,16 +82,39 @@ class LLMClient:
                 return await self._execute_request(model, prompt, system_instruction, temperature, max_tokens)
             except Exception as e:
                 last_exception = e
-                # [Issue Diagnosis] If we get a 404, log what models ARE available to aid debugging
-                if "404" in str(e) or "NOT_FOUND" in str(e).upper():
-                    logger.error(f"Model '{model}' not found. This often happens due to API version changes or region limits.")
+                if "404" in str(e) or "NOT_FOUND" in str(e).upper() or "400" in str(e):
+                    logger.error(f"Model '{model}' failure (404/400). Initiating resilience recovery...")
+                    self._avoid_models[model] = time.time() + 300 # Avoid for 5 mins
+                    
                     try:
-                        # Attempt to list models to help the developer see what's wrong
-                        client = genai.Client(api_key=self.google_api_key)
-                        available = [m.name for m in client.models.list()]
-                        logger.info(f"Available models for current key: {available}")
-                    except Exception:
-                        pass
+                        # 1. Refresh discovery if stale (> 1 hour) or never run
+                        if not self._discovered_models or (time.time() - self._last_discovery_time > 3600):
+                            logger.info("Refreshing Gemini model list...")
+                            client = genai.Client(api_key=self.google_api_key)
+                            self._discovered_models = [m.name for m in client.models.list()]
+                            self._last_discovery_time = time.time()
+                        
+                        # 2. Pick the best healthy candidate we haven't tried or blacklisted
+                        candidates = [m for m in self._discovered_models 
+                                     if m not in models_to_try 
+                                     and m not in self._avoid_models]
+                        
+                        # Preference: gemini-2.0-flash > gemini-1.5-flash > anything discovery saw
+                        new_fallback = None
+                        if candidates:
+                            for pref in ["2.0-flash", "2.5-flash", "1.5-flash"]:
+                                match = next((m for m in candidates if pref in m), None)
+                                if match:
+                                    new_fallback = match
+                                    break
+                            if not new_fallback:
+                                new_fallback = candidates[0]
+                                
+                        if new_fallback:
+                            logger.info(f"Resilience: Falling back to auto-discovered healthy model: {new_fallback}")
+                            return await self._execute_request(new_fallback, prompt, system_instruction, temperature, max_tokens)
+                    except Exception as inner_e:
+                        logger.error(f"Resilience recovery failed: {inner_e}")
                 
                 logger.warning(f"Model {model} failed: {str(e)}")
                 # If it's a 429 (Rate Limit) on OpenRouter, wait a bit
