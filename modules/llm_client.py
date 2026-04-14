@@ -23,6 +23,24 @@ def _parse_pool(pool_env: str, single_key_env: str) -> list[str]:
     single = os.getenv(single_key_env, "").strip()
     return [single] if single else []
 
+# Shared global pools to ensure unified state across the entire process
+_gemini_pool: Optional[KeyPool] = None
+_router_pool: Optional[KeyPool] = None
+
+def get_gemini_pool() -> KeyPool:
+    global _gemini_pool
+    if _gemini_pool is None:
+        keys = _parse_pool("GOOGLE_API_KEY_POOL", "GOOGLE_API_KEY")
+        _gemini_pool = KeyPool("gemini", keys)
+    return _gemini_pool
+
+def get_router_pool() -> KeyPool:
+    global _router_pool
+    if _router_pool is None:
+        keys = _parse_pool("OPENROUTER_API_KEY_POOL", "OPENROUTER_API_KEY")
+        _router_pool = KeyPool("openrouter", keys)
+    return _router_pool
+
 class LLMClient:
     def __init__(self):
         self.google_api_key   = os.getenv("GOOGLE_API_KEY")
@@ -33,12 +51,9 @@ class LLMClient:
         self.fallback_model   = os.getenv("FALLBACK_MODEL", "models/gemini-2.5-pro")
         self.gemini_last_resort = "models/gemini-2.5-flash"
 
-        # Build key pools (auto-falls-back to single key if pool env not set)
-        gemini_keys = _parse_pool("GOOGLE_API_KEY_POOL", "GOOGLE_API_KEY")
-        router_keys = _parse_pool("OPENROUTER_API_KEY_POOL", "OPENROUTER_API_KEY")
-
-        self.gemini_pool  = KeyPool("gemini", gemini_keys)
-        self.router_pool  = KeyPool("openrouter", router_keys)
+        # Use shared pools
+        self.gemini_pool  = get_gemini_pool()
+        self.router_pool  = get_router_pool()
 
         # Proactive discovery cache
         self._discovered_models = []
@@ -46,9 +61,10 @@ class LLMClient:
         self._avoid_models = {} # model_name -> expiration_timestamp
 
         logger.info(
-            f"LLMClient ready | gemini pool: {len(gemini_keys)} keys "
-            f"| openrouter pool: {len(router_keys)} keys"
+            f"LLMClient ready (Shared State) | gemini: {len(self.gemini_pool._entries)} keys "
+            f"| openrouter: {len(self.router_pool._entries)} keys"
         )
+
 
     async def generate_text(
         self, 
