@@ -12,6 +12,10 @@ from keyrotator.pool import KeyPool, AllKeysExhaustedError
 from keyrotator.providers import gemini as gemini_provider
 from keyrotator.providers import openrouter as openrouter_provider
 
+# Global rate limit state for LLM calls (15 RPM max = 1 call per ~4 seconds)
+global_llm_lock = asyncio.Lock()
+global_last_llm_time = 0.0
+
 def _parse_pool(pool_env: str, single_key_env: str) -> list[str]:
     """
     Returns a list of keys from pool_env (comma-separated).
@@ -46,10 +50,10 @@ class LLMClient:
         self.google_api_key   = os.getenv("GOOGLE_API_KEY")
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
-        # Primary & Fallback model names (unchanged)
-        self.primary_model    = os.getenv("PRIMARY_MODEL", "models/gemini-2.5-flash")
-        self.fallback_model   = os.getenv("FALLBACK_MODEL", "models/gemini-2.5-pro")
-        self.gemini_last_resort = "models/gemini-2.5-flash"
+        # Primary & Fallback model names
+        self.primary_model    = os.getenv("PRIMARY_MODEL", "models/gemini-2.0-flash")
+        self.fallback_model   = os.getenv("FALLBACK_MODEL", "models/gemini-1.5-flash")
+        self.gemini_last_resort = "models/gemini-2.0-flash"
 
         # Use shared pools
         self.gemini_pool  = get_gemini_pool()
@@ -159,6 +163,15 @@ class LLMClient:
         is_google_native = model_name.startswith("models/") or model_name.startswith("gemini-")
         is_google_prefixed = model_name.startswith("google/") and not is_explicit_openrouter
         
+        global global_last_llm_time
+        async with global_llm_lock:
+            now = time.time()
+            elapsed = now - global_last_llm_time
+            if elapsed < 4.2:
+                # 4.2 seconds spacing between requests ensures we stay safely under 15 RPM
+                await asyncio.sleep(4.2 - elapsed)
+            global_last_llm_time = time.time()
+
         if is_google_native or is_google_prefixed:
             # Native Gemini SDK path — ensure "models/" prefix
             clean_name = model_name

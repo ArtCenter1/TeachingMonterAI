@@ -23,23 +23,16 @@ class ScriptGenerator:
 
     async def generate_variants(self, concept_graph: ConceptGraph, student_model: StudentModel, fact_bundle: FactBundle, model_override: str = None) -> List[FullScript]:
         """Generate all three pedagogical variants in parallel."""
-        # Use CONTEST_MODE to determine parallelism
+        # Use CONTEST_MODE to determine parallelism, but rate limit it
         is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
         variants = []
         
-        if is_contest_mode:
-            logger.info("CONTEST_MODE enabled: Generating variants in parallel for maximum speed.")
-            tasks = [
-                self.generate(concept_graph, student_model, fact_bundle, name, desc, model_override)
-                for name, desc in self.strategies.items()
-            ]
-            variants = await asyncio.gather(*tasks, return_exceptions=False)
-        else:
-            for strategy_name, strategy_desc in self.strategies.items():
-                variant = await self.generate(concept_graph, student_model, fact_bundle, strategy_name, strategy_desc, model_override)
-                variants.append(variant)
-                await asyncio.sleep(1)  # Brief pause in dev mode to avoid rate limits
-        
+        # We process sequentially to avoid Gemini API key pool exhaustion
+        for strategy_name, strategy_desc in self.strategies.items():
+            variant = await self.generate(concept_graph, student_model, fact_bundle, strategy_name, strategy_desc, model_override)
+            variants.append(variant)
+            await asyncio.sleep(1)  # Brief pause to avoid rate limits
+            
         return variants
 
     async def generate(self, concept_graph: ConceptGraph, student_model: StudentModel, fact_bundle: FactBundle, 
