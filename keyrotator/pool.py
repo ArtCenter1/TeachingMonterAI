@@ -183,15 +183,29 @@ class KeyPool:
         with self._lock:
             now = time.time()
             keys_status = []
+            healthy_count = 0
+            
             for e in self._entries:
+                # 1. Apply auto-recovery if timer expired
+                if (e.state == KeyState.RATE_LIMITED 
+                        and e.quarantine_until is not None 
+                        and now >= e.quarantine_until):
+                    e.state = KeyState.HEALTHY
+                    e.quarantine_until = None
+                    logger.info(f"[keyrotator:{self.provider}] {e.alias} auto-recovered (via status check)")
+
+                # 2. Calculate TTL for UI
                 ttl = None
                 if e.state == KeyState.RATE_LIMITED and e.quarantine_until:
                     ttl = max(0, int(e.quarantine_until - now))
                 
-                # Prune old timestamps (> 60s)
+                # 3. Prune old timestamps (> 60s) for RPM calculation
                 e.success_times = [t for t in e.success_times if now - t < 60]
                 rpm = len(e.success_times)
                 
+                if e.state == KeyState.HEALTHY:
+                    healthy_count += 1
+
                 keys_status.append({
                     "index":          e.index,
                     "alias":          e.alias,
@@ -205,25 +219,16 @@ class KeyPool:
                 })
 
             total = len(self._entries)
-            healthy = sum(1 for e in self._entries if e.state == KeyState.HEALTHY)
-            # Auto-count recovered RATE_LIMITED keys for healthy display
-            auto_recovered = sum(
-                1 for e in self._entries
-                if e.state == KeyState.RATE_LIMITED
-                and e.quarantine_until is not None
-                and now >= e.quarantine_until
-            )
-            healthy += auto_recovered
-
             return {
                 "provider":       self.provider,
                 "total_keys":     total,
-                "healthy_keys":   healthy,
-                "health_pct":     round((healthy / total * 100) if total else 0, 1),
+                "healthy_keys":   healthy_count,
+                "health_pct":     round((healthy_count / total * 100) if total else 0, 1),
                 "is_contest_mode": os.getenv("CONTEST_MODE", "false").lower() == "true",
                 "keys":           keys_status,
                 "history":        self.history
             }
+
 
 class AllKeysExhaustedError(Exception):
     """Raised when get_key() returns None."""
