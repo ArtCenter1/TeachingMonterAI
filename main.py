@@ -107,18 +107,22 @@ async def generate_video(
     try:
         logger.info(f"Starting generation for run_id: {run_id}")
 
-        # 1. Parallel call M1 (Sourcing) and M2 (Persona)
-        current_stage = "m1_sourcing + m2_persona"
-        logger.info("Stage 1 & 2: Sourcing and Persona Parsing")
-        m1_task = asyncio.create_task(m1.source(
+        # 1. Sequential call M1 (Sourcing) and M2 (Persona) to prevent burst load on the Gemini API
+        current_stage = "m1_sourcing"
+        logger.info("Stage 1: Sourcing")
+        fact_bundle = await m1.source(
             request_data.course_requirement,
             search_cx=request_data.search_cx,
             search_api_key=request_data.search_api_key
-        ))
-        m2_task = asyncio.create_task(m2.parse(request_data.student_persona, model_override=request_data.model_override))
-
-        fact_bundle, student_model = await asyncio.gather(m1_task, m2_task)
-        logger.info(f"[HEARTBEAT] {run_id} | Stage: Sourcing completed | Facts: {len(fact_bundle.facts)}")
+        )
+        
+        await asyncio.sleep(1) # Throttle to allow key pool rest
+        
+        current_stage = "m2_persona"
+        logger.info("Stage 2: Persona Parsing")
+        student_model = await m2.parse(request_data.student_persona, model_override=request_data.model_override)
+        
+        logger.info(f"[HEARTBEAT] {run_id} | Stage: Sourcing and Persona completed | Facts: {len(fact_bundle.facts)}")
 
         # 3. Concept Planning
         current_stage = "m3_planner"
