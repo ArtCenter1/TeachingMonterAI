@@ -20,12 +20,20 @@ class SyntheticStudentTester:
         }
 
     async def test_script(self, script: FullScript) -> List[Dict[str, Any]]:
-        """Run all 4 synthetic personas against a script in parallel."""
-        tasks = []
-        for name, desc in self.personas.items():
-            tasks.append(self.run_persona(script, name, desc))
+        """Run all 4 synthetic personas against a script. Uses parallel execution if CONTEST_MODE is enabled."""
+        is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
+        results = []
         
-        return await asyncio.gather(*tasks)
+        if is_contest_mode:
+            logger.info(f"CONTEST_MODE enabled: Running {len(self.personas)} personas in parallel.")
+            tasks = [self.run_persona(script, name, desc) for name, desc in self.personas.items()]
+            results = await asyncio.gather(*tasks, return_exceptions=False)
+        else:
+            for name, desc in self.personas.items():
+                result = await self.run_persona(script, name, desc)
+                results.append(result)
+                await asyncio.sleep(1)  # Brief pause between personas in dev mode
+        return results
 
     async def run_persona(self, script: FullScript, persona_name: str, persona_desc: str) -> Dict[str, Any]:
         prompt = f"""
@@ -73,11 +81,18 @@ class CIDPPCritic:
     async def score_variants(self, scripts: List[FullScript], student_model: StudentModel, 
                             model_override: str = None) -> Tuple[FullScript, List[Dict[str, Any]]]:
         """Review multiple scripts and select the one with the highest pedagogical score."""
-        tasks = []
-        for script in scripts:
-            tasks.append(self.review(script, student_model, model_override))
+        is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
+        reviews = []
         
-        reviews = await asyncio.gather(*tasks)
+        if is_contest_mode:
+            logger.info("CONTEST_MODE enabled: Scoring all variants in parallel.")
+            tasks = [self.review(script, student_model, model_override) for script in scripts]
+            reviews = await asyncio.gather(*tasks, return_exceptions=False)
+        else:
+            for script in scripts:
+                review = await self.review(script, student_model, model_override)
+                reviews.append(review)
+                await asyncio.sleep(1)  # Brief pause between variant reviews in dev mode
         
         scored_data = []
         for script, review in zip(scripts, reviews):

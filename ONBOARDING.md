@@ -269,3 +269,10 @@ The notebook is **reused** across runs — it accumulates sources over time and 
 ---
 *Section 8 added by Antigravity AI Agent — April 2026*
 
+## 9. Setting Up for Competition (Contest Mode)
+
+When transitioning from local development (free-tier keys, strict rate-limiting, heavily throttled parallelism) to competition deployment:
+1. Ensure you have high-throughput API keys configured in your `.env`.
+2. Add `CONTEST_MODE=true` to your `.env` file.
+3. This triggers parallel `asyncio.gather` for script generation (`m4_generator.py`) and persona testing (`m5_critic.py`), maximizing generation speed.
+4. The Key Pool Dashboard (`localhost:8080/dev/pool-status`) will visually confirm **"🏆 CONTEST MODE ACTIVE"** and bypass the strict 1-second sequential delay limits natively enforced during development.

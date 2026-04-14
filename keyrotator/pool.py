@@ -1,3 +1,4 @@
+import os
 import time
 import threading
 from enum import Enum
@@ -43,6 +44,7 @@ class KeyPool:
         self.rate_limit_quarantine_sec = rate_limit_quarantine_sec
         self.spend_cap_quarantine_sec = spend_cap_quarantine_sec
         self._lock = threading.Lock()
+        self.history = []  # List of dicts: {"timestamp", "alias", "event", "status", "msg"}
 
         # Deduplicate and filter empty strings
         seen = set()
@@ -89,6 +91,7 @@ class KeyPool:
                     return entry
 
             logger.error(f"[keyrotator:{self.provider}] All {total} keys are exhausted")
+            self._add_history("SYSTEM", "EXHAUSTED", "FAIL", f"All {total} keys are currently unavailable.")
             return None
 
     def report_error(self, entry: KeyEntry, code: int, message: str = ""):
@@ -111,6 +114,7 @@ class KeyPool:
                     f"[keyrotator:{self.provider}] {entry.alias} → RATE_LIMITED "
                     f"(429, {self.rate_limit_quarantine_sec}s quarantine)"
                 )
+                self._add_history(entry.alias, "RATE_LIMITED", "FAIL", f"429: {message[:100]}")
             elif code == 402:
                 entry.state = KeyState.SPENT
                 entry.quarantine_until = None  # permanent
@@ -118,6 +122,7 @@ class KeyPool:
                     f"[keyrotator:{self.provider}] {entry.alias} → SPENT "
                     f"(402 spend cap, manual revive required)"
                 )
+                self._add_history(entry.alias, "SPENT", "FAIL", "402: Quota exceeded")
             elif code == 403:
                 entry.state = KeyState.DEAD
                 entry.quarantine_until = None  # permanent
@@ -141,6 +146,19 @@ class KeyPool:
             entry.last_error_code = None
             entry.last_error_msg = ""
             entry.success_times.append(time.time())
+            self._add_history(entry.alias, "SUCCESS", "OK", "")
+
+    def _add_history(self, alias: str, event: str, status: str, msg: str):
+        # Already inside lock from public methods
+        self.history.insert(0, {
+            "time": time.strftime("%H:%M:%S"),
+            "alias": alias,
+            "event": event,
+            "status": status,
+            "msg": msg
+        })
+        if len(self.history) > 20:
+            self.history.pop()
 
     def revive(self, key_index: int) -> bool:
         """
@@ -202,7 +220,9 @@ class KeyPool:
                 "total_keys":     total,
                 "healthy_keys":   healthy,
                 "health_pct":     round((healthy / total * 100) if total else 0, 1),
+                "is_contest_mode": os.getenv("CONTEST_MODE", "false").lower() == "true",
                 "keys":           keys_status,
+                "history":        self.history
             }
 
 class AllKeysExhaustedError(Exception):
