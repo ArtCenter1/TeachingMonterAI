@@ -35,7 +35,7 @@ from keyrotator import KeyPool, KeyRotatorRouter
 from modules.llm_client import get_gemini_pool, get_router_pool
 
 
-app = FastAPI(title="Teaching Monster AI Agent API", version="0.2.3")
+app = FastAPI(title="Teaching Monster AI Agent API", version="0.3.0")
 
 
 # ── Dev Key Pool Router (Using Shared Infrastructure) ──────────────────────
