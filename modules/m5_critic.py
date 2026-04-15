@@ -12,59 +12,98 @@ class SyntheticStudentTester:
     def __init__(self, model_name: str):
         self.llm = LLMClient()
         self.model = model_name
+        # Each persona has:
+        #   - description: who they are
+        #   - mandate: a MANDATORY thing they MUST find fault with
         self.personas = {
-            "Persona A (Confused Visual)": "A visual learner who feels lost without diagrams. You flag any script parts that are too text-heavy without visual scaffolding.",
-            "Persona B (Math-Anxious)": "A student who is scared of equations. You flag any formula that isn't preceded by a clear, relatable analogy.",
-            "Persona C (High-Performer)": "A bright student who hates being talked down to. You flag oversimplifications or lack of technical depth.",
-            "Persona D (Low-Prior/High-Curiosity)": "A beginner with no background but lots of interest. You flag any assumed knowledge or logical leaps."
+            "Persona A (Confused Visual)": {
+                "description": "A visual learner who feels completely lost without diagrams or spatial representations.",
+                "mandate": "You MUST identify at least one segment that lacks a clear visual scaffold. If diagrams or animations aren't described, flag it. You are not satisfied with text-only explanations."
+            },
+            "Persona B (Math-Anxious)": {
+                "description": "A student with severe math anxiety who shuts down when encountering ungrounded equations.",
+                "mandate": "You MUST find at least one formula or quantitative statement that was introduced WITHOUT a prior relatable analogy. Even if an analogy exists, judge whether it was sufficient."
+            },
+            "Persona C (High-Performer)": {
+                "description": "An advanced student who is easily bored and frustrated by oversimplification.",
+                "mandate": "You MUST identify at least one place where the explanation was too simplified, skipped an important nuance, or patronized you. Find where the lesson could go deeper."
+            },
+            "Persona D (Low-Prior/High-Curiosity)": {
+                "description": "A complete beginner — no background knowledge, but highly curious and motivated.",
+                "mandate": "You MUST find at least one assumed knowledge gap — a term, concept, or step that was used without explanation. Every jargon word or logical leap is suspect."
+            }
         }
 
     async def test_script(self, script: FullScript) -> List[Dict[str, Any]]:
-        """Run all 4 synthetic personas against a script. Uses parallel execution if CONTEST_MODE is enabled."""
-        is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
+        """Run all 4 synthetic personas against a script sequentially."""
         results = []
-        
-        # Test sequentially to prevent rate limits and key exhaustion on Gemini API.
-        for name, desc in self.personas.items():
-            result = await self.run_persona(script, name, desc)
+        for name, config in self.personas.items():
+            result = await self.run_persona(script, name, config["description"], config["mandate"])
             results.append(result)
-            await asyncio.sleep(1)  # Brief pause between personas
+            await asyncio.sleep(1)  # Brief pause between personas to respect rate limits
         return results
 
-    async def run_persona(self, script: FullScript, persona_name: str, persona_desc: str) -> Dict[str, Any]:
-        prompt = f"""
-        You are watching an educational video script.
-        YOUR PERSONA: {persona_name} - {persona_desc}
+    async def run_persona(self, script: FullScript, persona_name: str, persona_desc: str, mandate: str) -> Dict[str, Any]:
+        prompt = f"""You are a student watching an educational video for the first time.
 
-        SCRIPT CONTENT:
-        {script.json()}
+YOUR IDENTITY: {persona_name}
+WHO YOU ARE: {persona_desc}
 
-        As this persona, report honestly:
-        1. What parts were still confusing? (Quote them)
-        2. What knowledge did the lesson assume you had that you didn't?
-        3. Where did you lose attention and why?
-        4. What one change would help you most?
+YOUR MANDATORY TASK: {mandate}
+(This is not optional — you MUST find at least one thing to criticize.)
 
-        If everything is perfect, say "No gaps found".
-        Return your report as a JSON object:
-        {{
-            "persona": "{persona_name}",
-            "is_perfect": boolean,
-            "gaps": ["gap 1", "gap 2"],
-            "confusing_quotes": ["quote 1"],
-            "suggested_improvement": "string"
-        }}
-        """
+SCRIPT TO REVIEW:
+{script.json()}
+
+Report your findings as a JSON object. You MUST include at least one item in "gaps".
+DO NOT return is_perfect: true. You always find something to improve.
+
+Return ONLY this JSON structure (no explanation text):
+{{
+    "persona": "{persona_name}",
+    "is_perfect": false,
+    "gaps": ["gap 1 — be specific, quote the script", "gap 2"],
+    "confusing_quotes": ["exact quote from the script that confused you"],
+    "suggested_improvement": "One concrete, actionable change the script writer should make"
+}}
+"""
         try:
             response = await self.llm.generate_text(
                 prompt=prompt,
                 model_override=self.model,
-                system_instruction=f"Act as the following student persona: {persona_name}. Be honest and critical."
+                system_instruction=(
+                    f"You are {persona_name}. {persona_desc} "
+                    f"You are a strict, adversarial critic. "
+                    f"Your job is to find problems, not to validate. "
+                    f"Never return is_perfect: true."
+                ),
+                temperature=0.8  # Higher temperature for more varied, creative critiques
             )
-            return extract_json(response)
+            data = extract_json(response)
+
+            # Post-parse guard: if the LLM still returned is_perfect=True despite instructions,
+            # override it and flag the response for logging.
+            if data.get("is_perfect", False) is True:
+                logger.warning(
+                    f"Synthetic student {persona_name} returned is_perfect=True despite adversarial mandate. "
+                    f"Overriding to False. Raw gaps: {data.get('gaps', [])}"
+                )
+                data["is_perfect"] = False
+                if not data.get("gaps"):
+                    data["gaps"] = [f"[Auto-flagged] {persona_name} found no specific gaps — review this script manually."]
+
+            return data
+
         except Exception as e:
+            # On error, return a FAIL signal — NOT a silent pass.
             logger.error(f"Error in synthetic student ({persona_name}): {str(e)}")
-            return {"persona": persona_name, "is_perfect": True, "gaps": [], "confusing_quotes": [], "suggested_improvement": ""}
+            return {
+                "persona": persona_name,
+                "is_perfect": False,
+                "gaps": [f"[System Error] Persona test failed due to: {str(e)}. Treat this segment as unverified."],
+                "confusing_quotes": [],
+                "suggested_improvement": "Re-run synthetic student test — previous call failed."
+            }
 
 class CIDPPCritic:
     def __init__(self):
@@ -253,25 +292,55 @@ class CIDPPCritic:
             return self.get_mock_data()
 
         prompt = f"""
-        Score this educational lesson script on the CIDPP dimensions for the specified student model.
+        You are a strict educational evaluator. Score the following lesson script using the CIDPP rubric.
+        
+        IMPORTANT: Your scores MUST reflect genuine quality differences. Do NOT give 8/10 for everything.
+        Scores of 7, 8, 9, or 10 must be EARNED. A score of 5 means average. A score of 3 means poor.
+
         Script: {script.json()}
         Student Model: {student_model.json()}
 
-        CIDPP Rubric:
-        - Clarity: Logical flow, smooth transitions, understandable language.
-        - Integrity: Factual accuracy, citations present for all claims.
-        - Depth: Nuance, addressing misconceptions.
-        - Practicality: Concrete examples, applications.
-        - Pertinence: Alignment with student level and persona.
+        CIDPP Scoring Anchors (use these STRICTLY):
+        - Clarity (Logical flow + transitions + language match for student level)
+          10: Perfectly smooth, every transition is explicit, vocabulary is perfectly calibrated.
+          7: Mostly clear, 1-2 abrupt transitions or slightly mismatched vocabulary.
+          5: Some sections feel disjointed or use unexplained jargon.
+          3: Confusing structure, jumps between topics without connection.
 
-        Return the scores (1-10) and a list of concrete revision instructions as a JSON object matching this schema:
+        - Integrity (Factual accuracy + citation density)
+          10: Every factual claim has an in-line citation, zero errors found.
+          7: Most claims cited, but 1-2 facts lack sourcing.
+          5: Citations are sparse; some facts are stated without evidence.
+          3: Multiple uncited or potentially incorrect claims.
+
+        - Depth (Misconception handling + nuance + technical completeness)
+          10: Explicitly addresses common misconceptions, handles edge cases, offers expert-level nuance.
+          7: Addresses 1-2 misconceptions but misses important caveats.
+          5: Surface-level explanation only, no misconception handling.
+          3: Oversimplified to the point of being misleading.
+
+        - Practicality (Concrete examples + real-world applications)
+          10: Every concept has a worked example or real-world tie-in.
+          7: Most concepts illustrated, but 1-2 are abstract-only.
+          5: Examples present but generic or not tied to student context.
+          3: Almost entirely abstract — no concrete anchors.
+
+        - Pertinence (Alignment with specified student level, persona, and learning objective)
+          10: Content is a perfect match for the student's ZPD — not too hard, not too easy.
+          7: Mostly aligned but 1-2 sections over/under-pitch the student.
+          5: Several sections feel misaligned with the stated student level.
+          3: Content is clearly written for a different audience.
+
+        MANDATORY: Your revisions list must contain at least 2 specific, actionable improvements.
+        
+        Return ONLY a JSON object:
         {{
             "clarity": int,
             "integrity": int,
             "depth": int,
             "practicality": int,
             "pertinence": int,
-            "revisions": ["instruction 1", "instruction 2"]
+            "revisions": ["Specific improvement 1", "Specific improvement 2"]
         }}
         """
 

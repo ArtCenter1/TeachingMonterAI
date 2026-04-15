@@ -13,35 +13,75 @@ class VideoRenderer:
         self.temp_audio_dir = "temp/audio"
         self.temp_video_dir = "temp/video"
         self.api_key = os.getenv("CARTESIA_API_KEY")
-        # Set Voice ID (using a verified working default voice)
         self.voice_id = "cec7cae1-ac8b-4a59-9eac-ec48366f37ae"
-        
-        # Determine FFmpeg path
-        # [Environment Issue Fix] Use local .exe ONLY on Windows host.
-        # In Docker (Linux), always prefer system-installed 'ffmpeg'.
-        is_windows = os.name == 'nt'
-        local_ffmpeg = os.path.join(os.getcwd(), "bin", "ffmpeg.exe")
-        
-        if is_windows and os.path.exists(local_ffmpeg):
-            self.ffmpeg_path = local_ffmpeg
-            logger.info(f"Using local Windows FFmpeg: {self.ffmpeg_path}")
-        else:
-            self.ffmpeg_path = "ffmpeg"  # Fallback to system PATH (correct for Linux Docker)
-            logger.info(f"Using system FFmpeg (Platform: {os.name})")
+
+        # --- FFmpeg Resolution Chain (with startup probe) ---
+        self.ffmpeg_path = self._resolve_ffmpeg()
 
         os.makedirs(self.output_dir, exist_ok=True)
         os.makedirs(self.temp_audio_dir, exist_ok=True)
         os.makedirs(self.temp_video_dir, exist_ok=True)
-        
+
         if self.api_key:
             self.client = Cartesia(api_key=self.api_key)
         else:
             self.client = None
             logger.warning("CARTESIA_API_KEY not found. Video rendering will fail.")
 
+    def _resolve_ffmpeg(self) -> str:
+        """
+        Resolves and validates the ffmpeg binary path at startup.
+        Resolution chain: FFMPEG_PATH env var → 'ffmpeg' in system PATH → local bin/ffmpeg.exe
+        """
+        candidates = []
+
+        # 1. Explicit override via environment variable
+        env_path = os.getenv("FFMPEG_PATH", "").strip()
+        if env_path:
+            candidates.append(("FFMPEG_PATH env var", env_path))
+
+        # 2. System-installed ffmpeg (correct for Docker Linux)
+        candidates.append(("system PATH", "ffmpeg"))
+
+        # 3. Local Windows binary (only useful on host)
+        local_exe = os.path.join(os.getcwd(), "bin", "ffmpeg.exe")
+        if os.path.exists(local_exe):
+            candidates.append(("local bin/ffmpeg.exe", local_exe))
+
+        for source, path in candidates:
+            try:
+                result = subprocess.run(
+                    [path, "-version"],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=5
+                )
+                if result.returncode == 0:
+                    version_line = result.stdout.decode(errors="replace").splitlines()[0]
+                    logger.info(f"[M7] Using ffmpeg from {source}: {path} ({version_line})")
+                    return path
+            except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+                logger.debug(f"[M7] ffmpeg candidate '{path}' (from {source}) not usable.")
+                continue
+
+        raise RuntimeError(
+            f"[M7] No working ffmpeg found. Tried: {[p for _, p in candidates]}. "
+            f"Install ffmpeg or set the FFMPEG_PATH environment variable."
+        )
+
     async def render(self, visual_plan: List[Dict[str, Any]], script: FullScript, run_id: str = "default") -> Dict[str, str]:
         if not self.client:
             return {"video": "error", "subtitles": "error"}
+
+        # Pre-flight: validate that all visual plan images exist before spending API credits
+        missing_images = [
+            v["image_path"]
+            for v in visual_plan
+            if not os.path.exists(v.get("image_path", ""))
+        ]
+        if missing_images:
+            logger.error(f"[M7] Pre-flight failed: {len(missing_images)} missing image(s): {missing_images[:3]}")
+            return {"video": "error", "subtitles": "error", "error": f"Missing images: {missing_images[:3]}"}
 
         segment_files = []
         all_timestamps = []
