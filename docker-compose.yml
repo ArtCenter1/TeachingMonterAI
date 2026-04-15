@@ -4,7 +4,7 @@ services:
   # ── Teaching Monster FastAPI Backend ──────────────────────────────────────
   app:
     build: .
-    image: teachingmonsterai-app:0.2.1
+    image: teachingmonsterai-app:0.3.0
 
     container_name: teaching-monster-app
     restart: unless-stopped
