@@ -38,9 +38,16 @@ class SourcingModule:
         # is no longer used for the primary sourcing path.
         self.fallback_search_api_key = os.getenv("SEARCH_API_KEY")
         self.search_cx = os.getenv("SEARCH_CX", "017576662512468239146:omuauf_lfve")
-        logger.debug("SourcingModule initialised (primary path: OpenSpace MCP → web_search → AI → mock)")
-        
-    async def source(self, topic: str, search_cx: Optional[str] = None, search_api_key: Optional[str] = None) -> FactBundle:
+        logger.debug(
+            "SourcingModule initialised (primary path: OpenSpace MCP → web_search → AI → mock)"
+        )
+
+    async def source(
+        self,
+        topic: str,
+        search_cx: Optional[str] = None,
+        search_api_key: Optional[str] = None,
+    ) -> FactBundle:
         """
         Main sourcing method with timeout and fallback chain:
         1. Attempt NotebookLM MCP sourcing (timeout: 90 seconds)
@@ -49,48 +56,55 @@ class SourcingModule:
         4. Log the failure mode in M8 for post-run analysis
         """
         start_time = time.time()
-        
+
         # Stage 1: Attempt NotebookLM MCP sourcing with 90s timeout
         try:
             logger.info("Attempting NotebookLM MCP sourcing...")
             fact_bundle = await asyncio.wait_for(
-                self._notebooklm_mcp_source(topic), 
-                timeout=30.0
+                self._notebooklm_mcp_source(topic), timeout=60.0
             )
-            
+
             # Verify the sourcing succeeded
             if fact_bundle and fact_bundle.facts and len(fact_bundle.facts) > 0:
-                logger.info(f"NotebookLM MCP sourcing successful: {len(fact_bundle.facts)} facts retrieved")
+                logger.info(
+                    f"NotebookLM MCP sourcing successful: {len(fact_bundle.facts)} facts retrieved"
+                )
                 return await self._verify_and_enhance_facts(fact_bundle, topic)
-                
+
         except asyncio.TimeoutError:
             logger.warning("NotebookLM MCP sourcing timed out after 90 seconds")
         except Exception as e:
             logger.error(f"NotebookLM MCP sourcing failed: {str(e)}")
-        
+
         # Stage 2: Fallback to web_search + web_fetch
         try:
             logger.info("Falling back to web_search + web_fetch...")
-            fact_bundle = await self._web_search_fallback(topic, search_cx, search_api_key)
-            
+            fact_bundle = await self._web_search_fallback(
+                topic, search_cx, search_api_key
+            )
+
             if fact_bundle and fact_bundle.facts and len(fact_bundle.facts) > 0:
-                logger.info(f"Web search fallback successful: {len(fact_bundle.facts)} facts retrieved")
+                logger.info(
+                    f"Web search fallback successful: {len(fact_bundle.facts)} facts retrieved"
+                )
                 return await self._verify_and_enhance_facts(fact_bundle, topic)
-                
+
         except Exception as e:
             logger.error(f"Web search fallback failed: {str(e)}")
-            
+
         # Stage 3: AI Research Fallback (NEW)
         # If real-time search fails, use the LLM's internal knowledge to ground the lesson
         try:
             logger.info("Triggering AI Research Fallback (Internal Knowledge)...")
             fact_bundle = await self._ai_research_fallback(topic)
             if fact_bundle and fact_bundle.facts:
-                logger.info(f"AI Research Fallback successful: {len(fact_bundle.facts)} facts retrieved")
+                logger.info(
+                    f"AI Research Fallback successful: {len(fact_bundle.facts)} facts retrieved"
+                )
                 return await self._verify_and_enhance_facts(fact_bundle, topic)
         except Exception as e:
             logger.error(f"AI Research Fallback failed: {str(e)}")
-        
+
         # Stage 4: Final fallback to mock data (should very rarely happen)
         logger.warning("All sourcing methods failed, using mock data")
         return self.get_mock_data(topic)
@@ -119,44 +133,82 @@ class SourcingModule:
 
         # Infer subject domain from topic keywords for source-hint injection
         topic_lower = topic.lower()
-        if any(k in topic_lower for k in ("physics", "force", "motion", "wave", "energy", "quantum")):
+        if any(
+            k in topic_lower
+            for k in ("physics", "force", "motion", "wave", "energy", "quantum")
+        ):
             source_hint = "IB Physics textbook, AP Physics CED, Khan Academy physics"
-        elif any(k in topic_lower for k in ("biology", "cell", "dna", "gene", "evolution", "organism")):
-            source_hint = "IB Biology textbook, AP Biology CED, reviewed .edu biology sources"
-        elif any(k in topic_lower for k in ("algorithm", "programming", "data structure", "network",
-                                            "attention", "machine learning", "recursion", "sorting")):
-            source_hint = "IB CS guide, CS50 transcripts, official language documentation"
-        elif any(k in topic_lower for k in ("calculus", "algebra", "geometry", "statistics",
-                                            "probability", "trigonometry", "derivative", "integral")):
-            source_hint = "IB Math AA/AI guide, AP Calculus CED, standard textbook chapters"
+        elif any(
+            k in topic_lower
+            for k in ("biology", "cell", "dna", "gene", "evolution", "organism")
+        ):
+            source_hint = (
+                "IB Biology textbook, AP Biology CED, reviewed .edu biology sources"
+            )
+        elif any(
+            k in topic_lower
+            for k in (
+                "algorithm",
+                "programming",
+                "data structure",
+                "network",
+                "attention",
+                "machine learning",
+                "recursion",
+                "sorting",
+            )
+        ):
+            source_hint = (
+                "IB CS guide, CS50 transcripts, official language documentation"
+            )
+        elif any(
+            k in topic_lower
+            for k in (
+                "calculus",
+                "algebra",
+                "geometry",
+                "statistics",
+                "probability",
+                "trigonometry",
+                "derivative",
+                "integral",
+            )
+        ):
+            source_hint = (
+                "IB Math AA/AI guide, AP Calculus CED, standard textbook chapters"
+            )
         else:
-            source_hint = "IB/AP curriculum guides, Khan Academy, .edu educational resources"
+            source_hint = (
+                "IB/AP curriculum guides, Khan Academy, .edu educational resources"
+            )
 
         task = (
             f"Research the educational topic '{topic}' for a secondary education audience "
             f"(AP/IB level). "
             f"Use the following as primary authoritative sources: {source_hint}. "
             f"Return a JSON object with this exact structure — no markdown, no extra keys:\n"
-            f'{{\n'
+            f"{{\n"
             f'  "facts": [\n'
             f'    {{"claim": "The factual statement", "citation": "Source title / URL / page", "confidence": 0.9}}\n'
-            f'  ],\n'
+            f"  ],\n"
             f'  "study_guide_url": null\n'
-            f'}}\n'
+            f"}}\n"
             f"Provide at least 5 unique, verifiable facts with citations. "
             f"If a fact is uncertain, lower the confidence score. "
             f"Do NOT hallucinate citations."
         )
 
         logger.info("Delegating M1 sourcing to OpenSpace (topic: %s)", topic[:60])
-        raw = await client.execute_task(task, max_iterations=15, search_scope="local")
+        raw = await client.execute_task(task, max_iterations=5, search_scope="local")
         logger.debug("OpenSpace raw sourcing result (first 400 chars): %s", raw[:400])
 
         # Parse the returned JSON
         data = _extract_json_from_text(raw)
 
         facts_raw = data.get("facts", []) if isinstance(data, dict) else []
-        study_guide_url = data.get("study_guide_url") if isinstance(data, dict) else None
+        study_guide_url = (
+            data.get("study_guide_url") if isinstance(data, dict) else None
+        )
 
         facts = [
             {
@@ -169,9 +221,7 @@ class SourcingModule:
         ]
 
         if not facts:
-            raise ValueError(
-                "OpenSpace returned no usable facts for topic: %s" % topic
-            )
+            raise ValueError("OpenSpace returned no usable facts for topic: %s" % topic)
 
         logger.info(
             "OpenSpace sourcing returned %d facts (study_guide_url=%s)",
@@ -180,34 +230,38 @@ class SourcingModule:
         )
         return FactBundle(facts=facts, study_guide_url=study_guide_url)
 
-    async def _web_search_fallback(self, topic: str, search_cx: Optional[str] = None, search_api_key: Optional[str] = None) -> FactBundle:
+    async def _web_search_fallback(
+        self,
+        topic: str,
+        search_cx: Optional[str] = None,
+        search_api_key: Optional[str] = None,
+    ) -> FactBundle:
         """Fallback sourcing using web search + web fetch"""
         api_key = search_api_key or self.fallback_search_api_key
         cx = search_cx or self.search_cx
-        
+
         if not api_key or "your_" in api_key:
-            logger.warning("SEARCH_API_KEY not configured. Search fallback will use mock data.")
+            logger.warning(
+                "SEARCH_API_KEY not configured. Search fallback will use mock data."
+            )
             return self.get_mock_data(topic)
-            
+
         # Search for authoritative sources
         search_query = f"{topic} educational concepts AP IB secondary education site:.edu OR site:.gov OR site:org"
-        
+
         search_url = "https://www.googleapis.com/customsearch/v1"
-        search_params = {
-            "key": api_key,
-            "cx": cx,
-            "q": search_query,
-            "num": 5
-        }
-        
+        search_params = {"key": api_key, "cx": cx, "q": search_query, "num": 5}
+
         async with aiohttp.ClientSession() as session:
             # Perform search
             async with session.get(search_url, params=search_params) as search_response:
                 if search_response.status != 200:
-                    raise Exception(f"Web search returned status {search_response.status}")
-                
+                    raise Exception(
+                        f"Web search returned status {search_response.status}"
+                    )
+
                 search_results = await search_response.json()
-                
+
                 # Fetch content from top results
                 facts = []
                 if "items" in search_results:
@@ -215,60 +269,76 @@ class SourcingModule:
                         try:
                             content = await self._fetch_webpage_content(item["link"])
                             if content:
-                                extracted_facts = self._extract_facts_from_content(content, topic)
+                                extracted_facts = self._extract_facts_from_content(
+                                    content, topic
+                                )
                                 facts.extend(extracted_facts)
                         except Exception as e:
-                            logger.warning(f"Failed to process {item['link']}: {str(e)}")
+                            logger.warning(
+                                f"Failed to process {item['link']}: {str(e)}"
+                            )
                             continue
-                
+
                 # If we got no facts from webpage content, generate basic facts from search snippets
                 if not facts and "items" in search_results:
                     for item in search_results["items"][:3]:
-                        facts.append({
-                            "claim": f"According to {item.get('displayLink', 'educational source')}: {item.get('snippet', '')}",
-                            "citation": item.get("displayLink", "Web Search Result"),
-                            "confidence": 0.6
-                        })
-                
+                        facts.append(
+                            {
+                                "claim": f"According to {item.get('displayLink', 'educational source')}: {item.get('snippet', '')}",
+                                "citation": item.get(
+                                    "displayLink", "Web Search Result"
+                                ),
+                                "confidence": 0.6,
+                            }
+                        )
+
                 return FactBundle(
                     facts=facts[:10],  # Limit to 10 facts
-                    study_guide_url=search_results.get("items", [{}])[0].get("link") if search_results.get("items") else None
+                    study_guide_url=search_results.get("items", [{}])[0].get("link")
+                    if search_results.get("items")
+                    else None,
                 )
 
     async def _fetch_webpage_content(self, url: str) -> Optional[str]:
         """Fetch content from a webpage"""
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                async with session.get(
+                    url, timeout=aiohttp.ClientTimeout(total=10)
+                ) as response:
                     if response.status == 200:
                         return await response.text()
                     return None
         except Exception:
             return None
 
-    def _extract_facts_from_content(self, content: str, topic: str) -> List[Dict[str, Any]]:
+    def _extract_facts_from_content(
+        self, content: str, topic: str
+    ) -> List[Dict[str, Any]]:
         """Extract educational facts from webpage content"""
         # Simple fact extraction - in production this would use NLP
         facts = []
-        
+
         # Look for sentences that might contain facts
-        sentences = [s.strip() for s in content.split('.') if len(s.strip()) > 20]
-        
+        sentences = [s.strip() for s in content.split(".") if len(s.strip()) > 20]
+
         # Filter for educational content related to topic
         topic_words = topic.lower().split()
         for sentence in sentences[:10]:  # Check first 10 sentences
             sentence_lower = sentence.lower()
             if any(word in sentence_lower for word in topic_words):
                 # Basic fact extraction
-                facts.append({
-                    "claim": sentence.strip(),
-                    "citation": "Web Source",
-                    "confidence": 0.7
-                })
-                
+                facts.append(
+                    {
+                        "claim": sentence.strip(),
+                        "citation": "Web Source",
+                        "confidence": 0.7,
+                    }
+                )
+
                 if len(facts) >= 5:  # Limit facts per source
                     break
-        
+
         return facts
 
     async def _notebooklm_library_source(self, topic: str) -> FactBundle:
@@ -301,7 +371,9 @@ class SourcingModule:
                 )
 
                 if not nb:
-                    logger.info("Creating 'TeachingMonster_Sourcing' notebook in NotebookLM")
+                    logger.info(
+                        "Creating 'TeachingMonster_Sourcing' notebook in NotebookLM"
+                    )
                     nb = await client.notebooks.create("TeachingMonster_Sourcing")
                     # Seed with Wikipedia so the LLM has a grounded source.
                     # wait=False so we don't block — ask() still works with LLM knowledge.
@@ -310,7 +382,9 @@ class SourcingModule:
                             f"https://en.wikipedia.org/wiki/{topic.replace(' ', '_')}"
                         )
                         await client.sources.add_url(nb.id, wiki_url, wait=False)
-                        logger.info(f"Seeded notebook with Wikipedia source for: {topic}")
+                        logger.info(
+                            f"Seeded notebook with Wikipedia source for: {topic}"
+                        )
                     except Exception as seed_err:
                         logger.warning(f"Could not seed Wikipedia source: {seed_err}")
 
@@ -341,7 +415,11 @@ class SourcingModule:
 
         except Exception as e:
             logger.error(f"NotebookLM library sourcing failed: {str(e)}")
-            if "auth" in str(e).lower() or "cookie" in str(e).lower() or "401" in str(e):
+            if (
+                "auth" in str(e).lower()
+                or "cookie" in str(e).lower()
+                or "401" in str(e)
+            ):
                 logger.warning(
                     "NotebookLM auth error — ACTION REQUIRED: "
                     "Run `notebooklm login` on the host, then copy "
@@ -350,27 +428,37 @@ class SourcingModule:
                 )
             raise
 
-    async def _verify_and_enhance_facts(self, fact_bundle: FactBundle, topic: str) -> FactBundle:
+    async def _verify_and_enhance_facts(
+        self, fact_bundle: FactBundle, topic: str
+    ) -> FactBundle:
         """Verify facts using code interpreter and enhance with additional validation"""
         # In a full implementation, this would:
         # 1. Extract mathematical formulas/claims from facts
         # 2. Use code interpreter to verify them
         # 3. Enhance confidence scores based on verification
         # 4. Add study guide generation if needed
-        
+
         # For MVP, we'll just return the facts as-is but log that verification would happen
-        logger.info(f"Fact verification would be performed on {len(fact_bundle.facts)} facts")
-        
+        logger.info(
+            f"Fact verification would be performed on {len(fact_bundle.facts)} facts"
+        )
+
         # Ensure we have proper structure
         verified_facts = []
         for fact in fact_bundle.facts:
-            verified_facts.append({
-                "claim": fact.get("claim", ""),
-                "citation": fact.get("citation", "Verified Source"),
-                "confidence": min(1.0, max(0.0, float(fact.get("confidence", 0.5))))
-            })
-        
-        return FactBundle(facts=verified_facts, study_guide_url=fact_bundle.study_guide_url)
+            verified_facts.append(
+                {
+                    "claim": fact.get("claim", ""),
+                    "citation": fact.get("citation", "Verified Source"),
+                    "confidence": min(
+                        1.0, max(0.0, float(fact.get("confidence", 0.5)))
+                    ),
+                }
+            )
+
+        return FactBundle(
+            facts=verified_facts, study_guide_url=fact_bundle.study_guide_url
+        )
 
     async def _ai_research_fallback(self, topic: str) -> FactBundle:
         """
@@ -378,8 +466,9 @@ class SourcingModule:
         Uses a separate LLMClient instance to avoid circular imports.
         """
         from .llm_client import LLMClient
+
         client = LLMClient()
-        
+
         prompt = f"""
         Act as a senior educational researcher. Provide a list of 5-7 authoritative, 
         technically accurate facts about '{topic}' for a secondary education audience.
@@ -391,7 +480,7 @@ class SourcingModule:
         
         Return ONLY a JSON array of objects.
         """
-        
+
         try:
             response_text = await client.generate_text(prompt, temperature=0.3)
             # Find the JSON array in the response
@@ -401,11 +490,13 @@ class SourcingModule:
                 facts_data = json.loads(response_text[start:end])
                 facts = []
                 for f in facts_data:
-                    facts.append({
-                        "claim": f.get("claim", ""),
-                        "citation": f.get("citation", "AI Internal Knowledge"),
-                        "confidence": float(f.get("confidence", 0.9))
-                    })
+                    facts.append(
+                        {
+                            "claim": f.get("claim", ""),
+                            "citation": f.get("citation", "AI Internal Knowledge"),
+                            "confidence": float(f.get("confidence", 0.9)),
+                        }
+                    )
                 return FactBundle(facts=facts)
         except Exception as e:
             logger.error(f"AI Research Fallback LLM call failed: {str(e)}")
@@ -414,15 +505,19 @@ class SourcingModule:
     def get_mock_data(self, topic: str) -> FactBundle:
         """Mock data for when all sourcing methods fail"""
         return FactBundle(
-            facts=[{
-                "claim": f"Core concepts of {topic} involve fundamental principles that form the foundation for understanding more advanced topics in this subject area.",
-                "citation": "Educational Standard", 
-                "confidence": 0.9
-            }],
-            study_guide_url="https://example.com/guide"
+            facts=[
+                {
+                    "claim": f"Core concepts of {topic} involve fundamental principles that form the foundation for understanding more advanced topics in this subject area.",
+                    "citation": "Educational Standard",
+                    "confidence": 0.9,
+                }
+            ],
+            study_guide_url="https://example.com/guide",
         )
 
+
 if __name__ == "__main__":
+
     async def test():
         s = SourcingModule()
         topic = "Quantum Computing"
