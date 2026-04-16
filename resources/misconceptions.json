@@ -1,0 +1,74 @@
+{
+  "Computer Science": {
+    "variables": [
+      "Variables are physical containers that store data like boxes",
+      "Variables can only hold one type of data (e.g., only numbers)"
+    ],
+    "loops": [
+      "Loops always run an infinite number of times",
+      "Loops can only repeat the exact same action each time"
+    ],
+    "algorithms": [
+      "Algorithms are only for computers, not humans",
+      "An algorithm must be written in code to be valid"
+    ],
+    "binary numbers": [
+      "Binary is just another number system with no special meaning",
+      "Computers use binary because it's faster than decimal"
+    ]
+  },
+  "Physics": {
+    "force": [
+      "Force always causes motion (objects at rest have no forces)",
+      "Force is the same as energy"
+    ],
+    "gravity": [
+      "Gravity only affects objects on Earth",
+      "Heavier objects fall faster due to stronger gravity"
+    ],
+    "energy": [
+      "Energy is a physical substance that can be used up",
+      "Kinetic energy only comes from motion, not potential"
+    ],
+    "photosynthesis": [
+      "Plants get their food directly from the soil",
+      "Photosynthesis only happens during the day"
+    ]
+  },
+  "Biology": {
+    "cells": [
+      "All cells are identical regardless of function",
+      "Cells are just empty spaces filled with water"
+    ],
+    "dna": [
+      "DNA is only found in humans, not other organisms",
+      "DNA determines everything about an organism immediately"
+    ],
+    "evolution": [
+      "Evolution only happens to animals, not plants",
+      "Species evolve because they want to improve"
+    ],
+    "cellular respiration": [
+      "Respiration is the same as breathing",
+      "Cells only use oxygen for respiration"
+    ]
+  },
+  "Mathematics": {
+    "fractions": [
+      "Fractions are just division problems",
+      "Multiplying fractions always makes them larger"
+    ],
+    "probability": [
+      "Probability means something will definitely happen",
+      "Past events don't affect future probabilities"
+    ],
+    "geometry": [
+      "Area and perimeter are the same thing",
+      "Shapes can only be measured in whole units"
+    ],
+    "algebra": [
+      "Variables are just placeholders with no meaning",
+      "Equations must always have a solution"
+    ]
+  }
+}

@@ -8,6 +8,7 @@ from .llm_client import LLMClient
 from .mcp_client import OpenSpaceMCPClient
 from loguru import logger
 
+
 class SyntheticStudentTester:
     def __init__(self, model_name: str):
         self.llm = LLMClient()
@@ -18,52 +19,59 @@ class SyntheticStudentTester:
         self.personas = {
             "Persona A (Confused Visual)": {
                 "description": "A visual learner who feels completely lost without diagrams or spatial representations.",
-                "mandate": "You MUST identify at least one segment that lacks a clear visual scaffold. If diagrams or animations aren't described, flag it. You are not satisfied with text-only explanations."
+                "mandate": "You MUST identify at least one segment that lacks a clear visual scaffold. If diagrams or animations aren't described, flag it. You are not satisfied with text-only explanations.",
             },
             "Persona B (Math-Anxious)": {
                 "description": "A student with severe math anxiety who shuts down when encountering ungrounded equations.",
-                "mandate": "You MUST find at least one formula or quantitative statement that was introduced WITHOUT a prior relatable analogy. Even if an analogy exists, judge whether it was sufficient."
+                "mandate": "You MUST find at least one formula or quantitative statement that was introduced WITHOUT a prior relatable analogy. Even if an analogy exists, judge whether it was sufficient.",
             },
             "Persona C (High-Performer)": {
                 "description": "An advanced student who is easily bored and frustrated by oversimplification.",
-                "mandate": "You MUST identify at least one place where the explanation was too simplified, skipped an important nuance, or patronized you. Find where the lesson could go deeper."
+                "mandate": "You MUST identify at least one place where the explanation was too simplified, skipped an important nuance, or patronized you. Find where the lesson could go deeper.",
             },
             "Persona D (Low-Prior/High-Curiosity)": {
                 "description": "A complete beginner — no background knowledge, but highly curious and motivated.",
-                "mandate": "You MUST find at least one assumed knowledge gap — a term, concept, or step that was used without explanation. Every jargon word or logical leap is suspect."
-            }
+                "mandate": "You MUST find at least one assumed knowledge gap — a term, concept, or step that was used without explanation. Every jargon word or logical leap is suspect.",
+            },
         }
 
     async def test_script(self, script: FullScript) -> List[Dict[str, Any]]:
         """Run all 4 synthetic personas against a script sequentially."""
         results = []
         for name, config in self.personas.items():
-            result = await self.run_persona(script, name, config["description"], config["mandate"])
+            result = await self.run_persona(
+                script, name, config["description"], config["mandate"]
+            )
             results.append(result)
-            await asyncio.sleep(1)  # Brief pause between personas to respect rate limits
+            await asyncio.sleep(
+                1
+            )  # Brief pause between personas to respect rate limits
         return results
 
-    async def run_persona(self, script: FullScript, persona_name: str, persona_desc: str, mandate: str) -> Dict[str, Any]:
-        prompt = f"""You are a student watching an educational video for the first time.
+    async def run_persona(
+        self, script: FullScript, persona_name: str, persona_desc: str, mandate: str
+    ) -> Dict[str, Any]:
+        prompt = f"""You are a highly critical student watching an educational video for the first time.
 
 YOUR IDENTITY: {persona_name}
 WHO YOU ARE: {persona_desc}
 
 YOUR MANDATORY TASK: {mandate}
-(This is not optional — you MUST find at least one thing to criticize.)
+(This is ABSOLUTELY REQUIRED — you MUST find at least TWO specific problems to criticize. No exceptions.)
 
 SCRIPT TO REVIEW:
 {script.json()}
 
-Report your findings as a JSON object. You MUST include at least one item in "gaps".
-DO NOT return is_perfect: true. You always find something to improve.
+CRITICAL INSTRUCTION: As a demanding student, you NEVER find content perfect. You ALWAYS identify issues.
+You MUST include at least TWO items in "gaps" and at least ONE in "confusing_quotes".
+DO NOT even think about returning is_perfect: true — it's forbidden.
 
 Return ONLY this JSON structure (no explanation text):
 {{
     "persona": "{persona_name}",
     "is_perfect": false,
-    "gaps": ["gap 1 — be specific, quote the script", "gap 2"],
-    "confusing_quotes": ["exact quote from the script that confused you"],
+    "gaps": ["gap 1 — be specific, quote the script", "gap 2 — another specific issue"],
+    "confusing_quotes": ["exact quote from the script that confused you", "another confusing part"],
     "suggested_improvement": "One concrete, actionable change the script writer should make"
 }}
 """
@@ -73,11 +81,11 @@ Return ONLY this JSON structure (no explanation text):
                 model_override=self.model,
                 system_instruction=(
                     f"You are {persona_name}. {persona_desc} "
-                    f"You are a strict, adversarial critic. "
-                    f"Your job is to find problems, not to validate. "
-                    f"Never return is_perfect: true."
+                    f"You are an extremely strict, adversarial critic who ALWAYS finds faults. "
+                    f"Your role is to identify weaknesses, not to praise. "
+                    f"You NEVER accept anything as perfect. Always criticize constructively but harshly."
                 ),
-                temperature=0.8  # Higher temperature for more varied, creative critiques
+                temperature=1.0,  # Higher temperature for more critical, varied critiques
             )
             data = extract_json(response)
 
@@ -90,7 +98,9 @@ Return ONLY this JSON structure (no explanation text):
                 )
                 data["is_perfect"] = False
                 if not data.get("gaps"):
-                    data["gaps"] = [f"[Auto-flagged] {persona_name} found no specific gaps — review this script manually."]
+                    data["gaps"] = [
+                        f"[Auto-flagged] {persona_name} found no specific gaps — review this script manually."
+                    ]
 
             return data
 
@@ -100,60 +110,75 @@ Return ONLY this JSON structure (no explanation text):
             return {
                 "persona": persona_name,
                 "is_perfect": False,
-                "gaps": [f"[System Error] Persona test failed due to: {str(e)}. Treat this segment as unverified."],
+                "gaps": [
+                    f"[System Error] Persona test failed due to: {str(e)}. Treat this segment as unverified."
+                ],
                 "confusing_quotes": [],
-                "suggested_improvement": "Re-run synthetic student test — previous call failed."
+                "suggested_improvement": "Re-run synthetic student test — previous call failed.",
             }
+
 
 class CIDPPCritic:
     def __init__(self):
         self.llm = LLMClient()
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
-        self.synthetic_model = os.getenv("SYNTHETIC_STUDENT_MODEL", "google/gemini-2.0-flash-exp:free")
+        self.synthetic_model = os.getenv(
+            "SYNTHETIC_STUDENT_MODEL", "google/gemini-2.0-flash-exp:free"
+        )
         self.tester = SyntheticStudentTester(self.synthetic_model)
 
-    async def score_variants(self, scripts: List[FullScript], student_model: StudentModel, 
-                            model_override: str = None) -> Tuple[FullScript, List[Dict[str, Any]]]:
+    async def score_variants(
+        self,
+        scripts: List[FullScript],
+        student_model: StudentModel,
+        model_override: str = None,
+    ) -> Tuple[FullScript, List[Dict[str, Any]]]:
         """Review multiple scripts and select the one with the highest pedagogical score."""
         is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
         reviews = []
-        
+
         # Score sequentially with a short sleep to avoid rate limiting across 9 Gemini keys.
         for script in scripts:
             review = await self.review(script, student_model, model_override)
             reviews.append(review)
             await asyncio.sleep(1)  # Brief pause between variant reviews
-        
+
         scored_data = []
         for script, review in zip(scripts, reviews):
             # Calculate aggregate score
             total_score = (
-                review.clarity + 
-                review.integrity + 
-                review.depth + 
-                review.practicality + 
-                review.pertinence
+                review.clarity
+                + review.integrity
+                + review.depth
+                + review.practicality
+                + review.pertinence
             )
-            scored_data.append({
-                "script": script,
-                "review": review,
-                "total_score": total_score,
-                "strategy": script.scaffolding_strategy
-            })
+            scored_data.append(
+                {
+                    "script": script,
+                    "review": review,
+                    "total_score": total_score,
+                    "strategy": script.scaffolding_strategy,
+                }
+            )
 
         # Sort by total score descending
         scored_data.sort(key=lambda x: x["total_score"], reverse=True)
-        
+
         best_variant = scored_data[0]["script"]
-        
+
         # Phase 4 - Part 2: Synthetic Student Testing on the winner
-        logger.info(f"Running synthetic student tests on selected variant: {scored_data[0]['strategy']}")
+        logger.info(
+            f"Running synthetic student tests on selected variant: {scored_data[0]['strategy']}"
+        )
         feedback = await self.tester.test_script(best_variant)
-        
+
         # Phase 4 - Part 3: Refinement Loop (The "Gold Standard" step)
-        refined_script = await self.refine_script(best_variant, student_model, feedback, model_override)
-        
+        refined_script = await self.refine_script(
+            best_variant, student_model, feedback, model_override
+        )
+
         selection_log = [
             {
                 "strategy": d["strategy"],
@@ -163,25 +188,33 @@ class CIDPPCritic:
                     "integrity": d["review"].integrity,
                     "depth": d["review"].depth,
                     "practicality": d["review"].practicality,
-                    "pertinence": d["review"].pertinence
+                    "pertinence": d["review"].pertinence,
                 },
-                "revisions": d["review"].revisions
-            } for d in scored_data
+                "revisions": d["review"].revisions,
+            }
+            for d in scored_data
         ]
-        
+
         # Attach synthetic feedback to the winning selection log entry
         for entry in selection_log:
             if entry["strategy"] == scored_data[0]["strategy"]:
                 entry["synthetic_student_feedback"] = feedback
                 break
 
-        logger.info(f"Selected strategy: {scored_data[0]['strategy']} with score {scored_data[0]['total_score']}")
+        logger.info(
+            f"Selected strategy: {scored_data[0]['strategy']} with score {scored_data[0]['total_score']}"
+        )
         return refined_script, selection_log
 
-    async def refine_script(self, script: FullScript, student_model: StudentModel, 
-                          feedback: List[Dict[str, Any]], model_override: str = None) -> FullScript:
+    async def refine_script(
+        self,
+        script: FullScript,
+        student_model: StudentModel,
+        feedback: List[Dict[str, Any]],
+        model_override: str = None,
+    ) -> FullScript:
         """Refine the script based on synthetic student feedback."""
-        
+
         # Filter for critical gaps
         critical_gaps = []
         for f in feedback:
@@ -190,13 +223,15 @@ class CIDPPCritic:
                     critical_gaps.extend(f.get("gaps", []))
                 if f.get("suggested_improvement"):
                     critical_gaps.append(f["suggested_improvement"])
-        
+
         if not critical_gaps:
-            logger.info("No critical gaps identified by synthetic students. Skipping refinement.")
+            logger.info(
+                "No critical gaps identified by synthetic students. Skipping refinement."
+            )
             return script
 
         logger.info(f"Refining script to address {len(critical_gaps)} identified gaps.")
-        
+
         prompt = f"""
         Refine the following educational script based on student feedback.
         
@@ -233,12 +268,12 @@ class CIDPPCritic:
             "checks": ["question 1", "question 2"]
         }}
         """
-        
+
         try:
             response_text = await self.llm.generate_text(
                 prompt=prompt,
                 model_override=model_override,
-                system_instruction="You are a meticulous editor improving an educational script based on direct student feedback."
+                system_instruction="You are a meticulous editor improving an educational script based on direct student feedback.",
             )
             data = extract_json(response_text)
             return FullScript(**data)
@@ -246,7 +281,12 @@ class CIDPPCritic:
             logger.error(f"Error refining script: {str(e)}")
             return script
 
-    async def review(self, script: FullScript, student_model: StudentModel, model_override: str = None) -> CIDPPScores:
+    async def review(
+        self,
+        script: FullScript,
+        student_model: StudentModel,
+        model_override: str = None,
+    ) -> CIDPPScores:
         """
         Score a script on the CIDPP rubric.
 
@@ -259,7 +299,9 @@ class CIDPPCritic:
         try:
             client = OpenSpaceMCPClient()
             if await client.health_check():
-                logger.info("Delegating CIDPP review to OpenSpace pedagogical_critic skill")
+                logger.info(
+                    "Delegating CIDPP review to OpenSpace pedagogical_critic skill"
+                )
                 task = (
                     f"Use the pedagogical_critic skill to evaluate this educational script "
                     f"on the CIDPP rubric (1–10 for each dimension: "
@@ -271,19 +313,28 @@ class CIDPPCritic:
                     f'{{"clarity": int, "integrity": int, "depth": int, '
                     f'"practicality": int, "pertinence": int, "revisions": ["..."]}}'
                 )
-                raw = await client.execute_task(task, max_iterations=5, search_scope="local")
-                logger.debug("OpenSpace CIDPP raw result (first 300 chars): %s", raw[:300])
+                raw = await client.execute_task(
+                    task, max_iterations=5, search_scope="local"
+                )
+                logger.debug(
+                    "OpenSpace CIDPP raw result (first 300 chars): %s", raw[:300]
+                )
                 data = extract_json(raw)
                 scores = CIDPPScores(**data)
                 logger.info(
                     "OpenSpace CIDPP scores — C:%d I:%d D:%d P:%d Pe:%d revisions:%d",
-                    scores.clarity, scores.integrity, scores.depth,
-                    scores.practicality, scores.pertinence, len(scores.revisions),
+                    scores.clarity,
+                    scores.integrity,
+                    scores.depth,
+                    scores.practicality,
+                    scores.pertinence,
+                    len(scores.revisions),
                 )
                 return scores
         except Exception as exc:
             logger.warning(
-                "OpenSpace pedagogical_critic unavailable, using local LLM fallback: %s", exc
+                "OpenSpace pedagogical_critic unavailable, using local LLM fallback: %s",
+                exc,
             )
 
         # ── Attempt 2: Local LLM CIDPP scoring ───────────────────────────────
@@ -348,7 +399,7 @@ class CIDPPCritic:
             response_text = await self.llm.generate_text(
                 prompt=prompt,
                 model_override=model_override,
-                system_instruction="You are a rigorous educational critic who scores scripts based on clarity, integrity, depth, practicality, and pertinence (CIDPP)."
+                system_instruction="You are a rigorous educational critic who scores scripts based on clarity, integrity, depth, practicality, and pertinence (CIDPP).",
             )
             data = extract_json(response_text)
             return CIDPPScores(**data)
@@ -358,10 +409,5 @@ class CIDPPCritic:
 
     def get_mock_data(self) -> CIDPPScores:
         return CIDPPScores(
-            clarity=8,
-            integrity=10,
-            depth=7,
-            practicality=7,
-            pertinence=8,
-            revisions=[]
+            clarity=8, integrity=10, depth=7, practicality=7, pertinence=8, revisions=[]
         )

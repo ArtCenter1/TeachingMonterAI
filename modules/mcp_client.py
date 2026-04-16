@@ -17,6 +17,7 @@ Available tools (as of 2026-04-11, OpenSpace v1.27.0):
 import json
 import logging
 import os
+import time
 from typing import Any
 
 import aiohttp
@@ -51,7 +52,9 @@ def _parse_sse_data(text: str) -> dict:
             try:
                 return json.loads(payload)
             except json.JSONDecodeError as exc:
-                raise ValueError(f"SSE data line is not valid JSON: {payload!r}") from exc
+                raise ValueError(
+                    f"SSE data line is not valid JSON: {payload!r}"
+                ) from exc
     raise ValueError(f"No 'data:' line found in SSE response:\\n{text[:400]}")
 
 
@@ -225,6 +228,7 @@ class OpenSpaceMCPClient:
         """
         async with aiohttp.ClientSession() as session:
             sid = await self._init_session(session)
+            start_time = time.time()
             data, _ = await self._post(
                 session,
                 {
@@ -243,10 +247,14 @@ class OpenSpaceMCPClient:
                 session_id=sid,
                 timeout=600.0,  # OpenSpace docs recommend ≥ 600s timeout
             )
+            duration = time.time() - start_time
+            logger.info("OpenSpace execute_task completed in %.1f seconds", duration)
 
         result = data.get("result", {}) if data else {}
         contents = result.get("content", [])
-        text_parts = [c["text"] for c in contents if c.get("type") == "text" and c.get("text")]
+        text_parts = [
+            c["text"] for c in contents if c.get("type") == "text" and c.get("text")
+        ]
         return "\n".join(text_parts)
 
     async def search_skills(self, query: str, limit: int = 10) -> list[dict]:
