@@ -9,7 +9,12 @@ class FeedbackLogger:
     def __init__(self, log_file: str = "m8_feedback.json"):
         self.log_file = log_file
 
-    async def log_run(self, run_id: str, data: Dict[str, Any], selection_log: List[Dict[str, Any]] = None):
+    async def log_run(
+        self,
+        run_id: str,
+        data: Dict[str, Any],
+        selection_log: List[Dict[str, Any]] = None,
+    ):
         """Log a generation run with optional selection/A/B data."""
         logs = []
         if os.path.exists(self.log_file):
@@ -19,20 +24,38 @@ class FeedbackLogger:
                 except json.JSONDecodeError:
                     pass
 
-        entry = {
-            "run_id": run_id,
-            "data": data,
-            "selection_log": selection_log
-        }
+        entry = {"run_id": run_id, "data": data, "selection_log": selection_log}
         logs.append(entry)
 
         with open(self.log_file, "w") as f:
             json.dump(logs, f, indent=2)
 
+    def add_ai_student_feedback(
+        self, run_id: str, ai_student_scores: Dict[str, Any], critique_text: str
+    ):
+        """Append AI student feedback to an existing run entry."""
+        logs = []
+        if os.path.exists(self.log_file):
+            with open(self.log_file, "r") as f:
+                try:
+                    logs = json.load(f)
+                except json.JSONDecodeError:
+                    return False
+
+        for entry in logs:
+            if entry.get("run_id") == run_id:
+                entry["data"]["ai_student_scores"] = ai_student_scores
+                entry["data"]["critique_text"] = critique_text
+                with open(self.log_file, "w") as f:
+                    json.dump(logs, f, indent=2)
+                return True
+
+        return False  # Run ID not found
+
 
 class ErrorLogger:
     """Persists pipeline errors to a structured JSON log for easier debugging.
-    
+
     Each entry captures:
       - run_id         : the UUID of the failed run
       - timestamp      : ISO-8601 UTC timestamp

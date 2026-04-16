@@ -14,7 +14,7 @@ from loguru import logger
 load_dotenv()
 
 # Required for Windows subprocess/rendering (FFmpeg)
-if os.name == 'nt':
+if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -22,7 +22,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 # Add a file logger for persistent debugging
 logger.add("pipeline.log", rotation="10 MB")
 
-from modules.schemas import GenerationRequest, GenerationResponse
+from modules.schemas import GenerationRequest, GenerationResponse, AIStudentFeedback
 from modules.m1_sourcing import SourcingModule
 from modules.m2_persona import PersonaParser
 from modules.m3_planner import ConceptPlanner
@@ -66,29 +66,35 @@ m7 = VideoRenderer()
 m8 = FeedbackLogger()
 err_log = ErrorLogger()
 
+
 @app.get("/health")
 @app.head("/health")
 def health_check():
     return {"status": "ok"}
 
+
 @app.get("/")
 def read_root():
-    return {"message": "Teaching Monster AI Agent is running. Use /generate for API requests."}
+    return {
+        "message": "Teaching Monster AI Agent is running. Use /generate for API requests."
+    }
+
 
 @app.post("/")
 async def root_post_proxy(
     request_data: GenerationRequest,
     request: Request,
-    x_dry_run: Optional[str] = Header(None, alias="X-Dry-Run")
+    x_dry_run: Optional[str] = Header(None, alias="X-Dry-Run"),
 ):
     """Proxy root POST requests to the generate endpoint for compatibility."""
     return await generate_video(request_data, request, x_dry_run)
 
+
 @app.post("/generate", response_model=GenerationResponse)
 async def generate_video(
-    request_data: GenerationRequest, 
+    request_data: GenerationRequest,
     request: Request,
-    x_dry_run: Optional[str] = Header(None, alias="X-Dry-Run")
+    x_dry_run: Optional[str] = Header(None, alias="X-Dry-Run"),
 ):
     # 0. Competition Dashboard Dry-Run Check
     if x_dry_run == "true":
@@ -97,7 +103,7 @@ async def generate_video(
             video_url="https://example.com/test.mp4",
             subtitle_url="https://example.com/test.srt",
             supplementary_url=None,
-            generation_time_seconds=0
+            generation_time_seconds=0,
         )
 
     run_id = str(uuid.uuid4())
@@ -113,34 +119,55 @@ async def generate_video(
         fact_bundle = await m1.source(
             request_data.course_requirement,
             search_cx=request_data.search_cx,
-            search_api_key=request_data.search_api_key
+            search_api_key=request_data.search_api_key,
         )
-        
-        await asyncio.sleep(1) # Throttle to allow key pool rest
-        
+
+        await asyncio.sleep(1)  # Throttle to allow key pool rest
+
         current_stage = "m2_persona"
         logger.info("Stage 2: Persona Parsing")
-        student_model = await m2.parse(request_data.student_persona, model_override=request_data.model_override)
-        
-        logger.info(f"[HEARTBEAT] {run_id} | Stage: Sourcing and Persona completed | Facts: {len(fact_bundle.facts)}")
+        student_model = await m2.parse(
+            request_data.student_persona, model_override=request_data.model_override
+        )
+
+        logger.info(
+            f"[HEARTBEAT] {run_id} | Stage: Sourcing and Persona completed | Facts: {len(fact_bundle.facts)}"
+        )
 
         # 3. Concept Planning
         current_stage = "m3_planner"
         logger.info("Stage 3: Concept Planning")
-        concept_graph = await m3.plan(request_data.course_requirement, student_model, model_override=request_data.model_override)
-        logger.info(f"[HEARTBEAT] {run_id} | Stage: Planning completed | Nodes: {len(concept_graph.nodes)}")
+        concept_graph = await m3.plan(
+            request_data.course_requirement,
+            student_model,
+            model_override=request_data.model_override,
+        )
+        logger.info(
+            f"[HEARTBEAT] {run_id} | Stage: Planning completed | Nodes: {len(concept_graph.nodes)}"
+        )
 
         # 4. Script Generation (Variants)
         current_stage = "m4_generator"
         logger.info("Stage 4: Multi-Variant Script Generation")
-        scripts = await m4.generate_variants(concept_graph, student_model, fact_bundle, model_override=request_data.model_override)
-        logger.info(f"[HEARTBEAT] {run_id} | Stage: Generation completed | Variants: {len(scripts)}")
+        scripts = await m4.generate_variants(
+            concept_graph,
+            student_model,
+            fact_bundle,
+            model_override=request_data.model_override,
+        )
+        logger.info(
+            f"[HEARTBEAT] {run_id} | Stage: Generation completed | Variants: {len(scripts)}"
+        )
 
         # 5. CIDPP Critic Selection (Best-of-N)
         current_stage = "m5_critic"
         logger.info("Stage 5: CIDPP Critic Selection (Best-of-3)")
-        script, selection_log = await m5.score_variants(scripts, student_model, model_override=request_data.model_override)
-        logger.info(f"[HEARTBEAT] {run_id} | Stage: Critic completed | Selected: {script.title}")
+        script, selection_log = await m5.score_variants(
+            scripts, student_model, model_override=request_data.model_override
+        )
+        logger.info(
+            f"[HEARTBEAT] {run_id} | Stage: Critic completed | Selected: {script.title}"
+        )
 
         # 6. Multimodal Planning
         current_stage = "m6_multimodal"
@@ -153,7 +180,7 @@ async def generate_video(
         logger.info("Stage 7: Video/Subtitle Rendering")
         render_results = await m7.render(visual_plan, script, run_id=run_id)
         logger.info(f"[HEARTBEAT] {run_id} | Stage: Rendering completed")
-        
+
         video_filename = render_results.get("video", "error")
         subtitle_filename = render_results.get("subtitles", "error")
 
@@ -161,9 +188,9 @@ async def generate_video(
         base_url = str(request.base_url).rstrip("/")
         public_video_url = f"{base_url}/output/{video_filename}"
         public_subtitle_url = f"{base_url}/output/{subtitle_filename}"
-        
+
         generation_time = int(time.time() - start_time)
-        
+
         # 9. Feedback Logging (with Selection Data)
         logger.info(f"Stage 9: Logging results for {run_id}")
         run_data = {
@@ -173,7 +200,7 @@ async def generate_video(
             "selected_strategy": script.scaffolding_strategy,
             "video_url": public_video_url,
             "subtitle_url": public_subtitle_url,
-            "generation_time_seconds": generation_time
+            "generation_time_seconds": generation_time,
         }
         await m8.log_run(run_id, run_data, selection_log=selection_log)
 
@@ -181,21 +208,47 @@ async def generate_video(
             video_url=public_video_url,
             subtitle_url=public_subtitle_url,
             supplementary_url=fact_bundle.study_guide_url,
-            generation_time_seconds=generation_time
+            generation_time_seconds=generation_time,
         )
 
     except Exception as e:
-        logger.exception(f"FATAL PIPELINE ERROR for run_id {run_id} at stage [{current_stage}]: {str(e)}")
+        logger.exception(
+            f"FATAL PIPELINE ERROR for run_id {run_id} at stage [{current_stage}]: {str(e)}"
+        )
         err_log.log_error(
             run_id=run_id,
             exc=e,
             request_data=request_data.model_dump(),
             failed_stage=current_stage,
         )
-        raise HTTPException(status_code=500, detail=f"Internal Pipeline Error at [{current_stage}]: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal Pipeline Error at [{current_stage}]: {str(e)}",
+        )
+
+
+@app.post("/feedback/ai-student")
+async def submit_ai_student_feedback(feedback: AIStudentFeedback):
+    """Accept AI Student feedback from the competition platform and append to feedback logs."""
+    success = m8.add_ai_student_feedback(
+        run_id=feedback.run_id,
+        ai_student_scores=feedback.ai_student_scores,
+        critique_text=feedback.critique_text,
+    )
+    if not success:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Run ID {feedback.run_id} not found in feedback logs.",
+        )
+    logger.info(f"AI Student feedback ingested for run_id: {feedback.run_id}")
+    return {"status": "feedback ingested"}
+
 
 if __name__ == "__main__":
     import uvicorn
+
     if not GOOGLE_API_KEY:
-        logger.warning("GOOGLE_API_KEY not found in environment. Real AI modules will fail.")
+        logger.warning(
+            "GOOGLE_API_KEY not found in environment. Real AI modules will fail."
+        )
     uvicorn.run(app, host="0.0.0.0", port=8000)
