@@ -8,6 +8,7 @@ from .llm_client import LLMClient
 from loguru import logger
 from utils.analogy_store import analogy_store
 
+
 class ScriptGenerator:
     def __init__(self):
         self.llm = LLMClient()
@@ -18,25 +19,75 @@ class ScriptGenerator:
         self.strategies = {
             "Intuition-First": "Intuition → Formula → Application (best for IB/AP students comfortable with abstraction)",
             "Cognitive-Conflict": "Misconception → Correction → Reconstruction (best for topics with strong prior errors)",
-            "Inductive": "Example → Generalization (best for concrete learners, younger audiences)"
+            "Inductive": "Example → Generalization (best for concrete learners, younger audiences)",
         }
 
-    async def generate_variants(self, concept_graph: ConceptGraph, student_model: StudentModel, fact_bundle: FactBundle, model_override: str = None) -> List[FullScript]:
+        # Load misconception library
+        self.misconception_library = self._load_misconceptions()
+
+    def _load_misconceptions(self) -> Dict[str, Dict[str, List[str]]]:
+        """Load the misconception library from resources/misconceptions.json."""
+        path = "resources/misconceptions.json"
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                return json.load(f)
+        logger.warning(
+            "Misconception library not found at resources/misconceptions.json"
+        )
+        return {}
+
+    def get_relevant_misconceptions(
+        self, concept_graph: ConceptGraph
+    ) -> Dict[str, List[str]]:
+        """Fetch misconceptions for concepts in the graph from the library."""
+        found = {}
+        for node in concept_graph.nodes:
+            for subject, concepts in self.misconception_library.items():
+                for concept, misconceptions in concepts.items():
+                    if (
+                        concept.lower() in node.concept.lower()
+                        or node.concept.lower() in concept.lower()
+                    ):
+                        found[node.concept] = misconceptions
+                        break
+        return found
+
+    async def generate_variants(
+        self,
+        concept_graph: ConceptGraph,
+        student_model: StudentModel,
+        fact_bundle: FactBundle,
+        model_override: str = None,
+    ) -> List[FullScript]:
         """Generate all three pedagogical variants in parallel."""
         # Use CONTEST_MODE to determine parallelism, but rate limit it
         is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
         variants = []
-        
+
         # We process sequentially to avoid Gemini API key pool exhaustion
         for strategy_name, strategy_desc in self.strategies.items():
-            variant = await self.generate(concept_graph, student_model, fact_bundle, strategy_name, strategy_desc, model_override)
+            variant = await self.generate(
+                concept_graph,
+                student_model,
+                fact_bundle,
+                strategy_name,
+                strategy_desc,
+                model_override,
+            )
             variants.append(variant)
             await asyncio.sleep(1)  # Brief pause to avoid rate limits
-            
+
         return variants
 
-    async def generate(self, concept_graph: ConceptGraph, student_model: StudentModel, fact_bundle: FactBundle, 
-                       strategy_name: str = "Intuition-First", strategy_desc: str = None, model_override: str = None) -> FullScript:
+    async def generate(
+        self,
+        concept_graph: ConceptGraph,
+        student_model: StudentModel,
+        fact_bundle: FactBundle,
+        strategy_name: str = "Intuition-First",
+        strategy_desc: str = None,
+        model_override: str = None,
+    ) -> FullScript:
         if not self.google_api_key and not self.openrouter_api_key:
             logger.warning("No LLM API keys found, falling back to mock data.")
             return self.get_mock_data(concept_graph, strategy_name)
@@ -54,6 +105,9 @@ class ScriptGenerator:
         PEDAGOGICAL ANALOGIES (Use if relevant):
         {json.dumps(self.get_relevant_analogies(concept_graph), indent=2)}
 
+        COMMON MISCONCEPTIONS (Address in narration for Cognitive-Conflict strategy):
+        {json.dumps(self.get_relevant_misconceptions(concept_graph), indent=2)}
+
         SCAFFOLDING STRATEGY: {strategy_name} ({strategy_desc})
 
         Requirements:
@@ -63,6 +117,7 @@ class ScriptGenerator:
         4. Citations: Every factual claim must be attributed to a source in the facts.
         5. Hook: First 60 seconds must have a curiosity trigger.
         6. Checks: Include Socratic questions or checks for understanding.
+        7. For Cognitive-Conflict strategy, explicitly address and correct the listed misconceptions.
 
         Return the data as a JSON object matching this schema:
         {{
@@ -88,7 +143,7 @@ class ScriptGenerator:
             response_text = await self.llm.generate_text(
                 prompt=prompt,
                 model_override=model_override,
-                system_instruction=f"You are an expert educational content creator using the '{strategy_name}' pedagogical strategy."
+                system_instruction=f"You are an expert educational content creator using the '{strategy_name}' pedagogical strategy.",
             )
             data = extract_json(response_text)
             # Ensure strategy name is preserved
@@ -98,35 +153,39 @@ class ScriptGenerator:
             logger.error(f"Error generating script ({strategy_name}): {str(e)}")
             return self.get_mock_data(concept_graph, strategy_name)
 
-    def get_mock_data(self, concept_graph: ConceptGraph, strategy_name: str = "Intuition-First") -> FullScript:
+    def get_mock_data(
+        self, concept_graph: ConceptGraph, strategy_name: str = "Intuition-First"
+    ) -> FullScript:
         return FullScript(
             title="Introductory Lesson",
             scaffolding_strategy=strategy_name,
             segments=[
                 ScriptSegment(
                     segment_id="seg_0",
-                    concept=concept_graph.nodes[0].concept if concept_graph.nodes else "Intro",
+                    concept=concept_graph.nodes[0].concept
+                    if concept_graph.nodes
+                    else "Intro",
                     narration=f"Welcome to this {strategy_name} lesson.",
                     visual_type="Animation",
                     visual_content_spec="Title slide",
-                    duration_seconds=30.0
+                    duration_seconds=30.0,
                 )
             ],
             hook="Ready to learn?",
-            checks=[]
+            checks=[],
         )
 
     def get_relevant_analogies(self, concept_graph: ConceptGraph) -> Dict[str, str]:
         """Fetch pre-curated analogies for concepts in the graph."""
         found = {}
-        # We don't have 'subject' in concept_graph yet, 
+        # We don't have 'subject' in concept_graph yet,
         # so we check all subjects for matching concept keywords.
         subjects = ["Computer Science", "Physics", "Biology", "Mathematics"]
-        
+
         for node in concept_graph.nodes:
             for subject in subjects:
                 analogy = analogy_store.get_analogy(subject, node.concept)
                 if analogy:
                     found[node.concept] = analogy
-                    break # Move to next node
+                    break  # Move to next node
         return found
