@@ -17,6 +17,7 @@ services:
       - ./temp:/app/temp
       - ./m8_feedback.json:/app/m8_feedback.json
       - ./m8_errors.json:/app/m8_errors.json
+      - ./strategy_stats.json:/app/strategy_stats.json
     environment:
       - PYTHONUNBUFFERED=1
     extra_hosts:

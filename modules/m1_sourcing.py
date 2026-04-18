@@ -482,7 +482,9 @@ class SourcingModule:
         """
 
         try:
-            response_text = await client.generate_text(prompt, temperature=0.3)
+            response_text = await client.generate_text(
+                prompt, temperature=0.3, model_size="medium"
+            )
             # Find the JSON array in the response
             start = response_text.find("[")
             end = response_text.rfind("]") + 1

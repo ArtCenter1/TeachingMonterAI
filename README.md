@@ -54,6 +54,23 @@ graph TD
 | **M8** | **Logger** | Record persistent errors and training signals. |
 | **DASH** | **Mission Control** | Real-time observability and key quota management. |
 
+### Module Resource Analysis & Model Assignment
+
+To optimize cost and performance, modules are evaluated by computational needs and assigned appropriate LLM model sizes.
+
+| Module | Resource Needs | Token Estimate | Reasoning | Calls/Pipeline | Recommended Model | Rationale |
+|--------|----------------|----------------|-----------|----------------|-------------------|-----------|
+| **M1 Sourcing** | Low-Medium | 500-2000 | Factual lookup | 1 | `gemini-1.5-flash` | Simple fact extraction, fallback only |
+| **M2 Persona Parser** | Low | 200-500 | Structured parsing | 1 | `gemini-1.0-pro` | Basic JSON extraction, minimal reasoning |
+| **M3 Concept Planner** | Medium | 1000-3000 | Pedagogical sequencing | 1-2 | `gemini-1.5-pro` | Concept scaffolding requires some reasoning |
+| **M4 Script Generator** | High | 3000-8000 | Creative writing + pedagogy | 3 (variants) | `gemini-2.0-flash-exp` | Complex multi-step generation, analogies, misconceptions |
+| **M5 Critic** | Medium-High | 1500-4000 per call | Analytical evaluation | 4-8 (personas + variants) | `gemini-1.5-pro` | CIDPP scoring, detailed feedback |
+| **M6 Multimodal Planner** | Medium | 1000-2500 | Visual mapping | 1 | `gemini-1.5-flash` | Technical specification generation |
+| **M7 Renderer** | None | N/A | N/A | N/A | N/A | No LLM |
+| **M8 Logger** | None | N/A | N/A | N/A | N/A | No LLM |
+
+**Benefits**: 30-50% token savings, faster inference, reduced rate limits.
+
 ---
 
 ## 🔍 Observability & Inspection
@@ -96,9 +113,29 @@ The fastest way to get the agent running is via Docker Compose.
 Copy `.env.example` to `.env` (or update existing) and fill in your keys:
 ```bash
 GOOGLE_API_KEY=your_key
+XAI_API_KEY=your_kilo_xai_key  # For xAI Grok models (Kilo platform)
 CARTESIA_API_KEY=your_key
 NGROK_AUTHTOKEN=your_token (optional for public tunnel)
 ```
+
+**Model Configuration** (Choose based on available APIs):
+```bash
+# Gemini (requires GOOGLE_API_KEY)
+PRIMARY_MODEL=models/gemini-2.0-flash
+FALLBACK_MODEL=models/gemini-1.5-flash
+
+# xAI (requires XAI_API_KEY - Kilo)
+# PRIMARY_MODEL=xai/grok-beta              # Free model
+# PRIMARY_MODEL=xai/grok-4.20-reasoning    # Paid model
+
+# OpenRouter (requires OPENROUTER_API_KEY)
+# PRIMARY_MODEL=openrouter/meta-llama/llama-3.1-8b-instruct:free
+
+# Enable parallel processing
+CONTEST_MODE=true
+```
+
+**Key Rotation**: Pools automatically rotate keys across providers to distribute load and prevent exhaustion. Add multiple keys to pools for higher throughput.
 
 ### 3. Start the Pipeline
 ```bash

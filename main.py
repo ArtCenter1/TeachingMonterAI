@@ -234,6 +234,7 @@ async def submit_ai_student_feedback(feedback: AIStudentFeedback):
         run_id=feedback.run_id,
         ai_student_scores=feedback.ai_student_scores,
         critique_text=feedback.critique_text,
+        elo_outcome=feedback.elo_outcome,
     )
     if not success:
         raise HTTPException(
@@ -242,6 +243,15 @@ async def submit_ai_student_feedback(feedback: AIStudentFeedback):
         )
     logger.info(f"AI Student feedback ingested for run_id: {feedback.run_id}")
     return {"status": "feedback ingested"}
+
+
+@app.get("/dev/strategy-stats")
+def get_strategy_stats():
+    """Phase 3: Return live strategy win-rate data for the meta-policy dashboard."""
+    return {
+        "stats": m8.strategy_tracker.get_full_stats(),
+        "win_rates": m8.strategy_tracker.get_win_rates(),
+    }
 
 
 if __name__ == "__main__":

@@ -47,7 +47,8 @@ class PersonaParser:
             response_text = await self.llm.generate_text(
                 prompt=prompt,
                 model_override=model_override,
-                system_instruction="You are a pedagogical expert who extracts student mental models.",
+                temperature=0.3,  # Lower temperature for consistent parsing
+                model_size="small",
             )
             data = extract_json(response_text)
             return StudentModel(**data)
