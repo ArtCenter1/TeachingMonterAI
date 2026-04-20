@@ -97,6 +97,7 @@ async def call_with_pool(
                 logger.warning(
                     f"[keyrotator:gemini] {entry.alias} failed ({code}), rotating..."
                 )
+                await asyncio.sleep(2)  # Prevent rapid-fire exhaustion across shared IP limits
                 continue  # try next key
             else:
                 # Non-quota error (e.g. invalid content, network issue)
