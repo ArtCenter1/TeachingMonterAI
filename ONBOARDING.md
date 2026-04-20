@@ -192,6 +192,11 @@ Copy that entire JSON string. Open `.env` and paste it as the value of `NOTEBOOK
 NOTEBOOKLM_AUTH_JSON={"cookies":[{"name":"SID","value":"..."},...]}
 ```
 > **Important:** The JSON must be on a **single line** in `.env` (no newlines inside the value).
+>
+> **CRITICAL (Docker Escaping):** If your JSON contains dollar signs (`$`), which is common in Google's session IDs, Docker-compose will try to interpret them as variable placeholders. You **MUST** escape every `$` by doubling it to `$$`.
+> *   *Incorrect*: `"value": "...s1$o1$g1..."`
+> *   *Correct*: `"value": "...s1$$o1$$g1..."`
+
 
 **Step 4 — Rebuild the container so it picks up the new env:**
 ```powershell
@@ -262,7 +267,10 @@ The notebook is **reused** across runs — it accumulates sources over time and 
 ### Session Renewal Checklist (every ~2 weeks)
 - [ ] Run `notebooklm login` on host
 - [ ] Run `notebooklm list` to verify
-- [ ] Copy new `storage_state.json` contents into `.env → NOTEBOOKLM_AUTH_JSON`
+- [ ] Copy `storage_state.json` contents into `.env → NOTEBOOKLM_AUTH_JSON`
+- [ ] **Escape Dollar Signs:** Replace all `$` with `$$` in the JSON string inside `.env`
+- [ ] Ensure the entire JSON is on a single line
+
 - [ ] Run `docker compose up -d app` (no rebuild needed, just env reload)
 - [ ] Check `docker compose logs app | Select-String "NotebookLM"` shows success
 

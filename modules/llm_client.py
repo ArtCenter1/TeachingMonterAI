@@ -13,7 +13,7 @@ from tenacity import (
 )
 from loguru import logger
 
-from keyrotator.pool import KeyPool, AllKeysExhaustedError
+from keyrotator.pool import KeyPool, KeyState, AllKeysExhaustedError
 from keyrotator.providers import gemini as gemini_provider
 from keyrotator.providers import openrouter as openrouter_provider
 from keyrotator.providers import xai as xai_provider
@@ -117,19 +117,19 @@ class LLMClient:
         # Map model_size to preferred models (use OpenRouter for speed in dev mode)
         size_to_models = {
             "small": [
-                "openrouter/google/gemini-2.0-flash-lite-preview-02-05:free",
-                "openrouter/meta-llama/llama-3.1-8b-instruct",
+                "openrouter/google/gemma-3-12b-it:free",
+                "openrouter/meta-llama/llama-3.2-3b-instruct:free",
                 "kilo/nvidia/nemotron-3-super-120b-a12b:free",
                 "models/gemini-1.5-flash",
             ],
             "medium": [
-                "openrouter/google/gemini-2.0-flash-exp:free",
-                "openrouter/meta-llama/llama-3.1-405b-instruct:free",
+                "openrouter/meta-llama/llama-3.3-70b-instruct:free",
+                "openrouter/google/gemma-3-27b-it:free",
                 "kilo/nvidia/nemotron-3-super-120b-a12b:free",
                 "models/gemini-1.5-pro",
             ],
             "large": [
-                "openrouter/google/gemini-2.0-flash-exp:free",
+                "openrouter/nousresearch/hermes-3-llama-3.1-405b:free",
                 "openrouter/meta-llama/llama-3.3-70b-instruct:free",
                 "kilo/nvidia/nemotron-3-super-120b-a12b:free",
                 "models/gemini-2.0-flash-exp",
@@ -171,53 +171,56 @@ class LLMClient:
                     self._avoid_models[model] = time.time() + 300  # Avoid for 5 mins
 
                     try:
-                        # 1. Refresh discovery if stale (> 1 hour) or never run
-                        if not self._discovered_models or (
-                            time.time() - self._last_discovery_time > 3600
-                        ):
-                            logger.info("Refreshing Gemini model list...")
-                            client = genai.Client(api_key=self.google_api_key)
-                            self._discovered_models = [
-                                m.name for m in client.models.list()
+                        # Only attempt Gemini resilience if keys are available
+                        gemini_available = any(k.state in [KeyState.HEALTHY, KeyState.RATE_LIMITED] for k in self.gemini_pool._entries)
+                        
+                        if gemini_available:
+                            # 1. Refresh discovery if stale (> 1 hour) or never run
+                            if not self._discovered_models or (
+                                time.time() - self._last_discovery_time > 3600
+                            ):
+                                logger.info("Refreshing Gemini model list...")
+                                client = genai.Client(api_key=self.google_api_key)
+                                self._discovered_models = [
+                                    m.name for m in client.models.list()
+                                ]
+                                self._last_discovery_time = time.time()
+
+                            # 2. Pick the best healthy candidate we haven't tried or blacklisted
+                            candidates = [
+                                m
+                                for m in self._discovered_models
+                                if m not in models_to_try and m not in self._avoid_models
                             ]
-                            self._last_discovery_time = time.time()
 
-                        # 2. Pick the best healthy candidate we haven't tried or blacklisted
-                        candidates = [
-                            m
-                            for m in self._discovered_models
-                            if m not in models_to_try and m not in self._avoid_models
-                        ]
+                            # Preference: gemini-2.0-flash > gemini-1.5-flash > anything discovery saw
+                            new_fallback = None
+                            if candidates:
+                                for pref in ["2.0-flash", "2.5-flash", "1.5-flash"]:
+                                    match = next((m for m in candidates if pref in m), None)
+                                    if match:
+                                        new_fallback = match
+                                        break
+                                if not new_fallback:
+                                    new_fallback = candidates[0]
 
-                        # Preference: gemini-2.0-flash > gemini-1.5-flash > anything discovery saw
-                        new_fallback = None
-                        if candidates:
-                            for pref in ["2.0-flash", "2.5-flash", "1.5-flash"]:
-                                match = next((m for m in candidates if pref in m), None)
-                                if match:
-                                    new_fallback = match
-                                    break
-                            if not new_fallback:
-                                new_fallback = candidates[0]
-
-                        if new_fallback:
-                            logger.info(
-                                f"Resilience: Falling back to auto-discovered healthy model: {new_fallback}"
-                            )
-                            return await self._execute_request(
-                                new_fallback,
-                                prompt,
-                                system_instruction,
-                                temperature,
-                                max_tokens,
-                            )
+                            if new_fallback:
+                                logger.info(
+                                    f"Resilience: Falling back to auto-discovered healthy model: {new_fallback}"
+                                )
+                                return await self._execute_request(
+                                    new_fallback,
+                                    prompt,
+                                    system_instruction,
+                                    temperature,
+                                    max_tokens,
+                                )
                     except Exception as inner_e:
                         logger.error(f"Resilience recovery failed: {inner_e}")
 
                 logger.warning(f"Model {model} failed: {str(e)}")
-                # If it's a 429 (Rate Limit) on OpenRouter, wait a bit
-                if "429" in str(e) and "openrouter" in str(e).lower():
-                    await asyncio.sleep(2)
+                # Universal backoff before trying the next model to prevent rapid key burning
+                await asyncio.sleep(2)
                 continue
 
         logger.error(f"All models failed for prompt. Last error: {str(last_exception)}")
