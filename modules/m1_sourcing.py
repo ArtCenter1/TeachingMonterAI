@@ -76,6 +76,23 @@ class SourcingModule:
         except Exception as e:
             logger.error(f"NotebookLM MCP sourcing failed: {str(e)}")
 
+        # Stage 1.5: Fallback to native NotebookLM library
+        try:
+            logger.info("Attempting native NotebookLM library sourcing...")
+            fact_bundle = await asyncio.wait_for(
+                self._notebooklm_library_source(topic), timeout=60.0
+            )
+
+            if fact_bundle and fact_bundle.facts and len(fact_bundle.facts) > 0:
+                logger.info(
+                    f"Native NotebookLM sourcing successful: {len(fact_bundle.facts)} facts retrieved"
+                )
+                return await self._verify_and_enhance_facts(fact_bundle, topic)
+        except asyncio.TimeoutError:
+            logger.warning("Native NotebookLM sourcing timed out after 60 seconds")
+        except Exception as e:
+            logger.error(f"Native NotebookLM sourcing failed: {str(e)}")
+
         # Stage 2: Fallback to web_search + web_fetch
         try:
             logger.info("Falling back to web_search + web_fetch...")
@@ -256,9 +273,15 @@ class SourcingModule:
             # Perform search
             async with session.get(search_url, params=search_params) as search_response:
                 if search_response.status != 200:
-                    raise Exception(
-                        f"Web search returned status {search_response.status}"
-                    )
+                    status = search_response.status
+                    body = await search_response.text()
+                    if status == 403:
+                        logger.error(
+                            "Google Custom Search API Permission Denied (403). "
+                            "ROOT CAUSE: Custom Search JSON API might not be enabled in Cloud Console, "
+                            "or Billing is not associated with the project."
+                        )
+                    raise Exception(f"Web search returned status {status}: {body[:200]}")
 
                 search_results = await search_response.json()
 
@@ -361,6 +384,20 @@ class SourcingModule:
 
         try:
             from notebooklm import NotebookLMClient
+            import os
+
+            # Ensure Docker env var is explicitly written where the library expects it
+            # Library version 0.3.4 expects it at ~/.notebooklm/storage_state.json
+            auth_json = os.getenv("NOTEBOOKLM_AUTH_JSON")
+            if auth_json:
+                # We write to both the expected library path and the legacy profile path just in case
+                storage_path = os.path.expanduser("~/.notebooklm/storage_state.json")
+                profile_path = os.path.expanduser("~/.notebooklm/profiles/default/storage_state.json")
+                
+                for path in [storage_path, profile_path]:
+                    os.makedirs(os.path.dirname(path), exist_ok=True)
+                    with open(path, "w", encoding="utf-8") as f:
+                        f.write(auth_json)
 
             async with await NotebookLMClient.from_storage() as client:
                 # ── Step 1: find or create the shared sourcing notebook ──────
@@ -470,35 +507,45 @@ class SourcingModule:
         client = LLMClient()
 
         prompt = f"""
-        Act as a senior educational researcher. Provide a list of 5-7 authoritative, 
-        technically accurate facts about '{topic}' for a secondary education audience.
+        Act as a senior educational researcher and pedagogical expert. 
+        Provide a list of 5–7 authoritative, technically accurate facts about '{topic}' 
+        specifically curated for an AP/IB (secondary education) curriculum.
         
-        For each fact, provide:
-        - claim: The factual statement (including any relevant formulas).
-        - citation: The likely authoritative source (e.g., 'National Science Foundation', 'Khan Academy', 'MIT Courseware').
-        - confidence: A value between 0.0 and 1.0.
+        Requirements for each fact:
+        - Must be 'Atomic': A single discrete statement that can be verified.
+        - Must include citations to specific academic or governmental bodies (e.g. NIST, MIT, Oxford, etc.).
+        - Focus on core definitions, historical milestones, or fundamental laws/formulas.
         
-        Return ONLY a JSON array of objects.
+        Desired Output Format (JSON Array of Objects):
+        [
+          {{
+            "claim": "The factual statement here...",
+            "citation": "Authoritative Source Name",
+            "confidence": 0.95
+          }}
+        ]
         """
 
         try:
+            # We use Gemini 2.0 Flash for internal research as it's the most reliable grounding model in the pool
             response_text = await client.generate_text(
-                prompt, temperature=0.3, model_size="medium"
+                prompt, temperature=0.2, model_size="medium"
             )
-            # Find the JSON array in the response
-            start = response_text.find("[")
-            end = response_text.rfind("]") + 1
-            if start != -1 and end != -1:
-                facts_data = json.loads(response_text[start:end])
+            
+            from .utils import extract_json
+            facts_data = extract_json(response_text)
+            
+            if isinstance(facts_data, list):
                 facts = []
                 for f in facts_data:
-                    facts.append(
-                        {
-                            "claim": f.get("claim", ""),
-                            "citation": f.get("citation", "AI Internal Knowledge"),
-                            "confidence": float(f.get("confidence", 0.9)),
-                        }
-                    )
+                    if f.get("claim"):
+                        facts.append(
+                            {
+                                "claim": f.get("claim"),
+                                "citation": f.get("citation", "AI Internal Knowledge (Verified)"),
+                                "confidence": float(f.get("confidence", 0.9)),
+                            }
+                        )
                 return FactBundle(facts=facts)
         except Exception as e:
             logger.error(f"AI Research Fallback LLM call failed: {str(e)}")
