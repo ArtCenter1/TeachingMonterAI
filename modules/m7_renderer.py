@@ -130,16 +130,15 @@ class VideoRenderer:
         if os.path.exists(audio_path): return audio_path
 
         logger.info(f"M7: Generating voice for segment {segment.segment_id}")
-        # Standard Cartesia sync call (simplifying for now, can be async)
-        # Note: Using the v1/v2 style client matching current environment
-        data = self.client.tts.bytes(
+        data_iterator = self.client.tts.bytes(
             model_id="sonic-english",
             transcript=segment.narration,
-            voice_id=self.voice_id,
+            voice={"mode": "id", "id": self.voice_id},
             output_format={"container": "wav", "encoding": "pcm_s16le", "sample_rate": 44100},
         )
         with open(audio_path, "wb") as f:
-            f.write(data)
+            for chunk in data_iterator:
+                f.write(chunk)
         return audio_path
 
     async def _source_visual(self, visual: Dict[str, Any], duration: float):
