@@ -1,10 +1,9 @@
-version: "3.9"
 
 services:
   # ── Teaching Monster FastAPI Backend ──────────────────────────────────────
   app:
     build: .
-    image: teachingmonsterai-app:0.3.0
+    image: teachingmonsterai-app:0.4.0
 
     container_name: teaching-monster-app
     restart: unless-stopped
@@ -46,5 +45,4 @@ services:
 
 networks:
   default:
-    name: openspace_default
-    external: true
+    name: teaching_monster_net

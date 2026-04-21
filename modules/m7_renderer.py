@@ -1,26 +1,45 @@
 import os
 import asyncio
 import subprocess
-from typing import List, Dict, Any
+import random
 import base64
+from typing import List, Dict, Any
 from cartesia import Cartesia
 from .schemas import FullScript
+from .pexels_client import PexelsClient
 from loguru import logger
+
+# Performance note: Moviepy is used for high-level composition.
+# For production Docker images, ensure ImageMagick and FFmpeg are installed.
+try:
+    from moviepy.editor import (
+        VideoFileClip, AudioFileClip, ImageClip, TextClip, 
+        CompositeVideoClip, concatenate_videoclips, ColorClip,
+        CompositeAudioClip, vfx
+    )
+    MOVIEPY_AVAILABLE = True
+except ImportError:
+    MOVIEPY_AVAILABLE = False
+    logger.warning("MoviePy not found. Rendering will be severely limited.")
 
 class VideoRenderer:
     def __init__(self, output_dir="temp/output"):
         self.output_dir = output_dir
         self.temp_audio_dir = "temp/audio"
         self.temp_video_dir = "temp/video"
+        self.assets_dir = "temp/assets"
+        self.pexels = PexelsClient()
         self.api_key = os.getenv("CARTESIA_API_KEY")
         self.voice_id = "cec7cae1-ac8b-4a59-9eac-ec48366f37ae"
-
-        # --- FFmpeg Resolution Chain (with startup probe) ---
-        self.ffmpeg_path = self._resolve_ffmpeg()
+        
+        # Resolution standard
+        self.width = 1080
+        self.height = 1920 # Vertical format for social media/competition "Wow" factor
 
         os.makedirs(self.output_dir, exist_ok=True)
         os.makedirs(self.temp_audio_dir, exist_ok=True)
         os.makedirs(self.temp_video_dir, exist_ok=True)
+        os.makedirs(self.assets_dir, exist_ok=True)
 
         if self.api_key:
             self.client = Cartesia(api_key=self.api_key)
@@ -28,225 +47,153 @@ class VideoRenderer:
             self.client = None
             logger.warning("CARTESIA_API_KEY not found. Video rendering will fail.")
 
-    def _resolve_ffmpeg(self) -> str:
-        """
-        Resolves and validates the ffmpeg binary path at startup.
-        Resolution chain: FFMPEG_PATH env var → 'ffmpeg' in system PATH → local bin/ffmpeg.exe
-        """
-        candidates = []
-
-        # 1. Explicit override via environment variable
-        env_path = os.getenv("FFMPEG_PATH", "").strip()
-        if env_path:
-            candidates.append(("FFMPEG_PATH env var", env_path))
-
-        # 2. System-installed ffmpeg (correct for Docker Linux)
-        candidates.append(("system PATH", "ffmpeg"))
-
-        # 3. Local Windows binary (only useful on host)
-        local_exe = os.path.join(os.getcwd(), "bin", "ffmpeg.exe")
-        if os.path.exists(local_exe):
-            candidates.append(("local bin/ffmpeg.exe", local_exe))
-
-        for source, path in candidates:
-            try:
-                result = subprocess.run(
-                    [path, "-version"],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    timeout=5
-                )
-                if result.returncode == 0:
-                    version_line = result.stdout.decode(errors="replace").splitlines()[0]
-                    logger.info(f"[M7] Using ffmpeg from {source}: {path} ({version_line})")
-                    return path
-            except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
-                logger.debug(f"[M7] ffmpeg candidate '{path}' (from {source}) not usable.")
-                continue
-
-        raise RuntimeError(
-            f"[M7] No working ffmpeg found. Tried: {[p for _, p in candidates]}. "
-            f"Install ffmpeg or set the FFMPEG_PATH environment variable."
-        )
-
     async def render(self, visual_plan: List[Dict[str, Any]], script: FullScript, run_id: str = "default") -> Dict[str, str]:
-        if not self.client:
+        if not self.client or not MOVIEPY_AVAILABLE:
             return {"video": "error", "subtitles": "error"}
 
-        # Pre-flight: validate that all visual plan images exist before spending API credits
-        missing_images = [
-            v["image_path"]
-            for v in visual_plan
-            if not os.path.exists(v.get("image_path", ""))
-        ]
-        if missing_images:
-            logger.error(f"[M7] Pre-flight failed: {len(missing_images)} missing image(s): {missing_images[:3]}")
-            return {"video": "error", "subtitles": "error", "error": f"Missing images: {missing_images[:3]}"}
-
-        segment_files = []
-        all_timestamps = []
-        global_offset = 0.0
-        
+        segment_clips = []
         run_audio_dir = os.path.join(self.temp_audio_dir, run_id)
-        run_video_dir = os.path.join(self.temp_video_dir, run_id)
         os.makedirs(run_audio_dir, exist_ok=True)
-        os.makedirs(run_video_dir, exist_ok=True)
-        
+
+        logger.info(f"M7: Starting visual rendering for run {run_id}")
+
         for i, segment in enumerate(script.segments):
             visual = next((v for v in visual_plan if v["segment_id"] == segment.segment_id), None)
-            if not visual:
-                continue
+            if not visual: continue
 
-            # Switch to raw PCM file to avoid WAV header issues with FFmpeg
-            audio_path = os.path.join(run_audio_dir, f"{segment.segment_id}.raw")
-            video_path = os.path.join(run_video_dir, f"{segment.segment_id}.mp4")
+            # 1. Generate Narration Audio
+            audio_path = await self._generate_audio(segment, run_audio_dir)
+            audio_clip = AudioFileClip(audio_path)
+            duration = audio_clip.duration
+
+            # 2. Source Visual (Video -> Image -> Slide)
+            visual_clip = await self._source_visual(visual, duration)
+            visual_clip = visual_clip.set_audio(audio_clip)
+
+            # 3. Add Subtitles (Karaoke-style)
+            # For brevity in this iteration, we use simple centered text. 
+            # In Phase 3 we'll add the word-level highlight.
+            caption = segment.narration
+            if len(caption) > 80:
+                caption = caption[:77] + "..."
             
-            logger.info(f"Generating audio for segment {segment.segment_id}")
-            
-            segment_audio_data = b""
-            try:
-                # Use connection.context() for v3.x SDK compatibility (fixes TypeError in send)
-                with self.client.tts.websocket_connect() as connection:
-                    context = connection.context()
-                    context.send(
-                        model_id="sonic-english",
-                        voice={"mode": "id", "id": self.voice_id},
-                        output_format={"container": "raw", "encoding": "pcm_s16le", "sample_rate": 44100},
-                        transcript=segment.narration,
-                        stream=True,
-                    )
-                    for response in context.receive():
-                        # Collect audio bytes
-                        chunk = getattr(response, "audio", None)
-                        if chunk:
-                            if isinstance(chunk, str):
-                                segment_audio_data += base64.b64decode(chunk)
-                            else:
-                                segment_audio_data += chunk
+            # Subtitle overlay
+            txt_clip = TextClip(
+                caption,
+                fontsize=70,
+                color='white',
+                font='Arial-Bold',
+                stroke_color='black',
+                stroke_width=2,
+                method='caption',
+                size=(self.width*0.8, None),
+                align='Center'
+            ).set_duration(duration).set_position(('center', self.height*0.75))
 
-                        # Collect word timestamps
-                        if getattr(response, "type", None) == "timestamps":
-                            ts_obj = getattr(response, "word_timestamps", None)
-                            if ts_obj:
-                                words  = getattr(ts_obj, "words", [])
-                                starts = getattr(ts_obj, "start", getattr(ts_obj, "starts", []))
-                                ends   = getattr(ts_obj, "end",   getattr(ts_obj, "ends", []))
-                                for word, start, end in zip(words, starts, ends):
-                                    all_timestamps.append({
-                                        "word":  str(word),
-                                        "start": float(start) + global_offset,
-                                        "end":   float(end)   + global_offset,
-                                    })
-                        elif getattr(response, "type", None) == "error":
-                            logger.error(f"Cartesia stream error on {segment.segment_id}: {response}")
+            # Combine
+            final_segment = CompositeVideoClip([visual_clip, txt_clip], size=(self.width, self.height))
+            segment_clips.append(final_segment)
 
-                # Write raw PCM data
-                if not segment_audio_data:
-                    logger.warning(f"No audio for {segment.segment_id}, using silence")
-                    segment_audio_data = b"\x00" * 88200 # 1s silence
-
-                with open(audio_path, "wb") as f:
-                    f.write(segment_audio_data)
-
-            except Exception as e:
-                logger.exception(f"Audio generation failed for {segment.segment_id}: {str(e)}")
-                segment_audio_data = b"\x00" * 88200
-                with open(audio_path, "wb") as f:
-                    f.write(segment_audio_data)
-            
-            audio_duration = len(segment_audio_data) / (44100.0 * 2.0)
-            image_path = visual["image_path"]
-            
-            # FFmpeg Command for segment - Using raw PCM options
-            cmd = [
-                self.ffmpeg_path, "-y",
-                "-threads", "1",
-                "-loop", "1", "-t", str(audio_duration), "-i", image_path,
-                "-f", "s16le", "-ar", "44100", "-ac", "1", "-i", audio_path,
-                "-vf", "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,format=yuv420p",
-                "-c:v", "libx264",
-                "-preset", "ultrafast",
-                "-c:a", "aac",
-                "-b:a", "192k",
-                "-map", "0:v:0",
-                "-map", "1:a:0",
-                video_path
-            ]
-            
-            logger.info(f"Rendering segment {segment.segment_id}")
-            
-            # Use asyncio.to_thread with subprocess.run for Windows compatibility
-            def run_ffmpeg():
-                return subprocess.run(
-                    cmd, 
-                    stdout=subprocess.PIPE, 
-                    stderr=subprocess.PIPE,
-                    check=False
-                )
-
-            result = await asyncio.to_thread(run_ffmpeg)
-            stdout, stderr = result.stdout, result.stderr
-            returncode = result.returncode
-            
-            if returncode == 0:
-                segment_files.append(video_path)
-                global_offset += audio_duration
-            else:
-                logger.error(f"FFmpeg failed for segment {segment.segment_id}: {stderr.decode() if stderr else 'unknown error'}")
-
-        # Final Concatenation
-        if not segment_files:
-            return {"video": "error", "subtitles": "error"}
-
-        final_filename = f"final_video_{run_id}.mp4"
-        final_video_path = os.path.join(self.output_dir, final_filename)
-        concat_list_path = os.path.join(run_video_dir, "concat_list.txt")
+        # 4. Concatenate and add BGM
+        logger.info("M7: Concatenating segments and adding BGM...")
+        final_video = concatenate_videoclips(segment_clips, method="compose")
         
-        with open(concat_list_path, "w") as f:
-            for sf in segment_files:
-                abs_path = os.path.abspath(sf).replace('\\', '/')
-                f.write(f"file '{abs_path}'\n")
+        # Add BGM
+        bgm_path = "resources/bg_music.mp3"
+        if os.path.exists(bgm_path):
+            bgm = AudioFileClip(bgm_path).volumex(0.15).loop(duration=final_video.duration)
+            final_audio = CompositeAudioClip([final_video.audio, bgm])
+            final_video = final_video.set_audio(final_audio)
 
-        concat_cmd = [
-            self.ffmpeg_path, "-y",
-            "-f", "concat", "-safe", "0", "-i", concat_list_path,
-            "-c", "copy",
-            final_video_path
-        ]
+        # 5. Export
+        output_filename = f"TeachingMonster_{run_id}.mp4"
+        output_path = os.path.join(self.output_dir, output_filename)
         
-        logger.info(f"Concatenating all segments into {final_filename}")
-        
-        def run_concat():
-            return subprocess.run(
-                concat_cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False
-            )
+        # Use low-res/fast preset for competition speed
+        final_video.write_videofile(
+            output_path,
+            fps=24,
+            codec="libx264",
+            audio_codec="aac",
+            threads=4,
+            preset="ultrafast"
+        )
 
-        concat_result = await asyncio.to_thread(run_concat)
-        # We don't strictly need to wait for result.stdout if we don't log it
-        
-        # SRT Generation
-        subtitle_filename = f"subtitles_{run_id}.srt"
-        subtitle_path = os.path.join(self.output_dir, subtitle_filename)
-        self._generate_srt(all_timestamps, subtitle_path)
-        
-        return {"video": final_filename, "subtitles": subtitle_filename}
+        # Cleanup moviepy objects
+        for clip in segment_clips: clip.close()
+        final_video.close()
 
-    def _generate_srt(self, timestamps: List[Dict[str, Any]], output_path: str):
-        def format_time(seconds: float) -> str:
-            hrs = int(seconds // 3600)
-            mins = int((seconds % 3600) // 60)
-            secs = int(seconds % 60)
-            ms = int((seconds % 1) * 1000)
-            return f"{hrs:02}:{mins:02}:{secs:02},{ms:03}"
+        return {"video": output_filename, "subtitles": "built-in"}
 
-        with open(output_path, "w", encoding="utf-8") as f:
-            block_size = 6
-            for i in range(0, len(timestamps), block_size):
-                chunk = timestamps[i : i + block_size]
-                if not chunk: continue
-                f.write(f"{i // block_size + 1}\n")
-                f.write(f"{format_time(chunk[0]['start'])} --> {format_time(chunk[-1]['end'])}\n")
-                f.write(f"{' '.join([c['word'] for c in chunk]).strip()}\n\n")
+    async def _generate_audio(self, segment: Any, output_dir: str) -> str:
+        audio_path = os.path.join(output_dir, f"{segment.segment_id}.wav")
+        if os.path.exists(audio_path): return audio_path
+
+        logger.info(f"M7: Generating voice for segment {segment.segment_id}")
+        # Standard Cartesia sync call (simplifying for now, can be async)
+        # Note: Using the v1/v2 style client matching current environment
+        data = self.client.tts.bytes(
+            model_id="sonic-english",
+            transcript=segment.narration,
+            voice_id=self.voice_id,
+            output_format={"container": "wav", "encoding": "pcm_s16le", "sample_rate": 44100},
+        )
+        with open(audio_path, "wb") as f:
+            f.write(data)
+        return audio_path
+
+    async def _source_visual(self, visual: Dict[str, Any], duration: float):
+        keywords = visual.get("pexels_keywords", [])
+        
+        # Try Video
+        video_url = await self.pexels.search_videos(keywords)
+        if video_url:
+            video_path = await self.pexels.download_asset(video_url, "video")
+            if video_path:
+                clip = VideoFileClip(video_path)
+                # Loop if video too short, crop if too long
+                if clip.duration < duration:
+                    clip = clip.loop(duration=duration)
+                else:
+                    # Random start time for variety
+                    start_t = random.uniform(0, max(0, clip.duration - duration))
+                    clip = clip.subclip(start_t, start_t + duration)
+                
+                # Resize and Crop to fill Vertical
+                return self._resize_to_fill(clip)
+
+        # Fallback to Slide (Static)
+        image_path = visual.get("image_path")
+        if image_path and os.path.exists(image_path):
+            clip = ImageClip(image_path).set_duration(duration)
+            # Add subtle zoom (Ken Burns)
+            clip = clip.resize(lambda t: 1 + 0.05 * t/duration)
+            return self._resize_to_fill(clip)
+
+        # Ultimate Fallback: Blue Screen
+        return ColorClip(size=(self.width, self.height), color=(0, 0, 100)).set_duration(duration)
+
+    def _resize_to_fill(self, clip):
+        # Scale to fill the 1080x1920 frame while maintaining aspect ratio
+        w, h = clip.size
+        target_ratio = self.width / self.height
+        clip_ratio = w / h
+        
+        if clip_ratio > target_ratio:
+            # Clip is wider than target - scale based on height
+            new_h = self.height
+            new_w = int(w * (self.height / h))
+            clip = clip.resize(height=new_h)
+            # Center crop
+            margin = (new_w - self.width) / 2
+            clip = clip.crop(x1=margin, x2=new_w - margin)
+        else:
+            # Clip is taller than target (rare for landscape pexels)
+            new_w = self.width
+            new_h = int(h * (self.width / w))
+            clip = clip.resize(width=new_w)
+            # Center crop
+            margin = (new_h - self.height) / 2
+            clip = clip.crop(y1=margin, y2=new_h - margin)
+            
+        return clip.set_position("center")

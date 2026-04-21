@@ -11,4 +11,9 @@ pillow
 cartesia
 loguru
 tenacity
-notebooklm-py
+chromadb
+sentence-transformers
+moviepy<2.0.0
+pyyaml
+requests
+torch

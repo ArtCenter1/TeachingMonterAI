@@ -6,8 +6,9 @@ import time
 from typing import Dict, Any, Optional, List
 from dotenv import load_dotenv
 from .schemas import FactBundle
-from .mcp_client import OpenSpaceMCPClient
 from loguru import logger
+from .rag_retriever import retriever
+import yaml
 
 
 def _extract_json_from_text(text: str) -> Any:
@@ -38,9 +39,45 @@ class SourcingModule:
         # is no longer used for the primary sourcing path.
         self.fallback_search_api_key = os.getenv("SEARCH_API_KEY")
         self.search_cx = os.getenv("SEARCH_CX", "017576662512468239146:omuauf_lfve")
+        self.domains = self._load_domain_registry()
         logger.debug(
-            "SourcingModule initialised (primary path: OpenSpace MCP → web_search → AI → mock)"
+            "SourcingModule initialised (primary path: Local RAG → AI Research → web_search)"
         )
+
+    def _load_domain_registry(self) -> List[Dict[str, Any]]:
+        """Loads the domain configuration from domains.yaml."""
+        config_path = os.path.join('config', 'domains.yaml')
+        if not os.path.exists(config_path):
+            logger.warning(f"Domain config not found at {config_path}")
+            return []
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                data = yaml.safe_load(f)
+                return data.get('domains', [])
+        except Exception as e:
+            logger.error(f"Error loading domain registry: {e}")
+            return []
+
+    def _get_domain_for_topic(self, topic: str) -> Optional[str]:
+        """Infers the domain for a given topic based on registry contents."""
+        topic_lower = topic.lower()
+        # Primary check: exact match or partial match in topic strings
+        for d in self.domains:
+            for t in d.get('topics', []):
+                if t.lower() in topic_lower or topic_lower in t.lower():
+                    return d['name']
+        
+        # Secondary check: keyword heuristic (inherited from legacy logic)
+        if any(k in topic_lower for k in ("physics", "force", "motion", "wave", "energy", "quantum")):
+            return "AP Physics"
+        elif any(k in topic_lower for k in ("biology", "cell", "dna", "gene", "evolution", "organism")):
+            return "AP Biology"
+        elif any(k in topic_lower for k in ("algorithm", "programming", "data structure", "network", "computational")):
+            return "IB Computer Science"
+        elif any(k in topic_lower for k in (" calculus", "algebra", "stats", "probability", "integral", "derivative")):
+            return "AP Mathematics"
+            
+        return None
 
     async def source(
         self,
@@ -57,41 +94,20 @@ class SourcingModule:
         """
         start_time = time.time()
 
-        # Stage 1: Attempt NotebookLM MCP sourcing with 90s timeout
+        # Stage 1: Attempt local RAG sourcing
         try:
-            logger.info("Attempting NotebookLM MCP sourcing...")
-            fact_bundle = await asyncio.wait_for(
-                self._notebooklm_mcp_source(topic), timeout=60.0
-            )
+            logger.info("Attempting local RAG sourcing...")
+            fact_bundle = await self._rag_source(topic)
 
             # Verify the sourcing succeeded
             if fact_bundle and fact_bundle.facts and len(fact_bundle.facts) > 0:
                 logger.info(
-                    f"NotebookLM MCP sourcing successful: {len(fact_bundle.facts)} facts retrieved"
+                    f"RAG sourcing successful: {len(fact_bundle.facts)} facts retrieved"
                 )
                 return await self._verify_and_enhance_facts(fact_bundle, topic)
 
-        except asyncio.TimeoutError:
-            logger.warning("NotebookLM MCP sourcing timed out after 90 seconds")
         except Exception as e:
-            logger.error(f"NotebookLM MCP sourcing failed: {str(e)}")
-
-        # Stage 1.5: Fallback to native NotebookLM library
-        try:
-            logger.info("Attempting native NotebookLM library sourcing...")
-            fact_bundle = await asyncio.wait_for(
-                self._notebooklm_library_source(topic), timeout=60.0
-            )
-
-            if fact_bundle and fact_bundle.facts and len(fact_bundle.facts) > 0:
-                logger.info(
-                    f"Native NotebookLM sourcing successful: {len(fact_bundle.facts)} facts retrieved"
-                )
-                return await self._verify_and_enhance_facts(fact_bundle, topic)
-        except asyncio.TimeoutError:
-            logger.warning("Native NotebookLM sourcing timed out after 60 seconds")
-        except Exception as e:
-            logger.error(f"Native NotebookLM sourcing failed: {str(e)}")
+            logger.error(f"RAG sourcing failed: {str(e)}")
 
         # Stage 2: Fallback to web_search + web_fetch
         try:
@@ -126,126 +142,27 @@ class SourcingModule:
         logger.warning("All sourcing methods failed, using mock data")
         return self.get_mock_data(topic)
 
-    async def _notebooklm_mcp_source(self, topic: str) -> FactBundle:
-        """
-        Source facts via the OpenSpace Evolution Engine.
-
-        OpenSpace auto-discovers locally installed skills.  When the
-        ``notebooklm`` skill is present (installed via ``notebooklm-py``),
-        it will create a notebook, add authoritative IB/AP sources, and
-        return grounded facts with citations.  Without the skill, OpenSpace
-        falls back to its own web-search and reasoning capabilities.
-
-        Per the PRD (§4.2), the MCP Server is the PRIMARY sourcing path.
-        This method honours the 90-second budget set by the caller's
-        ``asyncio.wait_for`` wrapper in ``source()``.
-        """
-        client = OpenSpaceMCPClient()
-
-        # Fail fast if engine is not reachable — triggers Stage 2 fallback
-        if not await client.health_check():
-            raise ConnectionError(
-                "OpenSpace engine unreachable at %s" % client.base_url
-            )
-
-        # Infer subject domain from topic keywords for source-hint injection
-        topic_lower = topic.lower()
-        if any(
-            k in topic_lower
-            for k in ("physics", "force", "motion", "wave", "energy", "quantum")
-        ):
-            source_hint = "IB Physics textbook, AP Physics CED, Khan Academy physics"
-        elif any(
-            k in topic_lower
-            for k in ("biology", "cell", "dna", "gene", "evolution", "organism")
-        ):
-            source_hint = (
-                "IB Biology textbook, AP Biology CED, reviewed .edu biology sources"
-            )
-        elif any(
-            k in topic_lower
-            for k in (
-                "algorithm",
-                "programming",
-                "data structure",
-                "network",
-                "attention",
-                "machine learning",
-                "recursion",
-                "sorting",
-            )
-        ):
-            source_hint = (
-                "IB CS guide, CS50 transcripts, official language documentation"
-            )
-        elif any(
-            k in topic_lower
-            for k in (
-                "calculus",
-                "algebra",
-                "geometry",
-                "statistics",
-                "probability",
-                "trigonometry",
-                "derivative",
-                "integral",
-            )
-        ):
-            source_hint = (
-                "IB Math AA/AI guide, AP Calculus CED, standard textbook chapters"
-            )
-        else:
-            source_hint = (
-                "IB/AP curriculum guides, Khan Academy, .edu educational resources"
-            )
-
-        task = (
-            f"Research the educational topic '{topic}' for a secondary education audience "
-            f"(AP/IB level). "
-            f"Use the following as primary authoritative sources: {source_hint}. "
-            f"Return a JSON object with this exact structure — no markdown, no extra keys:\n"
-            f"{{\n"
-            f'  "facts": [\n'
-            f'    {{"claim": "The factual statement", "citation": "Source title / URL / page", "confidence": 0.9}}\n'
-            f"  ],\n"
-            f'  "study_guide_url": null\n'
-            f"}}\n"
-            f"Provide at least 5 unique, verifiable facts with citations. "
-            f"If a fact is uncertain, lower the confidence score. "
-            f"Do NOT hallucinate citations."
-        )
-
-        logger.info("Delegating M1 sourcing to OpenSpace (topic: %s)", topic[:60])
-        raw = await client.execute_task(task, max_iterations=5, search_scope="local")
-        logger.debug("OpenSpace raw sourcing result (first 400 chars): %s", raw[:400])
-
-        # Parse the returned JSON
-        data = _extract_json_from_text(raw)
-
-        facts_raw = data.get("facts", []) if isinstance(data, dict) else []
-        study_guide_url = (
-            data.get("study_guide_url") if isinstance(data, dict) else None
-        )
-
+    async def _rag_source(self, topic: str) -> FactBundle:
+        """Source facts from the local ChromaDB store."""
+        domain = self._get_domain_for_topic(topic)
+        logger.info(f"M1: Topic '{topic}' resolved to domain '{domain}'")
+        
+        chunks = retriever.retrieve(topic, domain=domain, n_results=7)
+        
+        if not chunks:
+            logger.warning("RAG: No grounded chunks found for topic.")
+            return FactBundle(facts=[])
+            
         facts = [
             {
-                "claim": str(f.get("claim", "")),
-                "citation": str(f.get("citation", "OpenSpace + NotebookLM")),
-                "confidence": min(1.0, max(0.0, float(f.get("confidence", 0.8)))),
+                "claim": chunk.strip(),
+                "citation": f"Local Curriculum Content ({domain or 'General'})",
+                "confidence": 0.95
             }
-            for f in facts_raw
-            if f.get("claim")
+            for chunk in chunks if len(chunk.strip()) > 50
         ]
-
-        if not facts:
-            raise ValueError("OpenSpace returned no usable facts for topic: %s" % topic)
-
-        logger.info(
-            "OpenSpace sourcing returned %d facts (study_guide_url=%s)",
-            len(facts),
-            study_guide_url,
-        )
-        return FactBundle(facts=facts, study_guide_url=study_guide_url)
+        
+        return FactBundle(facts=facts)
 
     async def _web_search_fallback(
         self,
@@ -364,106 +281,6 @@ class SourcingModule:
 
         return facts
 
-    async def _notebooklm_library_source(self, topic: str) -> FactBundle:
-        """
-        Native implementation using the official 'notebooklm-py' Python library.
-
-        Auth: Reads from NOTEBOOKLM_AUTH_JSON env var (Docker) or
-              ~/.notebooklm/profiles/default/storage_state.json (host).
-              Run `notebooklm login` once on the host to generate auth,
-              then set NOTEBOOKLM_AUTH_JSON=<contents of storage_state.json>.
-
-        API reference: https://github.com/teng-lin/notebooklm-py
-        Documented methods used:
-            - client.notebooks.list()
-            - client.notebooks.create(title)
-            - client.sources.add_url(nb_id, url, wait=False)
-            - client.chat.ask(nb_id, query)   → result.answer
-        """
-        logger.info("Using native NotebookLM library for sourcing")
-
-        try:
-            from notebooklm import NotebookLMClient
-            import os
-
-            # Ensure Docker env var is explicitly written where the library expects it
-            # Library version 0.3.4 expects it at ~/.notebooklm/storage_state.json
-            auth_json = os.getenv("NOTEBOOKLM_AUTH_JSON")
-            if auth_json:
-                # We write to both the expected library path and the legacy profile path just in case
-                storage_path = os.path.expanduser("~/.notebooklm/storage_state.json")
-                profile_path = os.path.expanduser("~/.notebooklm/profiles/default/storage_state.json")
-                
-                for path in [storage_path, profile_path]:
-                    os.makedirs(os.path.dirname(path), exist_ok=True)
-                    with open(path, "w", encoding="utf-8") as f:
-                        f.write(auth_json)
-
-            async with await NotebookLMClient.from_storage() as client:
-                # ── Step 1: find or create the shared sourcing notebook ──────
-                notebooks = await client.notebooks.list()
-                nb = next(
-                    (n for n in notebooks if "TeachingMonster_Sourcing" in n.title),
-                    None,
-                )
-
-                if not nb:
-                    logger.info(
-                        "Creating 'TeachingMonster_Sourcing' notebook in NotebookLM"
-                    )
-                    nb = await client.notebooks.create("TeachingMonster_Sourcing")
-                    # Seed with Wikipedia so the LLM has a grounded source.
-                    # wait=False so we don't block — ask() still works with LLM knowledge.
-                    try:
-                        wiki_url = (
-                            f"https://en.wikipedia.org/wiki/{topic.replace(' ', '_')}"
-                        )
-                        await client.sources.add_url(nb.id, wiki_url, wait=False)
-                        logger.info(
-                            f"Seeded notebook with Wikipedia source for: {topic}"
-                        )
-                    except Exception as seed_err:
-                        logger.warning(f"Could not seed Wikipedia source: {seed_err}")
-
-                # ── Step 2: ask NotebookLM for pedagogical facts ──────────────
-                query = (
-                    f"You are an educational expert. Provide 5–7 clear, accurate facts "
-                    f"about '{topic}' suitable for AP/IB secondary education students. "
-                    f"Include key formulas, definitions, and core concepts. "
-                    f"Format each fact on its own line starting with a dash (-)."
-                )
-                logger.info(f"Querying NotebookLM for facts on: {topic}")
-                result = await client.chat.ask(nb.id, query)
-
-                if not result or not getattr(result, "answer", None):
-                    logger.warning("NotebookLM returned an empty answer")
-                    return None
-
-                logger.info("NotebookLM sourcing successful")
-                return FactBundle(
-                    facts=[
-                        {
-                            "claim": result.answer,
-                            "citation": "Google NotebookLM",
-                            "confidence": 0.92,
-                        }
-                    ]
-                )
-
-        except Exception as e:
-            logger.error(f"NotebookLM library sourcing failed: {str(e)}")
-            if (
-                "auth" in str(e).lower()
-                or "cookie" in str(e).lower()
-                or "401" in str(e)
-            ):
-                logger.warning(
-                    "NotebookLM auth error — ACTION REQUIRED: "
-                    "Run `notebooklm login` on the host, then copy "
-                    "~/.notebooklm/profiles/default/storage_state.json contents "
-                    "into NOTEBOOKLM_AUTH_JSON in .env. See ONBOARDING.md §8."
-                )
-            raise
 
     async def _verify_and_enhance_facts(
         self, fact_bundle: FactBundle, topic: str
