@@ -1,0 +1,12 @@
+version: "3"
+
+# Minimal ngrok v3 config — timeout is not configurable via YAML in free tier.
+# We solve ERR_NGROK_3004 instead by streaming whitespace heartbeats from
+# the FastAPI app (see main.py _run_pipeline_and_stream), which keeps the
+# TCP connection active without needing any ngrok config changes.
+
+tunnels:
+  app:
+    proto: http
+    addr: http://app:8000
+    domain: lively-living-crane.ngrok-free.app

@@ -154,7 +154,7 @@ class LLMClient:
                 "openrouter/google/gemma-3-12b-it:free",
                 "openrouter/meta-llama/llama-3.2-3b-instruct:free",
                 "kilo/nvidia/nemotron-3-super-120b-a12b:free",
-                "models/gemini-1.5-flash",
+                "models/gemini-2.0-flash",   # gemini-1.5-flash is 404 on v1beta
             ],
             "medium": [
                 "openrouter/meta-llama/llama-3.3-70b-instruct:free",

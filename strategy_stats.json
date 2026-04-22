@@ -13,20 +13,20 @@
     "strategy": "Cognitive-Conflict",
     "level": "high_school",
     "subject": "General",
-    "wins": 0,
+    "wins": 1,
     "losses": 5,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 5
+    "total": 6
   },
   "Intuition-First|StudentLevel.HIGH_SCHOOL|General": {
     "strategy": "Intuition-First",
     "level": "high_school",
     "subject": "General",
-    "wins": 7,
+    "wins": 10,
     "losses": 1,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 8
+    "total": 11
   }
 }
