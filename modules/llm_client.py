@@ -19,8 +19,16 @@ from keyrotator.providers import openrouter as openrouter_provider
 from keyrotator.providers import xai as xai_provider
 from keyrotator.providers import kilo as kilo_provider
 
-# Global rate limit state for LLM calls (15 RPM max = 1 call per ~4 seconds)
-global_llm_lock = asyncio.Lock()
+# Per-pool rate limit locks — Gemini and OpenRouter have independent quotas.
+# With 9 Gemini keys @ 15 RPM each = 135 RPM effective = 1 call per 0.44s.
+# We stay conservative at 2.1s spacing per pool (not per key) to avoid burst issues.
+# OpenRouter free tier: ~10 RPM per key = 90 RPM with 9 keys → 4.2s spacing.
+global_gemini_lock = asyncio.Lock()
+global_router_lock = asyncio.Lock()
+global_last_gemini_time = 0.0
+global_last_router_time = 0.0
+# Legacy alias kept for any external references
+global_llm_lock = global_gemini_lock
 global_last_llm_time = 0.0
 
 
@@ -81,9 +89,10 @@ class LLMClient:
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
         # Primary & Fallback model names
-        self.primary_model = os.getenv("PRIMARY_MODEL", "models/gemini-2.0-flash")
-        self.fallback_model = os.getenv("FALLBACK_MODEL", "models/gemini-1.5-flash")
-        self.gemini_last_resort = "models/gemini-2.0-flash"
+        self.primary_model = os.getenv("PRIMARY_MODEL", "models/gemini-2.5-flash")
+        self.fallback_model = os.getenv("FALLBACK_MODEL", "models/gemini-2.5-flash")
+        # FIX: Last resort must be a live model — gemini-2.0-flash-exp is deprecated/404
+        self.gemini_last_resort = "models/gemini-2.5-flash"
 
         # Use shared pools
         self.gemini_pool = get_gemini_pool()
@@ -102,6 +111,19 @@ class LLMClient:
             f"| xai: {len(self.xai_pool._entries)} keys"
         )
 
+    def _gemini_pool_has_capacity(self) -> bool:
+        """Returns True if at least one Gemini key is HEALTHY or will recover soon (RATE_LIMITED)."""
+        now = time.time()
+        for entry in self.gemini_pool._entries:
+            if entry.state == KeyState.HEALTHY:
+                return True
+            if (entry.state == KeyState.RATE_LIMITED
+                    and entry.quarantine_until is not None
+                    and now >= entry.quarantine_until):
+                # This key will auto-recover on next get_key() call
+                return True
+        return False
+
     async def generate_text(
         self,
         prompt: str,
@@ -113,8 +135,20 @@ class LLMClient:
     ) -> str:
         """
         Unified generation method with multi-stage fallback.
+
+        Priority order:
+          1. model_override (if provided)
+          2. size_to_models[model_size] — OpenRouter first, then Gemini as last entry
+          3. primary_model from .env (if not already in the list)
+          4. fallback_model from .env (if not already in the list)
+          5. gemini_last_resort (hardcoded gemini-2.5-flash as final safety net)
+
+        The key insight: each model is tried sequentially. When an OpenRouter model
+        raises AllKeysExhaustedError OR any other exception, we move to the NEXT
+        model in the list, which will eventually be a Gemini model.
         """
-        # Map model_size to preferred models (use OpenRouter for speed in dev mode)
+        # Map model_size to preferred models — Gemini is ALWAYS the last entry per tier
+        # so it serves as the automatic fallback when all OpenRouter models fail.
         size_to_models = {
             "small": [
                 "openrouter/google/gemma-3-12b-it:free",
@@ -126,13 +160,13 @@ class LLMClient:
                 "openrouter/meta-llama/llama-3.3-70b-instruct:free",
                 "openrouter/google/gemma-3-27b-it:free",
                 "kilo/nvidia/nemotron-3-super-120b-a12b:free",
-                "models/gemini-1.5-pro",
+                "models/gemini-2.5-flash",
             ],
             "large": [
                 "openrouter/nousresearch/hermes-3-llama-3.1-405b:free",
                 "openrouter/meta-llama/llama-3.3-70b-instruct:free",
                 "kilo/nvidia/nemotron-3-super-120b-a12b:free",
-                "models/gemini-2.0-flash-exp",
+                "models/gemini-2.5-flash",
             ],
         }
 
@@ -151,52 +185,67 @@ class LLMClient:
         if self.fallback_model not in models_to_try:
             models_to_try.append(self.fallback_model)
 
-        # Hard-coded absolute fallback (using versioned name for stability)
+        # Hard-coded absolute last resort — gemini-2.5-flash (not deprecated gemini-2.0-flash)
         if self.gemini_last_resort not in models_to_try:
             models_to_try.append(self.gemini_last_resort)
+
+        logger.info(f"LLMClient: model chain for size='{model_size}': {models_to_try}")
 
         last_exception = None
         for model in models_to_try:
             try:
                 logger.info(f"LLMClient: Attempting generation with {model}")
-                return await self._execute_request(
+                result = await self._execute_request(
                     model, prompt, system_instruction, temperature, max_tokens
                 )
+                logger.success(f"LLMClient: Success with {model}")
+                return result
+
             except Exception as e:
                 last_exception = e
-                if "404" in str(e) or "NOT_FOUND" in str(e).upper() or "400" in str(e):
+                err_str = str(e)
+                logger.warning(f"Model {model} failed: {err_str[:200]}")
+
+                # ── Resilience Recovery (only for 404/NOT_FOUND on Gemini models) ──
+                if ("404" in err_str or "NOT_FOUND" in err_str.upper() or "400" in err_str):
                     logger.error(
-                        f"Model '{model}' failure (404/400). Initiating resilience recovery..."
+                        f"Model '{model}' failure (404/400). Adding to avoid list for 5min."
                     )
                     self._avoid_models[model] = time.time() + 300  # Avoid for 5 mins
 
-                    try:
-                        # Only attempt Gemini resilience if keys are available
-                        gemini_available = any(k.state in [KeyState.HEALTHY, KeyState.RATE_LIMITED] for k in self.gemini_pool._entries)
-                        
-                        if gemini_available:
-                            # 1. Refresh discovery if stale (> 1 hour) or never run
+                    # Only attempt discovery-based resilience if Gemini pool has capacity
+                    if self._gemini_pool_has_capacity():
+                        try:
+                            # Refresh model list if stale (> 1 hour) or never run
                             if not self._discovered_models or (
                                 time.time() - self._last_discovery_time > 3600
                             ):
-                                logger.info("Refreshing Gemini model list...")
-                                client = genai.Client(api_key=self.google_api_key)
+                                logger.info("Refreshing Gemini model list via discovery...")
+                                # Use pool key for discovery to avoid burning primary key
+                                pool_entry = self.gemini_pool.get_key()
+                                discovery_key = (
+                                    pool_entry.key if pool_entry else self.google_api_key
+                                )
+                                client = genai.Client(api_key=discovery_key)
                                 self._discovered_models = [
                                     m.name for m in client.models.list()
                                 ]
                                 self._last_discovery_time = time.time()
+                                logger.info(
+                                    f"Discovered {len(self._discovered_models)} Gemini models"
+                                )
 
-                            # 2. Pick the best healthy candidate we haven't tried or blacklisted
+                            # Pick the best healthy candidate not already in our list
                             candidates = [
                                 m
                                 for m in self._discovered_models
                                 if m not in models_to_try and m not in self._avoid_models
                             ]
 
-                            # Preference: gemini-2.0-flash > gemini-1.5-flash > anything discovery saw
+                            # Preference: gemini-2.5-flash > gemini-1.5-flash > anything else
                             new_fallback = None
                             if candidates:
-                                for pref in ["2.0-flash", "2.5-flash", "1.5-flash"]:
+                                for pref in ["2.5-flash", "1.5-flash"]:
                                     match = next((m for m in candidates if pref in m), None)
                                     if match:
                                         new_fallback = match
@@ -206,21 +255,63 @@ class LLMClient:
 
                             if new_fallback:
                                 logger.info(
-                                    f"Resilience: Falling back to auto-discovered healthy model: {new_fallback}"
+                                    f"Resilience: Falling back to auto-discovered model: {new_fallback}"
                                 )
-                                return await self._execute_request(
-                                    new_fallback,
-                                    prompt,
-                                    system_instruction,
-                                    temperature,
-                                    max_tokens,
-                                )
-                    except Exception as inner_e:
-                        logger.error(f"Resilience recovery failed: {inner_e}")
+                                try:
+                                    result = await self._execute_request(
+                                        new_fallback,
+                                        prompt,
+                                        system_instruction,
+                                        temperature,
+                                        max_tokens,
+                                    )
+                                    logger.success(
+                                        f"Resilience recovery succeeded with {new_fallback}"
+                                    )
+                                    return result
+                                except Exception as recovery_e:
+                                    logger.error(
+                                        f"Resilience recovery model {new_fallback} also failed: {recovery_e}"
+                                    )
+                        except Exception as inner_e:
+                            logger.error(f"Resilience recovery setup failed: {inner_e}")
 
-                logger.warning(f"Model {model} failed: {str(e)}")
-                # Universal backoff before trying the next model to prevent rapid key burning
-                await asyncio.sleep(2)
+                # ── Pool exhaustion: skip remaining OpenRouter models, jump to Gemini ──
+                if "exhausted" in err_str.lower() or "all" in err_str.lower() and "keys" in err_str.lower():
+                    logger.warning(
+                        f"Pool exhaustion detected for {model}. "
+                        "Skipping remaining same-provider models in this chain."
+                    )
+                    # Check if we should skip ahead to the first Gemini model
+                    is_openrouter = model.startswith("openrouter/") or ":" in model
+                    if is_openrouter:
+                        # Find the first non-OpenRouter model in remaining chain and jump to it
+                        remaining = models_to_try[models_to_try.index(model) + 1:]
+                        gemini_fallback = next(
+                            (m for m in remaining if m.startswith("models/") or m.startswith("gemini-")),
+                            None,
+                        )
+                        if gemini_fallback:
+                            logger.info(
+                                f"Pool exhaustion: jumping directly to Gemini fallback: {gemini_fallback}"
+                            )
+                            try:
+                                result = await self._execute_request(
+                                    gemini_fallback, prompt, system_instruction, temperature, max_tokens
+                                )
+                                logger.success(
+                                    f"Gemini fallback succeeded with {gemini_fallback}"
+                                )
+                                return result
+                            except Exception as gfb_e:
+                                logger.error(
+                                    f"Gemini fallback {gemini_fallback} also failed: {gfb_e}"
+                                )
+                                last_exception = gfb_e
+                                break  # No point continuing the loop — Gemini itself failed
+
+                # Small backoff before trying the next model to prevent rapid key burning
+                await asyncio.sleep(1)
                 continue
 
         logger.error(f"All models failed for prompt. Last error: {str(last_exception)}")
@@ -238,13 +329,15 @@ class LLMClient:
         Routing Rules:
         1. Kilo Gateway: kilo/ prefixed models (uses Kilo API key)
         2. xAI: xai/ prefixed models (uses direct xAI API key)
-        3. OpenRouter: Any model name explicitly asking for :free, :nitro, etc.
-           OR non-Google providers (anthropic/, qwen/, etc.)
-        4. Gemini SDK: Direct names, models/ names, or google/ names (without OR variants).
+        3. OpenRouter: Any model name with ':' variant suffix (e.g. :free, :nitro)
+           OR explicitly prefixed with openrouter/
+        4. Gemini SDK: Direct names, models/ names, or gemini- names.
         """
         is_kilo = model_name.startswith("kilo/")
         is_xai = model_name.startswith("xai/")
-        is_explicit_openrouter = ":" in model_name
+        is_explicit_openrouter = model_name.startswith("openrouter/") or (
+            ":" in model_name and not model_name.startswith("models/")
+        )
         is_google_native = model_name.startswith("models/") or model_name.startswith(
             "gemini-"
         )
@@ -252,14 +345,7 @@ class LLMClient:
             model_name.startswith("google/") and not is_explicit_openrouter
         )
 
-        global global_last_llm_time
-        async with global_llm_lock:
-            now = time.time()
-            elapsed = now - global_last_llm_time
-            if elapsed < 4.2:
-                # 4.2 seconds spacing between requests ensures we stay safely under 15 RPM
-                await asyncio.sleep(4.2 - elapsed)
-            global_last_llm_time = time.time()
+        global global_last_gemini_time, global_last_router_time
 
         if is_kilo:
             # Kilo Gateway path — strip kilo/ prefix
@@ -274,13 +360,25 @@ class LLMClient:
                 clean_name, prompt, system_instruction, temperature, max_tokens
             )
         elif is_explicit_openrouter:
-            # OpenRouter path — strip openrouter/ prefix
+            # OpenRouter path — uses its own lock so Gemini calls don't block
+            async with global_router_lock:
+                now = time.time()
+                elapsed = now - global_last_router_time
+                if elapsed < 4.2:
+                    await asyncio.sleep(4.2 - elapsed)
+                global_last_router_time = time.time()
             clean_name = model_name.replace("openrouter/", "")
             return await self._call_openrouter(
                 clean_name, prompt, system_instruction, temperature, max_tokens
             )
         elif is_google_native or is_google_prefixed:
-            # Native Gemini SDK path — ensure "models/" prefix
+            # Gemini path — uses its own lock, 2.1s spacing (safe with 9-key pool)
+            async with global_gemini_lock:
+                now = time.time()
+                elapsed = now - global_last_gemini_time
+                if elapsed < 2.1:
+                    await asyncio.sleep(2.1 - elapsed)
+                global_last_gemini_time = time.time()
             clean_name = model_name
             if clean_name.startswith("google/"):
                 clean_name = clean_name.replace("google/", "models/")
@@ -290,10 +388,16 @@ class LLMClient:
                 clean_name, prompt, system_instruction, temperature, max_tokens
             )
         else:
-            # No prefix matched — try OpenRouter as ultimate fallback
+            # No prefix matched — treat as OpenRouter
             logger.warning(
                 f"No matching model prefix for {model_name}, trying OpenRouter fallback"
             )
+            async with global_router_lock:
+                now = time.time()
+                elapsed = now - global_last_router_time
+                if elapsed < 4.2:
+                    await asyncio.sleep(4.2 - elapsed)
+                global_last_router_time = time.time()
             return await self._call_openrouter(
                 model_name, prompt, system_instruction, temperature, max_tokens
             )
@@ -317,8 +421,8 @@ class LLMClient:
                 max_tokens=max_tokens,
             )
         except AllKeysExhaustedError as e:
-            logger.error(f"[llm_client] {e}")
-            raise RuntimeError(str(e))
+            logger.error(f"[llm_client] Gemini pool exhausted: {e}")
+            raise RuntimeError(f"All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.")
 
     async def _call_xai_sdk(
         self,
@@ -383,5 +487,5 @@ class LLMClient:
                 max_tokens=max_tokens,
             )
         except AllKeysExhaustedError as e:
-            logger.error(f"[llm_client] {e}")
-            raise RuntimeError(str(e))
+            logger.error(f"[llm_client] OpenRouter pool exhausted: {e}")
+            raise RuntimeError(f"All OpenRouter keys exhausted — falling through to Gemini pool.")

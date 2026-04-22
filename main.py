@@ -3,6 +3,16 @@ import uuid
 import asyncio
 import os
 import traceback
+
+# ── Pillow ≥10 compatibility: ANTIALIAS was removed, MoviePy still uses it ──
+# Must happen before ANY moviepy import (including transitive imports in modules)
+try:
+    from PIL import Image as _PILImage
+    if not hasattr(_PILImage, "ANTIALIAS"):
+        _PILImage.ANTIALIAS = _PILImage.LANCZOS
+except ImportError:
+    pass
+
 from dotenv import load_dotenv
 from fastapi import FastAPI, BackgroundTasks, HTTPException, Header, Request
 from fastapi.staticfiles import StaticFiles

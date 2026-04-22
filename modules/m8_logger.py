@@ -269,7 +269,15 @@ class ErrorLogger:
         if os.path.exists(self.log_file):
             with open(self.log_file, "r") as f:
                 try:
-                    logs = json.load(f)
+                    loaded = json.load(f)
+                    # Guard: file may have been initialised as a {} dict — reset if so
+                    if isinstance(loaded, list):
+                        logs = loaded
+                    else:
+                        logger.warning(
+                            f"[ErrorLogger] {self.log_file} contained non-list JSON "
+                            "— resetting to empty log."
+                        )
                 except json.JSONDecodeError:
                     pass
 
