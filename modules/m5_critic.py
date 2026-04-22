@@ -184,6 +184,7 @@ class CIDPPCritic:
         scripts: List[FullScript],
         student_model: StudentModel,
         model_override: str = None,
+        max_revisions: int = 1,
     ) -> Tuple[FullScript, List[Dict[str, Any]]]:
         """Review multiple scripts and select the one with the highest pedagogical score."""
         is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
@@ -219,16 +220,31 @@ class CIDPPCritic:
 
         best_variant = scored_data[0]["script"]
 
-        # Phase 4 - Part 2: Synthetic Student Testing on the winner
-        logger.info(
-            f"Running synthetic student tests on selected variant: {scored_data[0]['strategy']}"
-        )
-        feedback = await self.tester.test_script(best_variant)
+        # Phase 4 - Part 2 & 3: Synthetic Student Testing & Refinement Loop
+        refined_script = best_variant
+        all_feedback = []
+        
+        for rev in range(max_revisions):
+            logger.info(
+                f"Running synthetic student tests on selected variant (revision {rev+1}/{max_revisions})"
+            )
+            feedback = await self.tester.test_script(refined_script)
+            all_feedback.extend(feedback)
+            
+            # Check if we can break early
+            has_gaps = False
+            for f in feedback:
+                if not f.get("is_perfect", True):
+                    has_gaps = True
+                    break
+                    
+            if not has_gaps and rev > 0:
+                logger.info("No gaps found. Ending refinement loops early.")
+                break
 
-        # Phase 4 - Part 3: Refinement Loop (The "Gold Standard" step)
-        refined_script = await self.refine_script(
-            best_variant, student_model, feedback, model_override
-        )
+            refined_script = await self.refine_script(
+                refined_script, student_model, feedback, model_override
+            )
 
         selection_log = [
             {
@@ -249,7 +265,7 @@ class CIDPPCritic:
         # Attach synthetic feedback to the winning selection log entry
         for entry in selection_log:
             if entry["strategy"] == scored_data[0]["strategy"]:
-                entry["synthetic_student_feedback"] = feedback
+                entry["synthetic_student_feedback"] = all_feedback
                 break
 
         logger.info(

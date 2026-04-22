@@ -61,6 +61,20 @@ class MultimodalPlanner:
                     "abstract science"
                 ]
                 
+            # Progressive reveal logic
+            content_spec = segment.visual_content_spec
+            reveal_sequential = False
+            elements = []
+            
+            # Heuristic: if it explicitly requests sequential reveal, or contains multiple bullet-like elements
+            if "reveal:sequential" in content_spec.lower() or content_spec.count(',') >= 3 or content_spec.count(';') >= 2:
+                reveal_sequential = True
+                delimiter = ';' if ';' in content_spec else ','
+                raw_elements = [e.strip() for e in content_spec.split(delimiter) if e.strip()]
+                # Clean elements
+                elements = [e.replace("reveal:sequential", "").strip() for e in raw_elements]
+                elements = [e for e in elements if e]
+
             visual_plan.append({
                 "segment_id": segment.segment_id,
                 "visual_type": segment.visual_type,
@@ -68,7 +82,9 @@ class MultimodalPlanner:
                 "duration_seconds": segment.duration_seconds,
                 "image_path": slide_path,
                 "pexels_keywords": search_terms,
-                "narration_context": segment.narration[:200] # For downstream debugging
+                "narration_context": segment.narration[:200], # For downstream debugging
+                "reveal_sequential": reveal_sequential,
+                "elements": elements
             })
             
         logger.success(f"M6: Visual plan complete with {len(visual_plan)} segments.")

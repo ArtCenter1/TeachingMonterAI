@@ -153,6 +153,55 @@ class ScriptGenerator:
         variant.greedy_mode = mode
         return [variant]
 
+    def _get_exemplary_lessons(self, subject: str, level: str, strategy: str) -> str:
+        """Fetch top-scoring lessons from M8 logs for few-shot injection."""
+        path = "m8_feedback.json"
+        if not os.path.exists(path):
+            return ""
+        try:
+            with open(path, "r") as f:
+                logs = json.load(f)
+        except Exception:
+            return ""
+        
+        candidates = []
+        for entry in logs:
+            data = entry.get("data", {})
+            if not data:
+                continue
+                
+            # Check strategy
+            if data.get("selected_strategy") != strategy:
+                continue
+            
+            # Check level
+            student_level = data.get("student_model", {}).get("level", "high_school")
+            if student_level != level:
+                continue
+            
+            # Check subject
+            req = data.get("request", {}).get("course_requirement", "")
+            req_subject = infer_subject(req)
+            if req_subject != subject:
+                continue
+                
+            # Check score >= 40
+            score = data.get("ai_student_scores", {}).get("Total", 0)
+            if score >= 40:
+                script = data.get("script")
+                if script:  # Ensure we actually logged the script
+                    candidates.append((score, script))
+                
+        # Sort by score desc, take top 2
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        top_candidates = candidates[:2]
+        
+        if not top_candidates:
+            return ""
+            
+        examples_str = "\n".join([json.dumps(c[1], indent=2) for c in top_candidates])
+        return f"\nEXEMPLARY LESSONS (Reference for quality and style - these scored highly):\n{examples_str}\n"
+
     async def generate(
         self,
         concept_graph: ConceptGraph,
@@ -169,6 +218,11 @@ class ScriptGenerator:
         if not strategy_desc:
             strategy_desc = self.strategies.get(strategy_name, "Standard explanation")
 
+        # Get few-shot examples
+        level = student_model.level.value
+        subject = infer_subject(concept_graph.nodes[0].concept if concept_graph.nodes else "")
+        exemplars = self._get_exemplary_lessons(subject, level, strategy_name)
+
         prompt = f"""
         Generate a full educational script for the following lesson plan.
         Topic: {concept_graph.nodes[0].concept if concept_graph.nodes else "Topic"}
@@ -181,7 +235,7 @@ class ScriptGenerator:
 
         COMMON MISCONCEPTIONS (Address in narration for Cognitive-Conflict strategy):
         {json.dumps(self.get_relevant_misconceptions(concept_graph), indent=2)}
-
+        {exemplars}
         SCAFFOLDING STRATEGY: {strategy_name} ({strategy_desc})
 
         Requirements:

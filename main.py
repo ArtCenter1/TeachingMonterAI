@@ -189,6 +189,7 @@ async def _run_pipeline_and_stream(request_data, request, x_dry_run):
                 "student_model": student_model.model_dump(),
                 "concept_graph": concept_graph.model_dump(),
                 "selected_strategy": script.scaffolding_strategy,
+                "script": script.model_dump(),
                 "video_url": public_video_url,
                 "subtitle_url": public_subtitle_url,
                 "generation_time_seconds": generation_time,

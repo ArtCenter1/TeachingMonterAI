@@ -84,6 +84,7 @@ class SourcingModule:
         topic: str,
         search_cx: Optional[str] = None,
         search_api_key: Optional[str] = None,
+        model_override: Optional[str] = None,
     ) -> FactBundle:
         """
         Main sourcing method with timeout and fallback chain:
@@ -129,7 +130,7 @@ class SourcingModule:
         # If real-time search fails, use the LLM's internal knowledge to ground the lesson
         try:
             logger.info("Triggering AI Research Fallback (Internal Knowledge)...")
-            fact_bundle = await self._ai_research_fallback(topic)
+            fact_bundle = await self._ai_research_fallback(topic, model_override=model_override)
             if fact_bundle and fact_bundle.facts:
                 logger.info(
                     f"AI Research Fallback successful: {len(fact_bundle.facts)} facts retrieved"
@@ -314,7 +315,7 @@ class SourcingModule:
             facts=verified_facts, study_guide_url=fact_bundle.study_guide_url
         )
 
-    async def _ai_research_fallback(self, topic: str) -> FactBundle:
+    async def _ai_research_fallback(self, topic: str, model_override: Optional[str] = None) -> FactBundle:
         """
         Uses the LLM to retrieve foundational educational facts if real-time search is unavailable.
         Uses a separate LLMClient instance to avoid circular imports.
@@ -346,7 +347,7 @@ class SourcingModule:
         try:
             # We use Gemini 2.0 Flash for internal research as it's the most reliable grounding model in the pool
             response_text = await client.generate_text(
-                prompt, temperature=0.2, model_size="medium"
+                prompt, temperature=0.2, model_size="medium", model_override=model_override
             )
             
             from .utils import extract_json

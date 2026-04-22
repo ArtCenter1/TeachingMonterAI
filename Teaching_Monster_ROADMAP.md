@@ -213,7 +213,7 @@ logger.add_ai_student_feedback(run_id, ai_scores, critique, elo_outcome="win")
 
 ---
 
-#### I2 — Verify Progressive Reveal in M6/M7
+#### ✅ I2 — Verify Progressive Reveal in M6/M7 — COMPLETE
 
 **Why it matters:** PRD Phase 3 item "Add progressive reveal enforcement to M6 + M7"
 is listed in the schema but not confirmed in the M6/M7 implementations from this audit.
@@ -221,7 +221,7 @@ is listed in the schema but not confirmed in the M6/M7 implementations from this
 **Action:** Audit `m6_multimodal.py` for `reveal:sequential` handling and
 `m7_renderer.py` for per-element timed reveal in rendered output.
 
-**Estimated effort:** 2–4 hours
+**Status:** Verified. `m6_multimodal.py` extracts `elements` and sets `reveal_sequential=True`. `m7_renderer.py` uses FFmpeg's `drawtext` with `enable='gte(t,{delay})'` to reveal items over time.
 
 ---
 

@@ -191,6 +191,7 @@ class VideoRenderer:
                 audio_path=audio_path,
                 duration=duration,
                 caption=caption,
+                visual=visual,
                 output_path=seg_out,
                 step=i,
             )
@@ -249,7 +250,7 @@ class VideoRenderer:
             return 30.0  # safe fallback
 
     def _truncate_caption(self, text: str, max_chars: int) -> str:
-        text = text.replace("'", "'").replace('"', '\\"').replace("\n", " ")
+        text = text.replace("'", "\u2019").replace('"', '\\"').replace("\n", " ")
         if len(text) > max_chars:
             return text[:max_chars - 3] + "..."
         return text
@@ -303,6 +304,7 @@ class VideoRenderer:
         audio_path: str,
         duration: float,
         caption: str,
+        visual: Dict[str, Any],
         output_path: str,
         step: int,
     ):
@@ -317,8 +319,8 @@ class VideoRenderer:
         W, H = self.WIDTH, self.HEIGHT
 
         # drawtext filter — white text with black outline, positioned at 75% height
-        # Escape special chars for FFmpeg filter syntax
-        safe_caption = caption.replace(":", "\\:").replace("'", "\\'")
+        # Use typographic apostrophe to completely avoid FFmpeg single-quote parsing bugs
+        safe_caption = caption.replace("'", "\u2019").replace(":", "\\:")
         fontsize = 52
         text_y = int(H * 0.72)
 
@@ -332,6 +334,25 @@ class VideoRenderer:
             f":line_spacing=8"
             f":fix_bounds=true"
         )
+
+        # Progressive reveal elements
+        elements = visual.get("elements", [])
+        if visual.get("reveal_sequential") and elements:
+            interval = duration / (len(elements) + 1)
+            for j, elem in enumerate(elements):
+                safe_elem = self._truncate_caption(elem, 40).replace("'", "\u2019").replace(":", "\\:")
+                delay = interval * (j + 1)
+                elem_y = int(H * 0.25) + j * 70  # stack them starting at 25% height
+                
+                drawtext += (
+                    f",drawtext=text='- {safe_elem}'"
+                    f":fontsize=42"
+                    f":fontcolor=yellow"
+                    f":borderw=2:bordercolor=black"
+                    f":x=(w-text_w)/2"
+                    f":y={elem_y}"
+                    f":enable='gte(t,{delay})'"
+                )
 
         # scale+crop to portrait: scale so shortest edge fills, then center-crop
         scale_crop = (

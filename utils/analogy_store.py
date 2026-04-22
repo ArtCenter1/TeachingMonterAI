@@ -146,3 +146,6 @@ class AnalogyStore:
     def total_count(self) -> int:
         """Return total number of analogies across all subjects."""
         return sum(len(v) for v in self.catalog.values())
+
+# Singleton instance for easy import
+analogy_store = AnalogyStore()
