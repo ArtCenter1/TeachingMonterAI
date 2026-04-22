@@ -1,4 +1,4 @@
-# 🎓 Teaching Monster AI Agent (v2.0 — RAG Edition)
+# 🎓 Teaching Monster AI Agent (v0.5.0 — RAG Edition)
 
 > [!IMPORTANT]
 > **🤖 FOR AI AGENTS / ASSISTANTS**
@@ -7,19 +7,19 @@
 ---
 
 [![Status](https://img.shields.io/badge/Status-RAG_Branch-orange.svg)](https://teaching.monster)
-[![Version](https://img.shields.io/badge/Version-2.0.0--RAG-blue.svg)](https://github.com/ArtCenter1/TeachingMonsterAI)
+[![Version](https://img.shields.io/badge/Version-0.5.0--RAG-blue.svg)](https://github.com/ArtCenter1/TeachingMonsterAI)
 [![Branch](https://img.shields.io/badge/Branch-RAG-purple.svg)](https://github.com/ArtCenter1/TeachingMonsterAI/tree/RAG)
 [![Docker](https://img.shields.io/badge/Docker-Ready-0db7ed.svg)](https://www.docker.com/)
 
 An autonomous pedagogical video generation system built for the **Teaching Monster Challenge**. The agent receives a topic and a student persona, then delivers a high-quality, grounded educational video in under 30 minutes — with zero human intervention.
 
-**v2.0 introduces Local RAG sourcing, Pexels B-roll video rendering, and configurable subject domains** — making this system reusable for any educational context beyond the competition.
+**v0.5.0 introduces Local RAG sourcing, Pexels B-roll video rendering, and configurable subject domains** — making this system reusable for any educational context beyond the competition.
 
 ---
 
-## 🌟 What's New in v2.0 (RAG Branch)
+## 🌟 What's New in v0.5.0 (RAG Branch)
 
-| Feature | v1.0 | v2.0 |
+| Feature | v1.0 | v0.5.0 |
 | :--- | :--- | :--- |
 | **Fact Sourcing** | NotebookLM (fragile, cookie-auth) | ✅ Local ChromaDB RAG — offline, sub-2s |
 | **Video Backgrounds** | Static PNG slides | ✅ Pexels B-roll video clips |

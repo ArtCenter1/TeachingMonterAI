@@ -257,7 +257,7 @@ def _render_dashboard(initial_json: str) -> str:
 
 <div class="header">
   <div>
-    <h1>🔑 KeyRotator <span>/ teaching-monster v0.4.0</span></h1>
+    <h1>🔑 KeyRotator <span>/ teaching-monster v0.5.0</span></h1>
     <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 4px;">Dynamic API Quota Orchestration</p>
     <div id="contest-mode" style="margin-top: 8px; font-size: 0.9rem; font-weight: 600;"></div>
   </div>
