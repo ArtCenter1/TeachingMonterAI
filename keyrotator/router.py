@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import os
 import time
 from typing import List
 from fastapi import APIRouter
@@ -12,8 +13,8 @@ import httpx
 
 
 class ReviveRequest(BaseModel):
-    provider: str    # "gemini" or "openrouter"
-    key_index: int   # 0-based index
+    provider: str  # "gemini" or "openrouter"
+    key_index: int  # 0-based index
 
 
 def KeyRotatorRouter(pools: List[KeyPool]) -> APIRouter:
@@ -46,9 +47,9 @@ def KeyRotatorRouter(pools: List[KeyPool]) -> APIRouter:
     @router.get("/pool-status")
     async def get_pool_status():
         return {
-            "pools":      [p.get_status() for p in pools],
+            "pools": [p.get_status() for p in pools],
             "public_url": await _get_ngrok_url(),
-            "timestamp":  time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }
 
     @router.post("/pool-status/revive")
@@ -57,25 +58,34 @@ def KeyRotatorRouter(pools: List[KeyPool]) -> APIRouter:
         if pool is None:
             return JSONResponse(
                 status_code=404,
-                content={"error": f"Provider '{body.provider}' not found."}
+                content={"error": f"Provider '{body.provider}' not found."},
             )
         success = pool.revive(body.key_index)
         if not success:
             return JSONResponse(
                 status_code=400,
-                content={"error": f"Invalid key index {body.key_index}"}
+                content={"error": f"Invalid key index {body.key_index}"},
             )
-        logger.info(f"[keyrotator] Revived {body.provider} key #{body.key_index} via dashboard")
-        return {"ok": True, "message": f"Key #{body.key_index} revived for {body.provider}"}
+        logger.info(
+            f"[keyrotator] Revived {body.provider} key #{body.key_index} via dashboard"
+        )
+        return {
+            "ok": True,
+            "message": f"Key #{body.key_index} revived for {body.provider}",
+        }
 
     @router.get("/pool-status/ui", response_class=HTMLResponse)
     async def get_pool_status_ui():
         status_data = [p.get_status() for p in pools]
         public_url = await _get_ngrok_url()
-        status_json = json.dumps({
-            "pools": status_data,
-            "public_url": public_url
-        })
+        contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
+        status_json = json.dumps(
+            {
+                "pools": status_data,
+                "public_url": public_url,
+                "contest_mode": contest_mode,
+            }
+        )
         html = _render_dashboard(status_json)
         return HTMLResponse(content=html)
 
@@ -247,8 +257,9 @@ def _render_dashboard(initial_json: str) -> str:
 
 <div class="header">
   <div>
-    <h1>🔑 KeyRotator <span>/ teaching-monster v0.3.0</span></h1>
+    <h1>🔑 KeyRotator <span>/ teaching-monster v0.5.0</span></h1>
     <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 4px;">Dynamic API Quota Orchestration</p>
+    <div id="contest-mode" style="margin-top: 8px; font-size: 0.9rem; font-weight: 600;"></div>
   </div>
   <div class="controls">
     <div class="refresh-badge" id="refresh-label">Next scan: 10s</div>
@@ -276,7 +287,14 @@ let countdown = REFRESH_INTERVAL;
 function render() {{
   const grid = document.getElementById("grid");
   const urlEl = document.getElementById("public-url");
-  
+  const contestEl = document.getElementById("contest-mode");
+
+  if (lastData.contest_mode) {{
+    contestEl.innerHTML = '<span style="color: #f59e0b;">🏆 CONTEST MODE ACTIVE</span> — Parallel processing enabled';
+  }} else {{
+    contestEl.innerHTML = '<span style="color: var(--text-dim);">🔧 DEV MODE</span> — Sequential processing';
+  }}
+
   if (lastData.public_url) {{
     urlEl.textContent = lastData.public_url;
   }} else {{

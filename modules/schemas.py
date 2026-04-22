@@ -68,6 +68,9 @@ class FullScript(BaseModel):
         default_factory=list, description="Socratic question prompts"
     )
 
+    class Config:
+        extra = "allow"
+
 
 class CIDPPScores(BaseModel):
     clarity: int = Field(ge=1, le=10)
@@ -145,4 +148,7 @@ class AIStudentFeedback(BaseModel):
     )
     critique_text: str = Field(
         ..., description="Full critique text from the AI Student"
+    )
+    elo_outcome: Optional[str] = Field(
+        None, description="Elo arena result: 'win' or 'loss' (Phase 3 meta-policy)"
     )

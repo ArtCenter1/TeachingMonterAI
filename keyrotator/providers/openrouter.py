@@ -91,6 +91,7 @@ async def call_with_pool(
                 logger.warning(
                     f"[keyrotator:openrouter] {entry.alias} failed ({code}), rotating..."
                 )
+                await asyncio.sleep(2)  # Prevent rapid-fire exhaustion across shared limits
                 continue
             else:
                 raise

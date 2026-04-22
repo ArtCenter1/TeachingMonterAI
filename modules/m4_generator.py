@@ -1,12 +1,15 @@
 import os
 import json
 import asyncio
-from typing import List, Dict, Any
+import random
+from typing import List, Dict, Any, Tuple, Optional
 from .schemas import FullScript, ScriptSegment, ConceptGraph, StudentModel, FactBundle
 from .utils import extract_json
 from .llm_client import LLMClient
 from loguru import logger
 from utils.analogy_store import analogy_store
+from .m8_logger import StrategyTracker
+from .utils import infer_subject
 
 
 class ScriptGenerator:
@@ -21,6 +24,12 @@ class ScriptGenerator:
             "Cognitive-Conflict": "Misconception → Correction → Reconstruction (best for topics with strong prior errors)",
             "Inductive": "Example → Generalization (best for concrete learners, younger audiences)",
         }
+
+        # Meta-policy: Epsilon-Greedy selection (Phase 3)
+        self.strategy_tracker = StrategyTracker()
+        self.epsilon_start = 0.15
+        self.epsilon_min = 0.05
+        self.epsilon_decay_rate = 0.001
 
         # Load misconception library
         self.misconception_library = self._load_misconceptions()
@@ -52,19 +61,46 @@ class ScriptGenerator:
                         break
         return found
 
-    async def generate_variants(
+    def _get_epsilon(self) -> float:
+        """Calculate current epsilon value with step-based decay."""
+        total = self.strategy_tracker.total_run_count()
+        return max(self.epsilon_min, self.epsilon_start - self.epsilon_decay_rate * total)
+
+    def _select_strategy(self, level: str, subject: str) -> Tuple[Optional[str], str]:
+        """Returns (strategy_name, mode) where mode is 'Exploit' | 'Explore' | 'ColdStart'."""
+        min_runs = 5  # require at least this many runs per strategy before trusting data
+        stats = self.strategy_tracker.get_full_stats()
+        
+        # Count runs per strategy for this level/subject
+        strategy_totals = {s: 0 for s in self.strategies}
+        for entry in stats:
+            if entry['level'] == level and entry['subject'] == subject:
+                strategy_totals[entry['strategy']] = entry['total']
+        
+        # Cold-start check
+        if any(v < min_runs for v in strategy_totals.values()):
+            return None, 'ColdStart'
+        
+        epsilon = self._get_epsilon()
+        if random.random() < epsilon:
+            chosen = random.choice(list(self.strategies.keys()))
+            return chosen, 'Explore'
+        else:
+            win_rates = self.strategy_tracker.get_win_rates(level=level, subject=subject)
+            if not win_rates:
+                return None, 'ColdStart'
+            best = max(win_rates, key=win_rates.get)
+            return best, 'Exploit'
+
+    async def _generate_all(
         self,
         concept_graph: ConceptGraph,
         student_model: StudentModel,
         fact_bundle: FactBundle,
         model_override: str = None,
     ) -> List[FullScript]:
-        """Generate all three pedagogical variants in parallel."""
-        # Use CONTEST_MODE to determine parallelism, but rate limit it
-        is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
+        """Generate all 3 variants (Best-of-N mode)."""
         variants = []
-
-        # We process sequentially to avoid Gemini API key pool exhaustion
         for strategy_name, strategy_desc in self.strategies.items():
             variant = await self.generate(
                 concept_graph,
@@ -75,9 +111,47 @@ class ScriptGenerator:
                 model_override,
             )
             variants.append(variant)
-            await asyncio.sleep(1)  # Brief pause to avoid rate limits
-
+            await asyncio.sleep(1)
         return variants
+
+    async def generate_variants(
+        self,
+        concept_graph: ConceptGraph,
+        student_model: StudentModel,
+        fact_bundle: FactBundle,
+        model_override: str = None,
+    ) -> List[FullScript]:
+        """Generate script variants based on meta-policy (Epsilon-Greedy)."""
+        is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
+        
+        if is_contest_mode:
+            logger.info("[M4] Contest mode: generating all 3 variants for Best-of-3 Selection")
+            return await self._generate_all(concept_graph, student_model, fact_bundle, model_override)
+        
+        # Dev mode: epsilon-greedy selection
+        level = student_model.level.value
+        subject = infer_subject(concept_graph.nodes[0].concept if concept_graph.nodes else "")
+        
+        chosen_strategy, mode = self._select_strategy(level, subject)
+        
+        if mode == 'ColdStart' or chosen_strategy is None:
+            logger.info(f"[M4] Cold-start ({level}/{subject}): generating all 3 for exploration")
+            return await self._generate_all(concept_graph, student_model, fact_bundle, model_override)
+        
+        logger.info(f"[M4] [{mode}] ε={self._get_epsilon():.3f} → selected strategy '{chosen_strategy}' for {level}/{subject}")
+        strategy_desc = self.strategies[chosen_strategy]
+        variant = await self.generate(
+            concept_graph,
+            student_model,
+            fact_bundle,
+            chosen_strategy,
+            strategy_desc,
+            model_override,
+        )
+        # Transient flags for M8 handling
+        variant.greedy_selected = True
+        variant.greedy_mode = mode
+        return [variant]
 
     async def generate(
         self,
@@ -143,7 +217,9 @@ class ScriptGenerator:
             response_text = await self.llm.generate_text(
                 prompt=prompt,
                 model_override=model_override,
-                system_instruction=f"You are an expert educational content creator using the '{strategy_name}' pedagogical strategy.",
+                temperature=0.8,
+                max_tokens=4096,
+                model_size="large",
             )
             data = extract_json(response_text)
             # Ensure strategy name is preserved

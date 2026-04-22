@@ -1,218 +1,257 @@
-# 🎮 Teaching Monster AI Agent (v0.3.0)
+# 🎓 Teaching Monster AI Agent (v0.5.0 — RAG Edition)
 
 > [!IMPORTANT]
 > **🤖 FOR AI AGENTS / ASSISTANTS**
-> Before taking any action, you MUST read **[ONBOARDING.md](file:///d:/My_Projects/TeachingMonsterAI/ONBOARDING.md)**. Use the `project_onboarding_check` skill to align with our pedagogical mission and 8-stage pipeline architecture.
+> Before taking any action, you MUST read **[ONBOARDING.md](./ONBOARDING.md)**. Understand the 8-module pipeline, current branch (`RAG`), and v2.0 architecture changes before touching any code.
 
 ---
 
-
-[![Status](https://img.shields.io/badge/Status-Stabilized-success.svg)](https://teaching.monster)
-[![Version](https://img.shields.io/badge/Version-0.3.0-blue.svg)](https://github.com/artcenter/TeachingMonsterAI)
+[![Status](https://img.shields.io/badge/Status-RAG_Branch-orange.svg)](https://teaching.monster)
+[![Version](https://img.shields.io/badge/Version-0.5.0--RAG-blue.svg)](https://github.com/ArtCenter1/TeachingMonsterAI)
+[![Branch](https://img.shields.io/badge/Branch-RAG-purple.svg)](https://github.com/ArtCenter1/TeachingMonsterAI/tree/RAG)
 [![Docker](https://img.shields.io/badge/Docker-Ready-0db7ed.svg)](https://www.docker.com/)
 
-An autonomous pedagogical video generation system built for the **Teaching Monster Challenge**. This agent receives a topic and a student persona, then delivers a high-quality, grounded educational video in under 30 minutes with zero human intervention.
+An autonomous pedagogical video generation system built for the **Teaching Monster Challenge**. The agent receives a topic and a student persona, then delivers a high-quality, grounded educational video in under 30 minutes — with zero human intervention.
+
+**v0.5.0 introduces Local RAG sourcing, Pexels B-roll video rendering, and configurable subject domains** — making this system reusable for any educational context beyond the competition.
 
 ---
 
-## 🌟 Key Features
+## 🌟 What's New in v0.5.0 (RAG Branch)
 
-- **Autonomous M1-M8 Pipeline**: From sourcing facts via NotebookLM to final FFmpeg rendering.
-- **Pedagogical Intelligence**: Implements scaffolding strategies, misconception detection, and cognitive load optimization.
-- **Gemini 2.0 Flash Integration**: High-speed, high-context reasoning for script generation and multimodal planning.
-- **Neural TTS**: High-fidelity narration via Cartesia.
-- **Docker-First Architecture**: Guaranteed reproducibility across any environment.
+| Feature | v1.0 | v0.5.0 |
+| :--- | :--- | :--- |
+| **Fact Sourcing** | NotebookLM (fragile, cookie-auth) | ✅ Local ChromaDB RAG — offline, sub-2s |
+| **Video Backgrounds** | Static PNG slides | ✅ Pexels B-roll video clips |
+| **Subtitles** | Raw FFmpeg drawtext | ✅ Karaoke-style, white + black stroke |
+| **Background Music** | None | ✅ Royalty-free BGM, auto-looped |
+| **Subject Domains** | Hardcoded (Physics, Bio, CS, Math) | ✅ Configurable — any subject |
+| **External Dependencies** | NotebookLM + OpenSpace MCP | ✅ Fully offline (API keys only) |
+| **Docker Image Size** | ~1.8GB (CUDA torch) | ✅ ~450MB (CPU-only torch) |
 
 ---
 
 ## 🏗️ System Architecture
 
-The agent operates as a fully automated eight-stage pipeline, orchestrated by `main.py`.
-
 ```mermaid
 graph TD
-    API[POST /generate] --> M1[M1: Sourcing - NotebookLM]
-    M1 --> M2[M2: Persona Parser]
-    M2 --> M3[M3: Concept Planner]
-    M3 --> M4[M4: Script Generator]
-    M4 --> M5[M5: CIDPP Critic]
-    M5 --> M6[M6: Multimodal Planner]
-    M6 --> M7[M7: Video Renderer]
-    M7 --> M8[M8: Feedback Logger]
-    M8 --> URL[Output Video URL]
+    Setup["⚙️ Setup (One-Time)\nsetup_domains.py\n→ ingest_rag.py"] --> DB["📚 ChromaDB\n(baked into image)"]
+
+    API["POST /generate\ncourse_requirement\nstudent_persona"] --> M1
+
+    DB --> M1["M1: RAG Sourcing\nChromaDB → AI Research\n→ Web Search fallback"]
+    M1 --> M2["M2: Persona Parser"]
+    M2 --> M3["M3: Concept Planner"]
+    M3 --> M4["M4: Script Generator\n(3 variants)"]
+    M4 --> M5["M5: CIDPP Critic\n+ Selection"]
+    M5 --> M6["M6: Multimodal Planner\n+ Pexels Keywords"]
+    M6 --> M7["M7: Video Renderer\nB-roll + TTS + Subtitles + BGM"]
+    M7 --> M8["M8: Feedback Logger"]
+    M8 --> URL["📹 Output Video URL"]
 ```
+
+### Module Reference
 
 | Module | Name | Responsibility |
 | :--- | :--- | :--- |
-| **M1** | **Sourcing** | Extract grounded facts from NotebookLM & Web Search. |
-| **M2** | **Persona Parser** | Infer learner state and ZPD (Zone of Proximal Development). |
-| **M3** | **Concept Planner** | Sequence concepts into an optimal lesson arc. |
-| **M4** | **Scriptwriter** | Generate pedagogical narration with visual cues. |
-| **M5** | **Critic** | Score scripts on Accuracy, Logic, and Engagement. |
-| **M6** | **MM Planner** | Map script segments to optimal visual representations. |
-| **M7** | **Renderer** | Assemble TTS + visuals via FFmpeg into the final MP4. |
-| **M8** | **Logger** | Record persistent errors and training signals. |
-| **DASH** | **Mission Control** | Real-time observability and key quota management. |
+| **M1** | **RAG Sourcing** | Query local ChromaDB → AI Research → Web Search fallback |
+| **M2** | **Persona Parser** | Infer learner state, ZPD, and validate request is within configured domains |
+| **M3** | **Concept Planner** | Build prerequisite dependency graph; sequence optimal lesson arc |
+| **M4** | **Script Generator** | Generate 3 pedagogical script variants with scaffolding + visual cues |
+| **M5** | **CIDPP Critic** | Score on 5 dimensions; select best variant; trigger revision if needed |
+| **M6** | **MM Planner** | Map segments to visual type + generate Pexels B-roll search keywords |
+| **M7** | **Video Renderer** | Assemble Pexels B-roll + Cartesia TTS + karaoke subtitles + BGM into MP4 |
+| **M8** | **Feedback Logger** | Record all run data for reward model training and strategy tracking |
 
 ---
 
-## 🔍 Observability & Inspection
+## 🚀 Quick Start
 
-The system includes dedicated tools for monitoring pipeline health and API utilization in real-time.
+### Prerequisites
+- Docker & Docker Compose
+- API Keys: Google Gemini, Cartesia, Pexels
 
-### 🗝️ KeyRotator Dashboard (Mission Control)
-### 📊 KeyRotator Dashboard
-Real-time pool health, rate-limit tracking, and pipeline activity logging.
-
-- **Access**: [http://localhost:8000/dev/pool-status/ui](http://localhost:8000/dev/pool-status/ui)
-- **Features**:
-    - **Live Public URL**: Automatically detects the current ngrok endpoint.
-    - **Activity Log**: Tracks successes, 429 rate limits, and pool exhaustion events.
-    - **Pulse Test**: Trigger a "heartbeat" to verify end-to-end connectivity.
-
-![KeyRotator Dashboard Demo](docs/images/dashboard_demo.webp)
-
-### 📚 API Documentation (Swagger)
-Interactive API playground with automatic schema validation.
-
-- **Access**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Usage**: Test the `POST /generate` endpoint with custom requirements.
-
-![API Docs UI](docs/images/api_docs_ui.png)
-
-
-
----
-
-## 🚀 Quick Start (Docker)
-
-The fastest way to get the agent running is via Docker Compose.
-
-### 1. Prerequisites
-- Docker & Docker Compose installed.
-- API Keys for: Google Gemini, Cartesia, and (optional) ngrok.
-
-### 2. Configure Environment
-Copy `.env.example` to `.env` (or update existing) and fill in your keys:
+### Step 1 — Configure Environment
 ```bash
-GOOGLE_API_KEY=your_key
-CARTESIA_API_KEY=your_key
-NGROK_AUTHTOKEN=your_token (optional for public tunnel)
+cp .env.example .env
+# Edit .env and fill in your keys
 ```
 
-### 3. Start the Pipeline
+Required keys:
+```bash
+GOOGLE_API_KEY=your_gemini_key
+CARTESIA_API_KEY=your_cartesia_key
+PEXELS_API_KEY=your_pexels_key
+```
+
+### Step 2 — Configure Subject Domains
+This is the **one-time setup** that determines what subjects the system knows.
+
+**Option A — Interactive wizard (recommended):**
+```bash
+python scripts/setup_domains.py
+```
+Follow the prompts to add, remove, or replace subject domains. The wizard calls ingestion automatically when done.
+
+**Option B — Edit YAML directly:**
+```bash
+# Edit config/domains.yaml with your subjects and topics
+# Then run ingestion:
+python scripts/ingest_rag.py
+```
+
+**For the Teaching Monster Competition** — the defaults in `config/domains.yaml` are already set to Physics, Biology, Computer Science, and Mathematics. You can skip this step and go straight to Step 3.
+
+### Step 3 — Build & Run
 ```bash
 docker compose up -d --build
 ```
-The API will be available at `http://localhost:8000`.
+The `docker build` automatically:
+- Installs CPU-only PyTorch (~250MB, no CUDA bloat)
+- Downloads the embedding model (`all-MiniLM-L6-v2`, ~90MB)
+- Runs `ingest_rag.py` to bake the knowledge corpus into the image
 
-### 4. Trigger a Generation
+### Step 4 — Generate a Video
 ```bash
 curl -X POST http://localhost:8000/generate \
      -H "Content-Type: application/json" \
-     -d '{"course_requirement": "Quantum Tunneling", "student_persona": "12-year old curios learner"}'
+     -d '{"course_requirement": "Newton'\''s Laws of Motion", "student_persona": "High schooler, visual learner, no calculus"}'
+```
+
+Response:
+```json
+{
+  "video_url": "https://cdn.../your-video.mp4",
+  "supplementary_url": "https://cdn.../study-guide.html",
+  "generation_time_seconds": 1291
+}
 ```
 
 ---
 
-## 🏆 Pre-Contest Submission Procedure v1.0
+## ⚙️ Configuring Subject Domains
 
-Follow this step-by-step guide right before submitting your final model for contest. This ensures fresh authentication, optimized performance, and reliable API access.
+The system is designed to work with **any subject domain**, not just the competition defaults.
 
-### Step 1: Re-Authenticate NotebookLM (5-10 minutes)
-**Why**: NotebookLM sessions expire ~2 weeks; fresh auth enables grounded sourcing during contest.
+### domains.yaml Structure
+```yaml
+# config/domains.yaml
+domains:
+  - name: "AP Physics"
+    level: "secondary"        # primary | secondary | university
+    topics:
+      - "Mechanics and Newton's Laws"
+      - "Electricity and Magnetism"
 
-1. **On host machine** (not in container):
-   - Open PowerShell/Command Prompt
-   - Run: `notebooklm login`
-   - Browser opens → Sign in with Google account linked to NotebookLM
-   - Wait for "Login successful" message
+  - name: "Elementary Music"
+    level: "primary"
+    topics:
+      - "Rhythm and Beat"
+      - "Reading Sheet Music"
+```
 
-2. **Extract new auth JSON**:
-   - Navigate to: `%USERPROFILE%\.notebooklm\profiles\default\storage_state.json`
-   - Open file, copy entire JSON content (single line, no formatting)
+### How Curriculum Content is Generated
+- If `resources/curriculum/<domain>/<topic>.md` **exists** → the file is used directly
+- If the file **doesn't exist** → the LLM auto-generates a ~1,500-word curriculum summary for that topic
+- All content is embedded and stored in ChromaDB at `temp/chroma_db/`
 
-3. **Update .env**:
-   - Open `D:\My_Projects\TeachingMonsterAI\.env`
-   - Replace `NOTEBOOKLM_AUTH_JSON=` with the copied JSON
-   - Save file
+This means you can deploy this system for **elementary music, language arts, history, coding bootcamps** — any subject — just by editing `domains.yaml` and rebuilding.
 
-4. **Restart container**:
-   - Run: `docker restart teaching-monster-app`
-   - Wait 30 seconds for container to fully start
+---
 
-5. **Verify auth**:
-   - Run test: `docker exec teaching-monster-app python test_notebooklm.py`
-   - Should succeed without "Authentication expired" error
+## 🎬 How the Video Pipeline Works
 
-### Step 2: Replace with High-Performance API Keys (10-15 minutes)
-**Why**: Free-tier keys have rate limits; paid keys enable CONTEST_MODE parallel processing and higher quotas.
+For each API call, the pipeline runs in ~21 minutes:
 
-**Checklist for Key Replacement**:
+| Stage | What Happens | Time |
+|---|---|---|
+| M1 RAG | ChromaDB returns grounded facts for the topic | ~2s |
+| M2 Persona | Parses student level, learning style, ZPD | ~5s |
+| M3 Planner | Builds concept sequence + prerequisite graph | ~15s |
+| M4 Script | Generates 3 script variants in parallel | ~3m |
+| M5 Critic | CIDPP scores → selects best variant | ~2m |
+| M6 Visuals | Maps segments to Pexels search keywords | ~20s |
+| M7 Render | B-roll download + TTS + subtitles + BGM + concat | ~15m |
+| M8 Log | Saves run record for reward model | ~1s |
 
-- [ ] **Backup current .env**: Copy to `env.backup` (never commit)
-- [ ] **Obtain high-performance keys**:
-  - Google Gemini: Upgrade to paid tier at [Google AI Studio](https://aistudio.google.com/app/apikey) (minimum $10/month for higher limits)
-  - OpenRouter: Upgrade account for higher rate limits
-  - Cartesia: Ensure paid tier for TTS
-- [ ] **Update primary keys**:
-  - Replace `GOOGLE_API_KEY` with paid key
-  - Replace `OPENROUTER_API_KEY` with paid key
-  - Keep `CARTESIA_API_KEY` if already paid
-- [ ] **Update key pools** (use keyrotator for rotation):
-  - Run: `python keyrotator/router.py --update-google-pool --keys "key1,key2,key3"` (replace with actual keys)
-  - Run: `python keyrotator/router.py --update-openrouter-pool --keys "key1,key2,key3"`
-  - Check `modules/key_pool_state.py` for pool status
-- [ ] **Test key rotation**:
-  - Run: `python scratch/test_keys.py`
-  - Ensure no "quota exceeded" errors
-- [ ] **Enable contest mode**:
-  - Set `CONTEST_MODE=true` in .env
-  - Restart container: `docker restart teaching-monster-app`
-- [ ] **Verify ngrok**:
-  - Check ngrok status: Visit http://localhost:4040
-  - Ensure domain `lively-living-crane.ngrok-free.app` is active
-  - Test endpoint: `curl http://lively-living-crane.ngrok-free.app/health`
+---
 
-### Step 3: Final Pipeline Test (5-10 minutes)
-1. **Run full pipeline test**:
-   - `docker exec teaching-monster-app python test_pipeline.py` (if exists) or trigger via API
-   - Verify generation completes in <300 seconds with parallel processing
+## 🔍 Observability
 
-2. **Check logs**:
-   - `docker logs teaching-monster-app --tail 50`
-   - Ensure no auth errors, key exhaustion, or FFmpeg issues
+### API Documentation (Swagger)
+Interactive API playground with automatic schema validation.
 
-3. **Confirm improvements active**:
-   - M3: Generates 3+ nodes
-   - M5: Synthetic students find issues (not "perfect")
-   - NotebookLM: Uses grounded facts (check citations)
+- **Access**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### Emergency Checklist (If Issues Arise)
-- [ ] Disable NotebookLM: Remove `NOTEBOOKLM_AUTH_JSON` → falls back to web search
-- [ ] Switch to stdio MCP: Set `OPENSPACE_MCP_URL=http://host.docker.internal:8081/mcp` if streamable fails
-- [ ] Increase timeouts: Edit `modules/m1_sourcing.py` timeout to 120s
-- [ ] Clear cache: `docker system prune -a` (rebuilds fresh images)
+### KeyRotator Dashboard (Mission Control)
+Real-time API key health, rate-limit tracking, and pipeline activity.
 
-**Time Estimate**: 20-35 minutes total. Perform 1-2 hours before contest deadline to allow testing. Never commit real keys to git.
+- **Access**: [http://localhost:8000/dev/pool-status/ui](http://localhost:8000/dev/pool-status/ui)
+
+---
+
+## 📐 Model Assignment by Module
+
+| Module | Recommended Model | Rationale |
+|---|---|---|
+| **M1 Sourcing** | `gemini-1.5-flash` | AI Research fallback only; simple fact extraction |
+| **M2 Persona Parser** | `gemini-1.0-pro` | Basic JSON extraction |
+| **M3 Concept Planner** | `gemini-1.5-pro` | Pedagogical sequencing requires reasoning |
+| **M4 Script Generator** | `gemini-2.0-flash` | Complex multi-step generation × 3 variants |
+| **M5 Critic** | `gemini-1.5-pro` | CIDPP 5-dimension scoring + feedback |
+| **M6 MM Planner** | `gemini-1.5-flash` | Keyword & spec generation |
+| **M7 Renderer** | N/A | No LLM — pure moviepy + FFmpeg |
+| **M8 Logger** | N/A | No LLM — pure I/O |
+
+Configure in `.env`:
+```bash
+PRIMARY_MODEL=models/gemini-2.0-flash
+FALLBACK_MODEL=models/gemini-1.5-flash
+```
+
+---
+
+## 🏆 Pre-Contest Checklist (v2.0)
+
+Replace the v1.0 NotebookLM re-auth flow with this:
+
+- [ ] **Verify domain corpus**: Run `python scripts/ingest_rag.py` — confirm all 4 subjects ingested
+- [ ] **Test RAG offline**: Disconnect internet → verify pipeline still sources facts via ChromaDB
+- [ ] **Upgrade to paid API keys**: Google Gemini, Cartesia, Pexels (check rate limits)
+- [ ] **Enable contest mode**: Set `CONTEST_MODE=true` in `.env`
+- [ ] **Full end-to-end test**: `curl` the `/generate` endpoint; verify video URL returns in < 25 minutes
+- [ ] **Check logs**: `docker logs teaching-monster-app --tail 50` — no auth errors
+
+> **Removed from v1.0:** NotebookLM re-authentication is no longer required. The system is fully offline for sourcing.
 
 ---
 
 ## 🛠️ Maintenance & Cleanup
 
-The pipeline generates temporary image sequences and large Docker images. To keep your workspace clean:
+```bash
+# Clean temporary video and audio files
+Remove-Item -Path temp -Include *.mp4,*.raw,*.png -Recurse -Force
 
-- **Clean Temporary Files**: `Remove-Item -Path temp -Include *.png,*.raw -Recurse -Force`
-- **Prune Old Images**: `docker image prune` (or follow instructions in [ONBOARDING.md](file:///d:/My_Projects/TeachingMonsterAI/ONBOARDING.md#6-maintenance--workspace-cleanup)).
+# Clear ChromaDB (forces re-ingestion on next build)
+Remove-Item -Path temp/chroma_db -Recurse -Force
+
+# Clear Pexels video cache
+Remove-Item -Path temp/cache_videos -Recurse -Force
+
+# Prune Docker images
+docker image prune
+```
 
 ---
 
 ## 📚 Documentation
-- [**ONBOARDING.md**](file:///d:/My_Projects/TeachingMonsterAI/ONBOARDING.md): Detailed technical guide for developers.
-- [**README-docker.md**](file:///d:/My_Projects/TeachingMonsterAI/README-docker.md): Granular Docker and ngrok networking setup.
-- [**PHASE_4_PLAN.md**](file:///d:/My_Projects/TeachingMonsterAI/PHASE_4_PLAN.md): Roadmap for future pedagogical improvements.
-- [**Mission Control**](http://localhost:8000/dev/pool-status/ui): Live Dashboard.
-- [**API Docs**](http://localhost:8000/docs): Interactive API Documentation.
+
+- [**ONBOARDING.md**](./ONBOARDING.md) — Technical guide for new developers and AI agents
+- [**Teaching_Monster_AI_Agent_PRD_v2.0.md**](./Teaching_Monster_AI_Agent_PRD_v2.0.md) — Full product requirements document
+- [**config/domains.yaml**](./config/domains.yaml) — Subject domain configuration
+- [**API Docs**](http://localhost:8000/docs) — Interactive API Documentation (when running)
 
 ---
-*Developed by Antigravity AI Agent for the Teaching Monster Challenge — April 2026*
+
+*Developed for the Teaching Monster Challenge — April 2026*
+*v2.0 RAG Branch — Local-first, visually enhanced, domain-configurable*

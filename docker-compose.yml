@@ -1,10 +1,9 @@
-version: "3.9"
 
 services:
   # ── Teaching Monster FastAPI Backend ──────────────────────────────────────
   app:
     build: .
-    image: teachingmonsterai-app:0.3.0
+    image: teachingmonsterai-app:0.5.0
 
     container_name: teaching-monster-app
     restart: unless-stopped
@@ -17,8 +16,13 @@ services:
       - ./temp:/app/temp
       - ./m8_feedback.json:/app/m8_feedback.json
       - ./m8_errors.json:/app/m8_errors.json
+      - ./strategy_stats.json:/app/strategy_stats.json
     environment:
       - PYTHONUNBUFFERED=1
+      # Uvicorn keeps HTTP connections alive for up to 30 minutes (contest timeout)
+      - UVICORN_TIMEOUT_KEEP_ALIVE=1800
+      - UVICORN_TIMEOUT=1800
+      - UVICORN_H11_MAX_INCOMPLETE_EVENT_SIZE=16384
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
@@ -33,11 +37,13 @@ services:
     container_name: teaching-monster-ngrok
     restart: unless-stopped
     command:
-      - "http"
-      - "http://app:8000"
-      - "--domain=${NGROK_DOMAIN}"
+      - "start"
+      - "--all"
+      - "--config=/etc/ngrok.yml"
     environment:
       - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml
     ports:
       - "4040:4040"
     depends_on:
@@ -45,5 +51,4 @@ services:
 
 networks:
   default:
-    name: openspace_default
-    external: true
+    name: teaching_monster_net

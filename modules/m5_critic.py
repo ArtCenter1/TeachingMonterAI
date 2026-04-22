@@ -5,117 +5,168 @@ from typing import List, Dict, Any, Tuple
 from .schemas import FullScript, StudentModel, CIDPPScores
 from .utils import extract_json
 from .llm_client import LLMClient
-from .mcp_client import OpenSpaceMCPClient
 from loguru import logger
 
 
 class SyntheticStudentTester:
+    """Runs 4 synthetic student personas in a SINGLE batched LLM call.
+
+    Previous implementation made 4 separate LLM calls (one per persona),
+    which exhausted the 9-key Gemini pool during the critic stage.
+    Batching into 1 call reduces total critic-stage LLM calls from ~8 to ~5.
+    """
+
     def __init__(self, model_name: str):
         self.llm = LLMClient()
         self.model = model_name
-        # Each persona has:
-        #   - description: who they are
-        #   - mandate: a MANDATORY thing they MUST find fault with
         self.personas = {
             "Persona A (Confused Visual)": {
                 "description": "A visual learner who feels completely lost without diagrams or spatial representations.",
-                "mandate": "You MUST identify at least one segment that lacks a clear visual scaffold. If diagrams or animations aren't described, flag it. You are not satisfied with text-only explanations.",
+                "mandate": "Identify segments lacking clear visual scaffolds. Flag text-only explanations.",
             },
             "Persona B (Math-Anxious)": {
                 "description": "A student with severe math anxiety who shuts down when encountering ungrounded equations.",
-                "mandate": "You MUST find at least one formula or quantitative statement that was introduced WITHOUT a prior relatable analogy. Even if an analogy exists, judge whether it was sufficient.",
+                "mandate": "Find formulas or quantitative statements introduced WITHOUT a prior relatable analogy.",
             },
             "Persona C (High-Performer)": {
                 "description": "An advanced student who is easily bored and frustrated by oversimplification.",
-                "mandate": "You MUST identify at least one place where the explanation was too simplified, skipped an important nuance, or patronized you. Find where the lesson could go deeper.",
+                "mandate": "Identify places where the explanation was too simplified or skipped important nuance.",
             },
             "Persona D (Low-Prior/High-Curiosity)": {
                 "description": "A complete beginner — no background knowledge, but highly curious and motivated.",
-                "mandate": "You MUST find at least one assumed knowledge gap — a term, concept, or step that was used without explanation. Every jargon word or logical leap is suspect.",
+                "mandate": "Find assumed knowledge gaps — terms, concepts, or steps used without explanation.",
             },
         }
 
     async def test_script(self, script: FullScript) -> List[Dict[str, Any]]:
-        """Run all 4 synthetic personas against a script sequentially."""
-        results = []
+        """Run all 4 synthetic personas in ONE batched LLM call to conserve API keys."""
+        # Build the persona block for the prompt
+        persona_block = ""
         for name, config in self.personas.items():
-            result = await self.run_persona(
-                script, name, config["description"], config["mandate"]
+            persona_block += (
+                f"\n### {name}\n"
+                f"- Who: {config['description']}\n"
+                f"- Mandate: {config['mandate']}\n"
             )
-            results.append(result)
-            await asyncio.sleep(
-                1
-            )  # Brief pause between personas to respect rate limits
-        return results
 
-    async def run_persona(
-        self, script: FullScript, persona_name: str, persona_desc: str, mandate: str
-    ) -> Dict[str, Any]:
-        prompt = f"""You are a highly critical student watching an educational video for the first time.
+        # Truncate script to ~3000 chars to stay within token budget
+        script_text = script.json()[:3000]
 
-YOUR IDENTITY: {persona_name}
-WHO YOU ARE: {persona_desc}
+        prompt = f"""You are simulating 4 different students who just watched an educational video.
+Each student has a distinct perspective and MUST find specific problems.
 
-YOUR MANDATORY TASK: {mandate}
-(This is ABSOLUTELY REQUIRED — you MUST find at least TWO specific problems to criticize. No exceptions.)
+THE 4 STUDENTS:
+{persona_block}
 
 SCRIPT TO REVIEW:
-{script.json()}
+{script_text}
 
-CRITICAL INSTRUCTION: As a demanding student, you NEVER find content perfect. You ALWAYS identify issues.
-You MUST include at least TWO items in "gaps" and at least ONE in "confusing_quotes".
-DO NOT even think about returning is_perfect: true — it's forbidden.
+CRITICAL RULES:
+- Each persona MUST report at least 2 gaps and 1 confusing quote.
+- NEVER set is_perfect to true for any persona.
+- Be specific — quote the script where possible.
 
-Return ONLY this JSON structure (no explanation text):
-{{
-    "persona": "{persona_name}",
+Return ONLY a JSON array with exactly 4 objects (one per persona):
+[
+  {{
+    "persona": "Persona A (Confused Visual)",
     "is_perfect": false,
-    "gaps": ["gap 1 — be specific, quote the script", "gap 2 — another specific issue"],
-    "confusing_quotes": ["exact quote from the script that confused you", "another confusing part"],
-    "suggested_improvement": "One concrete, actionable change the script writer should make"
-}}
+    "gaps": ["specific gap 1", "specific gap 2"],
+    "confusing_quotes": ["exact quote from script"],
+    "suggested_improvement": "One concrete fix"
+  }},
+  {{
+    "persona": "Persona B (Math-Anxious)",
+    "is_perfect": false,
+    "gaps": ["specific gap 1", "specific gap 2"],
+    "confusing_quotes": ["exact quote from script"],
+    "suggested_improvement": "One concrete fix"
+  }},
+  {{
+    "persona": "Persona C (High-Performer)",
+    "is_perfect": false,
+    "gaps": ["specific gap 1", "specific gap 2"],
+    "confusing_quotes": ["exact quote from script"],
+    "suggested_improvement": "One concrete fix"
+  }},
+  {{
+    "persona": "Persona D (Low-Prior/High-Curiosity)",
+    "is_perfect": false,
+    "gaps": ["specific gap 1", "specific gap 2"],
+    "confusing_quotes": ["exact quote from script"],
+    "suggested_improvement": "One concrete fix"
+  }}
+]
 """
+
         try:
             response = await self.llm.generate_text(
                 prompt=prompt,
                 model_override=self.model,
                 system_instruction=(
-                    f"You are {persona_name}. {persona_desc} "
-                    f"You are an extremely strict, adversarial critic who ALWAYS finds faults. "
-                    f"Your role is to identify weaknesses, not to praise. "
-                    f"You NEVER accept anything as perfect. Always criticize constructively but harshly."
+                    "You are 4 different students reviewing the same lesson. "
+                    "You are extremely strict adversarial critics who ALWAYS find faults. "
+                    "Each persona has a unique lens. None of them ever finds content perfect. "
+                    "Return a JSON array of 4 objects — nothing else."
                 ),
-                temperature=1.0,  # Higher temperature for more critical, varied critiques
+                temperature=0.9,
+                model_size="medium",
             )
-            data = extract_json(response)
+            raw_data = extract_json(response)
 
-            # Post-parse guard: if the LLM still returned is_perfect=True despite instructions,
-            # override it and flag the response for logging.
-            if data.get("is_perfect", False) is True:
-                logger.warning(
-                    f"Synthetic student {persona_name} returned is_perfect=True despite adversarial mandate. "
-                    f"Overriding to False. Raw gaps: {data.get('gaps', [])}"
-                )
-                data["is_perfect"] = False
-                if not data.get("gaps"):
-                    data["gaps"] = [
-                        f"[Auto-flagged] {persona_name} found no specific gaps — review this script manually."
-                    ]
+            # Handle both list and single-object responses
+            if isinstance(raw_data, dict):
+                raw_data = [raw_data]
 
-            return data
+            results = []
+            persona_names = list(self.personas.keys())
+            for i, entry in enumerate(raw_data[:4]):
+                # Enforce persona name alignment
+                expected_name = persona_names[i] if i < len(persona_names) else f"Persona {i}"
+                entry["persona"] = entry.get("persona", expected_name)
+
+                # Post-parse guard: force is_perfect=False
+                if entry.get("is_perfect", False) is True:
+                    logger.warning(
+                        f"Synthetic student {entry['persona']} returned is_perfect=True. Overriding."
+                    )
+                    entry["is_perfect"] = False
+                    if not entry.get("gaps"):
+                        entry["gaps"] = [
+                            f"[Auto-flagged] {entry['persona']} found no specific gaps — review manually."
+                        ]
+                results.append(entry)
+
+            # If LLM returned fewer than 4, pad with error entries
+            while len(results) < 4:
+                idx = len(results)
+                name = persona_names[idx] if idx < len(persona_names) else f"Persona {idx}"
+                results.append({
+                    "persona": name,
+                    "is_perfect": False,
+                    "gaps": [f"[Auto-padded] Batched call returned only {len(raw_data)} responses."],
+                    "confusing_quotes": [],
+                    "suggested_improvement": "Run synthetic test again for full coverage.",
+                })
+
+            logger.info(f"Batched synthetic student test: {len(results)} personas in 1 LLM call")
+            return results
 
         except Exception as e:
-            # On error, return a FAIL signal — NOT a silent pass.
-            logger.error(f"Error in synthetic student ({persona_name}): {str(e)}")
-            return {
-                "persona": persona_name,
-                "is_perfect": False,
-                "gaps": [
-                    f"[System Error] Persona test failed due to: {str(e)}. Treat this segment as unverified."
-                ],
-                "confusing_quotes": [],
-                "suggested_improvement": "Re-run synthetic student test — previous call failed.",
-            }
+            logger.error(f"Batched synthetic student test failed: {str(e)}")
+            # Return fail signals for all 4 personas
+            return [
+                {
+                    "persona": name,
+                    "is_perfect": False,
+                    "gaps": [
+                        f"[System Error] Batched test failed: {str(e)}. Treat as unverified."
+                    ],
+                    "confusing_quotes": [],
+                    "suggested_improvement": "Re-run synthetic student test.",
+                }
+                for name in self.personas.keys()
+            ]
 
 
 class CIDPPCritic:
@@ -273,7 +324,9 @@ class CIDPPCritic:
             response_text = await self.llm.generate_text(
                 prompt=prompt,
                 model_override=model_override,
-                system_instruction="You are a meticulous editor improving an educational script based on direct student feedback.",
+                temperature=0.3,
+                max_tokens=1024,
+                model_size="medium",
             )
             data = extract_json(response_text)
             return FullScript(**data)
@@ -289,55 +342,8 @@ class CIDPPCritic:
     ) -> CIDPPScores:
         """
         Score a script on the CIDPP rubric.
-
-        Attempt order:
-          1. OpenSpace ``pedagogical_critic`` skill (senior review pass)
-          2. Local LLM with CIDPP prompt (fallback)
-          3. Mock data (if no API keys configured)
         """
-        # ── Attempt 1: OpenSpace pedagogical_critic skill ────────────────────
-        try:
-            client = OpenSpaceMCPClient()
-            if await client.health_check():
-                logger.info(
-                    "Delegating CIDPP review to OpenSpace pedagogical_critic skill"
-                )
-                task = (
-                    f"Use the pedagogical_critic skill to evaluate this educational script "
-                    f"on the CIDPP rubric (1–10 for each dimension: "
-                    f"Clarity, Integrity, Depth, Practicality, Pertinence). "
-                    f"Student persona level: {student_model.level}, "
-                    f"modality preference: {student_model.modality_preference}. "
-                    f"Script (first 3000 chars):\n{json.dumps(script.dict())[:3000]}\n\n"
-                    f"Return ONLY a JSON object with this exact structure — no markdown:\n"
-                    f'{{"clarity": int, "integrity": int, "depth": int, '
-                    f'"practicality": int, "pertinence": int, "revisions": ["..."]}}'
-                )
-                raw = await client.execute_task(
-                    task, max_iterations=5, search_scope="local"
-                )
-                logger.debug(
-                    "OpenSpace CIDPP raw result (first 300 chars): %s", raw[:300]
-                )
-                data = extract_json(raw)
-                scores = CIDPPScores(**data)
-                logger.info(
-                    "OpenSpace CIDPP scores — C:%d I:%d D:%d P:%d Pe:%d revisions:%d",
-                    scores.clarity,
-                    scores.integrity,
-                    scores.depth,
-                    scores.practicality,
-                    scores.pertinence,
-                    len(scores.revisions),
-                )
-                return scores
-        except Exception as exc:
-            logger.warning(
-                "OpenSpace pedagogical_critic unavailable, using local LLM fallback: %s",
-                exc,
-            )
-
-        # ── Attempt 2: Local LLM CIDPP scoring ───────────────────────────────
+        # Local LLM CIDPP scoring is now the primary path
         if not self.google_api_key and not self.openrouter_api_key:
             logger.warning("No LLM API keys found, falling back to mock data.")
             return self.get_mock_data()

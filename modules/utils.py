@@ -1,43 +1,64 @@
 import json
 import re
-from loguru import logger
+from typing import Dict, Any
 
-def extract_json(text: str) -> dict:
-    """
-    Robustly extracts and parses JSON from LLM responses.
-    Handles markdown blocks and common escaping issues.
-    """
-    try:
-        # 1. Try to find markdown json block
-        json_match = re.search(r"```json\s*(\{[\s\S]*\})\s*```", text)
-        if json_match:
-            content = json_match.group(1)
-        else:
-            # 2. Try to find the first '{' and last '}'
-            start = text.find('{')
-            end = text.rfind('}')
-            if start != -1 and end != -1:
-                content = text[start:end+1]
-            else:
-                content = text.strip()
-
-        # 3. Handle common LLM escaping issues (e.g. unescaped backslashes in formulas)
-        # Replacing single backslashes not followed by common escape chars with double backslashes
-        # This is a heuristic but fixes many LaTeX/formula issues in JSON
-        # We only do this if a standard load fails
+def extract_json(text: str) -> Dict[str, Any]:
+    """Extract a JSON object from a string that might contain other text."""
+    # Attempt to find JSON block in triple backticks (with or without 'json' language specifier)
+    pattern = r"```(?:json)?\s*(.*?)\s*```"
+    match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+    if match:
+        content = match.group(1)
         try:
             return json.loads(content)
         except json.JSONDecodeError:
-            # Attempt to escape lone backslashes
-            # This regex looks for \ that isn't part of a valid escape sequence (\", \\, \/, \b, \f, \n, \r, \t, \uXXXX)
-            fixed_content = re.sub(r'\\(?![\\"/bfnrtu])', r'\\\\', content)
+            pass
+            
+    # Fallback: Find the first { or [ and last } or ]
+    start_obj = text.find('{')
+    start_arr = text.find('[')
+    
+    # Determine the earliest starting bracket
+    start = -1
+    if start_obj != -1 and start_arr != -1:
+        start = min(start_obj, start_arr)
+    elif start_obj != -1:
+        start = start_obj
+    elif start_arr != -1:
+        start = start_arr
+        
+    if start != -1:
+        # Match the ending bracket based on the starting bracket
+        end = text.rfind('}') if text[start] == '{' else text.rfind(']')
+        if end != -1 and end > start:
+            content = text[start:end+1]
             try:
-                return json.loads(fixed_content)
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse JSON even after stabilization: {e}")
-                logger.debug(f"Raw content: {content}")
-                raise e
+                return json.loads(content)
+            except json.JSONDecodeError:
+                try:
+                    # Try a slightly more aggressive cleanup for multi-line strings
+                    cleaned = re.sub(r'\s+', ' ', content)
+                    return json.loads(cleaned)
+                except:
+                    pass
 
-    except Exception as e:
-        logger.error(f"Error extracting JSON: {str(e)}")
-        raise e
+    raise ValueError(f"Could not extract valid JSON from text: {text[:200]}...")
+
+def infer_subject(course_requirement: str) -> str:
+    """Infer subject from course_requirement using keyword heuristics.
+    
+    Returns standard subject names like 'Physics', 'Biology', 'CS', 'Mathematics', or 'General'.
+    """
+    req_lower = course_requirement.lower()
+    for kw, subj in [
+        ("physics", "Physics"), ("biology", "Biology"),
+        ("computer", "CS"), ("math", "Mathematics"),
+        ("cell", "Biology"), ("momentum", "Physics"),
+        ("algorithm", "CS"), ("derivative", "Mathematics"),
+        ("recursion", "CS"), ("dna", "Biology"),
+        ("force", "Physics"), ("calculus", "Mathematics"),
+        ("chemistry", "Chemistry"), ("chemical", "Chemistry"),
+    ]:
+        if kw in req_lower:
+            return subj
+    return "General"

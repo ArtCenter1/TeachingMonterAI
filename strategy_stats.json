@@ -1,0 +1,32 @@
+{
+  "Inductive|StudentLevel.HIGH_SCHOOL|General": {
+    "strategy": "Inductive",
+    "level": "high_school",
+    "subject": "General",
+    "wins": 1,
+    "losses": 4,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 5
+  },
+  "Cognitive-Conflict|StudentLevel.HIGH_SCHOOL|General": {
+    "strategy": "Cognitive-Conflict",
+    "level": "high_school",
+    "subject": "General",
+    "wins": 1,
+    "losses": 5,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 6
+  },
+  "Intuition-First|StudentLevel.HIGH_SCHOOL|General": {
+    "strategy": "Intuition-First",
+    "level": "high_school",
+    "subject": "General",
+    "wins": 11,
+    "losses": 1,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 12
+  }
+}

@@ -115,10 +115,9 @@ Return ONLY a JSON object matching this exact schema (no explanation text):
                 response_text = await self.llm.generate_text(
                     prompt=prompt,
                     model_override=model_override,
-                    system_instruction=(
-                        "You are a pedagogical lesson planner who specializes in concept mapping and scaffolding. "
-                        "Always return valid JSON only. Never return fewer than 3 concept nodes."
-                    ),
+                    temperature=0.7,
+                    max_tokens=2048,
+                    model_size="medium",
                 )
 
                 data = extract_json(response_text)
