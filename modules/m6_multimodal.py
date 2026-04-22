@@ -22,12 +22,12 @@ class MultimodalPlanner:
         
         # Parse result
         try:
-            # Assuming a standard extract_json utility exists in modules/utils.py
-            # If not, we'll implement a local regex extraction
             import re
             import json
             match = re.search(r'\{.*\}', keywords_raw, re.DOTALL)
-            keywords_map = json.loads(match.group(0)) if match else {}
+            raw_map = json.loads(match.group(0)) if match else {}
+            # Normalize keys to string and strip any whitespace/prefixes the LLM might add
+            keywords_map = {str(k).strip().replace("ID ", "").replace("seg_", ""): v for k, v in raw_map.items()}
         except Exception as e:
             logger.warning(f"M6: Failed to parse keywords JSON: {e}")
             keywords_map = {}
@@ -46,10 +46,20 @@ class MultimodalPlanner:
                 logger.error(f"M6: Slide generation failed for segment {segment.segment_id}: {e}")
 
             # 3. Assemble visual entry
-            # Fallback keywords to concept if LLM failed
-            search_terms = keywords_map.get(str(segment.segment_id), [segment.concept, "education", "abstract"])
-            if not isinstance(search_terms, list):
-                search_terms = [str(search_terms)]
+            # Normalize segment_id for lookup
+            lookup_id = str(segment.segment_id).replace("seg_", "")
+            
+            # Fallback chain: [LLM-provided] -> [narration-derived] -> [concept-derived] -> [subject-generic]
+            search_terms = keywords_map.get(lookup_id)
+            
+            if not search_terms or not isinstance(search_terms, list):
+                # Local fallback if LLM failed or ID mismatch
+                search_terms = [
+                    segment.concept, 
+                    "educational visualization",
+                    "learning background",
+                    "abstract science"
+                ]
                 
             visual_plan.append({
                 "segment_id": segment.segment_id,
@@ -57,7 +67,8 @@ class MultimodalPlanner:
                 "content_spec": segment.visual_content_spec,
                 "duration_seconds": segment.duration_seconds,
                 "image_path": slide_path,
-                "pexels_keywords": search_terms
+                "pexels_keywords": search_terms,
+                "narration_context": segment.narration[:200] # For downstream debugging
             })
             
         logger.success(f"M6: Visual plan complete with {len(visual_plan)} segments.")
@@ -65,19 +76,27 @@ class MultimodalPlanner:
 
     def _build_keywords_prompt(self, script: FullScript) -> str:
         segments_info = "\n".join([
-            f"ID {s.segment_id}: '{s.concept}' (Visual: {s.visual_content_spec})"
+            f"ID {s.segment_id}: '{s.concept}'\nNarration: {s.narration}\nVisual Spec: {s.visual_content_spec}\n---"
             for s in script.segments
         ])
         
         return f"""
-Act as a visual director for an educational video. 
-For each segment below, provide 3 descriptive search keywords for Pexels Video.
-Keywords must be realistic B-roll scenes, not abstract diagrams.
-Examples: "chalkboard math formulas", "forest aerial view", "microscope bacteria", "students in library".
+Act as a Visual Director for a high-end educational YouTube channel.
+Your task is to extract concrete, search-friendly visual keywords from the narration of each lesson segment.
 
-Segments:
+Rules:
+1. Keywords must be highly specific to the *narration* context.
+2. Avoid abstract words like "education", "science", "knowledge".
+3. Use realistic B-roll scene descriptions.
+4. Provide 5 distinct keywords/phrases per segment.
+
+Example:
+Narration: "Imagine the heart as a double-pump, pushing oxygenated blood to the brain."
+Keywords: ["human heart animation", "blood cells flowing", "circulatory system", "medical visualization heart", "pumping heart close up"]
+
+Segments to process:
 {segments_info}
 
-Return ONLY a flat JSON object where keys are the IDs and values are arrays of 3 keyword strings.
-Example: {{"1": ["sun setting", "clouds moving", "horizon"]}}
+Return ONLY a flat JSON object where keys are the numeric IDs and values are arrays of 5 keyword strings.
+Example: {{"1": ["scene 1", "scene 2", "scene 3", "scene 4", "scene 5"]}}
 """

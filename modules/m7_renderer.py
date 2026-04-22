@@ -258,22 +258,30 @@ class VideoRenderer:
         self, visual: Dict[str, Any], run_video_dir: str, idx: int
     ) -> str:
         """
-        Download a Pexels B-roll clip and return its local path.
-        Falls back to a synthetic color video if Pexels fails.
+        Download a B-roll clip based on keywords. 
+        Iterates through keywords until a match is found.
         """
         keywords = visual.get("pexels_keywords", [])
-        query = " ".join(keywords) if isinstance(keywords, list) else str(keywords or "education")
+        if not isinstance(keywords, list):
+            keywords = [str(keywords)]
 
-        try:
-            results = self.pexels.search_videos(query)
-            if results:
-                video_url = results[0].get("url", "")
-                if video_url:
-                    path = self.pexels.download_video(video_url)
-                    if path and os.path.exists(path):
-                        return path
-        except Exception as e:
-            logger.warning(f"M7: Pexels failed for '{query}': {e}")
+        # Add some broad fallbacks if the specific ones fail
+        search_candidates = keywords + ["educational visualization", "abstract science background", "learning"]
+
+        for query in search_candidates:
+            if not query or len(query) < 3: continue
+            try:
+                logger.debug(f"M7: Sourcing video for segment {idx} using query: '{query}'")
+                results = self.pexels.search_videos(query)
+                if results:
+                    video_url = results[0].get("url", "")
+                    if video_url:
+                        path = self.pexels.download_video(video_url)
+                        if path and os.path.exists(path):
+                            logger.info(f"M7: Successfully sourced video for segment {idx} with '{query}'")
+                            return path
+            except Exception as e:
+                logger.warning(f"M7: Sourcing failed for '{query}': {e}")
 
         # Fallback: generate a 90-second solid-color video placeholder
         color_path = os.path.join(run_video_dir, f"color_{idx}.mp4")

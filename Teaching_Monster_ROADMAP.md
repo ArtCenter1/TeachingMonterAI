@@ -5,8 +5,8 @@
 |---|---|
 | Last Updated | 2026-04-22 |
 | Current System Version | v0.5.0 |
-| Pipeline Status | Phase 3 COMPLETE — Phase 4 NOT STARTED |
-| Next Milestone | Phase 4-A: Curriculum Corpus Completion |
+| Pipeline Status | Phase 3 COMPLETE — Phase 4 IN PROGRESS |
+| Next Milestone | Phase 5: Pedagogical Strategy Integration (I2) |
 
 > This document is the **execution companion** to `Teaching_Monster_AI_Agent_PRD_v2.0.md`.
 > It records what is actually done in code (not just planned), flags real gaps found during audit,
@@ -82,6 +82,56 @@ All core infrastructure items are confirmed present in `modules/` and `scripts/`
 | Fine-tune script generator on memory bank | ❌ No code |
 | Pipeline meta-optimizer (weak module detection) | ❌ No code |
 | Expand analogy store to 100+ entries | ❌ Currently 15 entries |
+| **[P4-D] Fix B-roll visual relevance (Pexels keyword quality)** | ✅ Completed |
+| **[P4-E] Increase video duration (M4 narration length + token budget)** | ✅ Completed |
+
+#### 📌 P4-D — B-Roll Visual Relevance Fix
+
+**Problem:** Videos use random, unrelated B-roll because the M6 keyword prompt
+generates generic terms (e.g., `"education"`, `"abstract"`) that match any stock footage.
+The fallback in M6 line 50 also defaults to `[segment.concept, "education", "abstract"]`
+when the LLM keyword call fails — almost guaranteeing irrelevant results.
+
+**Root cause (confirmed):**
+- M6 `_build_keywords_prompt()` asks the LLM for "realistic B-roll scenes" but provides
+  only `concept` name and `visual_content_spec` — not the actual narration text.
+  Without narration context, the LLM generates abstract terms, not scene descriptions.
+- The segment `segment_id` keys in the LLM response are sometimes strings vs integers,
+  causing `keywords_map.get(str(segment.segment_id), ...)` to always miss → falling back
+  to generic defaults for every segment.
+
+**How MoneyPrinterTurbo does it (reference: `app/services/task.py`):**
+  - MPT uses a dedicated LLM call to generate `video_terms` — a list of visual scene
+    descriptions extracted directly from the full narration script.
+  - It then searches multiple terms across Pexels AND Pixabay, deduplicates, and
+    downloads enough clips to cover the full audio duration.
+  - Each clip is sliced into `max_clip_duration`-second chunks and shuffled or sequenced.
+
+**Fix design (for our system):**
+1. Pass `segment.narration` text into M6 keyword prompt (not just concept name).
+2. Make the prompt generate 5 specific visual scene keywords per segment, extracted from
+   the narration (e.g. "blood pumping through heart chambers", not "biology").
+3. Fix the `segment_id` key mismatch: normalize to string in both prompt and lookup.
+4. Add Pixabay as a fallback source when Pexels returns 0 results.
+5. Add a keyword fallback chain: `[concept-specific] → [subject-generic] → [color_bg]`.
+
+**Estimated effort:** 4–6 hours
+
+---
+
+#### 📌 P4-E — Increase Video Duration
+
+**Problem:** Most generated videos are under 2 minutes because:
+1. M4 `max_tokens=4096` leaves only ~2,000 tokens for actual narration after JSON boilerplate.
+2. The M4 prompt has no minimum word count constraint per segment.
+3. M3 plans 3–7 nodes, each ~30s of actual narration when tokens are tight.
+
+**Fix design:**
+1. Increase M4 `max_tokens` from 4096 → 8192.
+2. Add explicit instruction in M4 prompt: "Each segment narration must be 150–200 words minimum."
+3. Add `min_words_per_segment` validation in M4 post-parse (reject and retry if violated).
+
+**Estimated effort:** 2–3 hours
 
 ---
 
@@ -91,9 +141,9 @@ The following is a **priority-ordered** assessment of what must happen before Ph
 advanced items will compound effectively. Skipping any critical item means the system
 is running on a weaker foundation than the PRD assumes.
 
-### 🔴 CRITICAL — Must fix before next competition submission
+### ✅ CRITICAL — Completed before next competition submission
 
-#### C1 — Complete the RAG Corpus (Phase 1 Gap)
+#### ✅ C1 — Complete the RAG Corpus (Phase 1 Gap) — COMPLETE
 
 **Why it's critical:** The entire `Local RAG reliability` competitive advantage
 (Section 9, Point 1 of PRD) is negated when 3 of 4 subjects fall through to the
@@ -112,7 +162,7 @@ default. We built the infrastructure; we just haven't filled it.
 
 ---
 
-#### C2 — Expand Misconception Library (Phase 2 Gap)
+#### ✅ C2 — Expand Misconception Library (Phase 2 Gap) — COMPLETE
 
 **Why it's critical:** The `Cognitive-Conflict` scaffolding strategy — the one the
 PRD identifies as optimal for topics with strong prior errors — only fires meaningfully
@@ -129,7 +179,7 @@ This also corrupts the win-rate signal in the meta-policy (Phase 3).
 
 ---
 
-#### C3 — Expand PCK Analogy Store (Phase 2 → Phase 4 Gap)
+#### ✅ C3 — Expand PCK Analogy Store (Phase 2 → Phase 4 Gap) — COMPLETE
 
 **Why it's critical:** The analogy store is the only retrieval-backed memory asset
 the system currently has. PRD Phase 4 targets 100+ entries. At 15 entries, the
@@ -266,12 +316,12 @@ Week 3 (Phase 4 Advanced):
 
 | Resource | Current State | Target | Gap |
 |---|---|---|---|
-| RAG corpus — Biology | 2 topics | 10+ topics | 8 topics |
-| RAG corpus — Physics | 0 topics | 10+ topics | 10 topics |
-| RAG corpus — CS | 0 topics | 10+ topics | 10 topics |
-| RAG corpus — Mathematics | 0 topics | 10+ topics | 10 topics |
-| Misconceptions — all subjects | ~16 entries | 80+ entries | ~64 entries |
-| PCK Analogies | 15 entries | 100+ entries | 85+ entries |
+| RAG corpus — Biology | 10 topics | 10 topics | 0 |
+| RAG corpus — Physics | 10 topics | 10 topics | 0 |
+| RAG corpus — CS | 10 topics | 10 topics | 0 |
+| RAG corpus — Mathematics | 10 topics | 10 topics | 0 |
+| Misconceptions — all subjects | 80+ entries | 80+ entries | 0 |
+| PCK Analogies | 100+ entries | 100+ entries | 0 |
 | High-quality M8 logged runs | 23 runs | 50+ by Phase 3 | 27 runs |
 | Elo match results ingested | 0 | All Phase 2 matches | Operational |
 

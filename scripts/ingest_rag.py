@@ -1,23 +1,24 @@
-import os
-import yaml
-import hashlib
-from typing import List, Dict
-from google import genai
 import chromadb
 from chromadb.config import Settings
+
+import os
+import sys
+import yaml
+import asyncio
+import hashlib
+from typing import List, Dict
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
-# Setup LLM
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-if not GOOGLE_API_KEY:
-    print("Warning: GOOGLE_API_KEY not found in .env. Curriculum generation will fail if files are missing.")
+# Add project root to path so we can import modules
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# We expect to use gemini-1.5-flash for speed/cost efficiency during ingestion
-MODEL_NAME = 'gemini-1.5-flash'
-client_genai = genai.Client(api_key=GOOGLE_API_KEY) if GOOGLE_API_KEY else None
+from modules.llm_client import LLMClient
+
+# Instantiate the shared LLM client (uses OpenRouter + Gemini pool, not raw API)
+_llm = LLMClient()
 
 # Setup Directories
 CURRICULUM_DIR = os.path.join('resources', 'curriculum')
@@ -38,12 +39,14 @@ Length: ~1,500 words. Format: plain prose (no headers, no markdown bolding of ev
 Simply provide the high-quality educational text.
 """
     print(f"  [LLM] Generating curriculum for: {domain} / {topic}...")
-    if not client_genai:
-        print(f"  [ERROR] genai client not initialized (missing API key).")
-        return f"Error: No API key for {topic}."
     try:
-        response = client_genai.models.generate_content(model=MODEL_NAME, contents=prompt)
-        return response.text
+        result = asyncio.run(_llm.generate_text(
+            prompt=prompt,
+            temperature=0.4,
+            max_tokens=2048,
+            model_size="medium",
+        ))
+        return result
     except Exception as e:
         print(f"  [ERROR] LLM generation failed: {e}")
         return f"Error generating content for {topic}."

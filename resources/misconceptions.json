@@ -2,139 +2,273 @@
   "Computer Science": {
     "variables": [
       "Variables are physical containers that store data like boxes",
-      "Variables can only hold one type of data (e.g., only numbers)",
-      "Changing a variable's value 'uses up' the old value forever (not understanding pointers/references)"
+      "Variables can only hold one type of data",
+      "Changing a variable's value 'uses up' the old value forever",
+      "A variable name IS the data (confusing identifier with value)"
     ],
     "loops": [
       "Loops always run an infinite number of times",
       "Loops can only repeat the exact same action each time",
-      "A 'while' loop checks its condition constantly during the execution of the body, not just at the start of each iteration"
+      "A 'while' loop checks its condition constantly during the body, not just at the start of each iteration",
+      "For loops always count upward from zero"
     ],
     "algorithms": [
       "Algorithms are only for computers, not humans",
       "An algorithm must be written in code to be valid",
-      "There is only one correct algorithm for any given problem"
+      "There is only one correct algorithm for any given problem",
+      "A faster algorithm is always better regardless of memory usage"
     ],
     "binary numbers": [
       "Binary is just another number system with no special meaning",
       "Computers use binary because it's faster than decimal",
-      "Binary 10 is the same as decimal 10"
+      "Binary 10 is the same as decimal 10",
+      "Hexadecimal is a completely separate system unrelated to binary"
     ],
     "data structures": [
       "Linked lists are always slower than arrays because they are 'linked'",
       "Arrays can grow in size automatically without performance cost",
-      "A stack and a queue are basically the same thing because they both hold data"
+      "A stack and a queue are basically the same thing because they both hold data",
+      "Hash tables always have O(1) lookup regardless of load factor"
     ],
     "sorting": [
       "Bubble sort is the most efficient because it's the easiest to understand",
       "Sorting only works on numbers, not text or complex objects",
-      "Quicksort is always $O(n \log n)$ regardless of the pivot choice"
+      "Quicksort is always O(n log n) regardless of the pivot choice",
+      "Merge sort uses less memory than quicksort because it's more organised"
     ],
     "oop": [
       "An object is just a list of variables",
       "Inheritance means the child class 'steals' code from the parent",
-      "Private variables are for security against hackers, not for encapsulation"
+      "Private variables are for security against hackers, not for encapsulation",
+      "Polymorphism means an object can be two things at the same time"
     ],
     "recursion": [
       "Recursion is just a loop with a different name",
       "A recursive function calls itself 'at the same time' (parallelism confusion)",
-      "Recursion will always eventually stop even without a base case"
+      "Recursion will always eventually stop even without a base case",
+      "Recursion is always less efficient than iteration"
+    ],
+    "time complexity": [
+      "O(n^2) is always slower than O(n log n) for all inputs",
+      "Big O notation measures actual runtime in seconds",
+      "An O(1) algorithm is always fast in practice",
+      "The best algorithm is always the one with the lowest Big O class"
+    ],
+    "graphs": [
+      "A graph is the same thing as a chart",
+      "All graphs must be connected",
+      "Trees are not a type of graph",
+      "BFS always finds the shortest path in a weighted graph"
+    ],
+    "machine learning": [
+      "Machine learning models 'understand' data the way humans do",
+      "More data always leads to a better model",
+      "A high training accuracy means the model will generalise well",
+      "Neural networks work exactly like the human brain"
+    ],
+    "networks": [
+      "The internet and the World Wide Web are the same thing",
+      "Data packets always travel the same route across a network",
+      "HTTPS means the website is trustworthy, not just encrypted",
+      "A firewall blocks all malicious traffic automatically"
     ]
   },
   "Physics": {
     "force": [
       "Force always causes motion (objects at rest have no forces)",
       "Force is the same as energy",
-      "An object moving at a constant speed must have a net force acting on it"
+      "An object moving at constant speed must have a net force acting on it",
+      "If an object is not moving, no forces are acting on it"
     ],
     "gravity": [
       "Gravity only affects objects on Earth",
       "Heavier objects fall faster due to stronger gravity",
-      "There is no gravity in space (the 'vacuum' misconception)"
+      "There is no gravity in space (the 'vacuum' misconception)",
+      "Gravity is the strongest of the fundamental forces"
     ],
     "energy": [
       "Energy is a physical substance that can be used up",
       "Kinetic energy only comes from motion, not potential",
-      "Energy is 'lost' when a machine isn't 100% efficient (not realizing it's converted to heat)"
+      "Energy is 'lost' when a machine isn't 100% efficient",
+      "Cold is the absence of energy (rather than low thermal energy)"
     ],
     "thermodynamics": [
-      "Cold is a substance that flows into objects",
-      "Heat and Temperature are the same thing",
-      "Entropy only applies to messy rooms, not closed systems"
+      "Heat and temperature are the same thing",
+      "Cold is a type of substance that flows from cold to hot objects",
+      "The second law of thermodynamics means everything eventually breaks down into nothing",
+      "A perfectly insulated container means zero heat loss"
     ],
     "waves": [
-      "Sound waves can travel through a vacuum like light",
-      "The medium (e.g., water) moves along with the wave",
-      "Waves 'die out' because they run out of energy (not understanding dissipation/attenuation)"
+      "Sound can travel through a vacuum like light can",
+      "Transverse waves move matter in the direction of wave travel",
+      "A louder sound means a higher frequency",
+      "Light is purely a wave with no particle properties"
     ],
     "electromagnetism": [
-      "Electric current is used up by a lightbulb",
-      "Magnetic fields are just a different type of gravitational field",
-      "Battery 'stores' electrons (rather than providing the potential difference to move existing ones)"
+      "Electricity flows at the speed of light through wires",
+      "Current flows from negative to positive (confusing conventional and electron flow)",
+      "Magnets only attract or repel metal objects",
+      "An electric field exists only when current is flowing"
+    ],
+    "momentum": [
+      "Momentum and velocity are the same thing",
+      "A heavier object always has more momentum than a lighter one",
+      "In a collision, the total momentum always decreases due to energy loss",
+      "Impulse only matters for fast-moving objects"
+    ],
+    "optics": [
+      "We see objects because our eyes send light to them",
+      "Mirrors reverse left and right, but not up and down",
+      "Refraction only occurs when light passes from air into glass",
+      "A concave mirror always produces an inverted image"
+    ],
+    "quantum mechanics": [
+      "Quantum mechanics only applies to very small, very fast particles",
+      "The Heisenberg Uncertainty Principle is due to imperfect measuring instruments",
+      "Quantum superposition means a particle is in two places at once",
+      "Electrons orbit the nucleus in fixed circular paths like planets"
+    ],
+    "circuits": [
+      "Current is used up as it flows through a circuit",
+      "Voltage is the same as current",
+      "Adding more resistors in series makes the circuit brighter",
+      "A battery stores electricity (rather than chemical energy)"
+    ],
+    "nuclear physics": [
+      "Radioactivity is contagious and can spread from person to person",
+      "Nuclear fission and fusion are the same process in reverse",
+      "All radiation is equally dangerous regardless of type or dose",
+      "Atoms are destroyed in nuclear reactions"
+    ],
+    "gravitational fields": [
+      "Gravitational potential energy only exists near Earth's surface",
+      "Orbiting satellites have no gravity acting on them",
+      "A satellite in orbit must constantly fire its engines to stay up",
+      "Gravity decreases linearly with distance"
     ]
   },
   "Biology": {
-    "cells": [
-      "All cells are identical regardless of function",
-      "Cells are just empty spaces filled with water",
-      "Plant cells have cell walls *instead* of cell membranes (they have both)"
-    ],
     "dna": [
-      "DNA is only found in humans, not other organisms",
-      "DNA determines everything about an organism immediately",
-      "Mutations are always 'bad' or 'deadly'"
-    ],
-    "evolution": [
-      "Evolution only happens to animals, not plants",
-      "Species evolve because they want to improve",
-      "Humans evolved *from* monkeys (rather than sharing a common ancestor)"
-    ],
-    "cellular respiration": [
-      "Respiration is the same as breathing",
-      "Cells only use oxygen for respiration",
-      "Photosynthesis and Respiration are 'opposites' that cancel each other out"
+      "All DNA is genes (ignoring non-coding regions)",
+      "DNA is a static blueprint that never changes",
+      "Genes directly produce traits (ignoring gene expression complexity)",
+      "Humans have more genes than simpler organisms"
     ],
     "cell division": [
-      "Mitosis and Meiosis are the same thing but for different animals",
-      "Chromosomes only exist during cell division",
-      "Interphase is a 'resting' phase where nothing happens"
+      "Mitosis and meiosis produce identical outcomes",
+      "Cell division creates new DNA from scratch",
+      "Cancer is caused simply by cells dividing too fast (ignoring checkpoint failures)",
+      "All cells in the body divide at the same rate"
+    ],
+    "evolution": [
+      "Evolution is goal-directed and organisms evolve to become 'better'",
+      "Individuals evolve during their lifetime",
+      "Evolution is 'just a theory' with no empirical evidence",
+      "Humans evolved from chimpanzees (not from a common ancestor)"
     ],
     "circulatory system": [
-      "Deoxygenated blood is blue",
-      "The heart is the source of all 'feelings' and 'soul'",
-      "Arteries always carry oxygenated blood (forgetting the pulmonary artery)"
+      "Veins carry oxygenated blood and arteries carry deoxygenated blood (always)",
+      "The heart pumps blood by squeezing it like a squeeze bottle",
+      "Blood is blue inside the body",
+      "The heart only pumps blood to the lungs"
+    ],
+    "photosynthesis": [
+      "Plants get their food from the soil",
+      "Plants only photosynthesise in sunlight and only respire at night",
+      "Oxygen is the main product plants use from photosynthesis",
+      "All plants photosynthesise at the same rate"
+    ],
+    "nervous system": [
+      "We use only 10% of our brain",
+      "Left-brained people are logical and right-brained people are creative",
+      "Neurons regenerate easily after damage",
+      "Reflexes are controlled by the brain, not the spinal cord"
+    ],
+    "genetics": [
+      "Dominant traits are more common in a population",
+      "Offspring receive exactly 50% of traits from each parent",
+      "Recessive traits skip generations and disappear",
+      "Identical twins have exactly the same DNA with no differences"
+    ],
+    "immune system": [
+      "Antibiotics can treat viral infections",
+      "A fever is always harmful and must be reduced immediately",
+      "Vaccines contain the actual disease-causing pathogen",
+      "Hand sanitiser is as effective as handwashing for all pathogens"
+    ],
+    "ecology": [
+      "Producers always have the most biomass in an ecosystem",
+      "Removing a predator from an ecosystem always increases biodiversity",
+      "Food chains are simple linear sequences in nature",
+      "Decomposers are less important than producers or consumers"
+    ],
+    "hormones": [
+      "Hormones only affect reproductive functions",
+      "Adrenaline only activates during extreme situations",
+      "Hormones work instantaneously like electrical signals",
+      "Insulin only matters for people with diabetes"
     ]
   },
   "Mathematics": {
-    "fractions": [
-      "Fractions are just division problems",
-      "Multiplying fractions always makes them larger",
-      "The larger the denominator, the larger the fraction"
+    "derivatives": [
+      "The derivative is the same as the slope of a straight line",
+      "f'(x) = 0 always means a maximum or minimum",
+      "Differentiation and integration are completely unrelated operations",
+      "The chain rule only applies to exponential functions"
+    ],
+    "integration": [
+      "Integration is just reverse differentiation with no geometric meaning",
+      "Definite and indefinite integrals are the same thing",
+      "The constant of integration is just a formality with no real meaning",
+      "Integration can only be applied to smooth, continuous functions"
     ],
     "probability": [
-      "Probability means something will definitely happen",
-      "Past events don't affect future probabilities (Gambler's Fallacy vs. Independent Events)",
-      "50% chance means if I do it twice, it will definitely happen once"
-    ],
-    "geometry": [
-      "Area and perimeter are the same thing",
-      "Shapes can only be measured in whole units",
-      "A square is not a rectangle"
-    ],
-    "algebra": [
-      "Variables are just placeholders with no meaning",
-      "Equations must always have a solution",
-      "You can't add $x$ and $y$ because they are different 'letters'"
-    ],
-    "calculus": [
-      "A derivative is just the 'slope' and nothing else",
-      "Integration is just finding the area under a curve",
-      "Infinity is a number you can reach"
+      "The probability of an event increases if it 'hasn't happened in a while' (Gambler's Fallacy)",
+      "A 50% chance means it will definitely happen once in every two tries",
+      "Probability 0 means an event is impossible",
+      "Independent events cannot occur at the same time"
     ],
     "matrices": [
-      "Matrix multiplication is commutative ($AB=BA$)",
-      "Matrices are just spreadsheets for storing data",
-      "A matrix with a zero determinant still has an inverse"
+      "Matrix multiplication is commutative (AB = BA)",
+      "All square matrices have inverses",
+      "The determinant gives the size of the matrix",
+      "Matrices are only useful in computer graphics"
+    ],
+    "limits": [
+      "A limit tells you the value of a function at that point",
+      "If a function is undefined at a point, its limit there is undefined too",
+      "Infinity is a number you can reach",
+      "L'Hopital's Rule can always be applied to any limit"
+    ],
+    "statistics": [
+      "Correlation implies causation",
+      "The mean is always the best measure of central tendency",
+      "A p-value of 0.05 means there is a 5% chance the null hypothesis is true",
+      "A larger sample is always better regardless of sampling method"
+    ],
+    "complex numbers": [
+      "Imaginary numbers are not 'real' and have no practical applications",
+      "i squared equals positive 1",
+      "Complex numbers can be ordered on a number line",
+      "The modulus of a complex number is always a complex number"
+    ],
+    "trigonometry": [
+      "sin, cos, and tan are only ratios in right triangles, not functions",
+      "The unit circle is just a memorisation tool with no deeper meaning",
+      "Radians are more complicated than degrees and should be avoided",
+      "arcsin always returns the correct angle for any triangle problem"
+    ],
+    "number theory": [
+      "Zero is not an even number",
+      "All prime numbers are odd",
+      "Every number is either rational or irrational, nothing in between",
+      "Infinity plus one is larger than infinity"
+    ],
+    "differential equations": [
+      "Differential equations always have a neat analytical solution",
+      "The order of a differential equation refers to how many solutions it has",
+      "Initial conditions are optional extras, not essential for finding a unique solution",
+      "All differential equations model exponential growth or decay"
     ]
   }
 }

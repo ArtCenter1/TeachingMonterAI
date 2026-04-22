@@ -192,6 +192,7 @@ class ScriptGenerator:
         5. Hook: First 60 seconds must have a curiosity trigger.
         6. Checks: Include Socratic questions or checks for understanding.
         7. For Cognitive-Conflict strategy, explicitly address and correct the listed misconceptions.
+        8. Verbosity: Every segment narration MUST be between 150-250 words. Do not be overly concise. Explain in detail to ensure the final video length is substantial.
 
         Return the data as a JSON object matching this schema:
         {{
@@ -218,10 +219,18 @@ class ScriptGenerator:
                 prompt=prompt,
                 model_override=model_override,
                 temperature=0.8,
-                max_tokens=4096,
+                max_tokens=8192,
                 model_size="large",
             )
             data = extract_json(response_text)
+            
+            # Post-generation validation: check for overly concise segments
+            for seg in data.get("segments", []):
+                narration = seg.get("narration", "")
+                word_count = len(narration.split())
+                if word_count < 100:
+                    logger.warning(f"M4: Segment {seg.get('segment_id')} is too short ({word_count} words).")
+                    # We could trigger a retry here, but for now we just log it.
             # Ensure strategy name is preserved
             data["scaffolding_strategy"] = strategy_name
             return FullScript(**data)
