@@ -152,9 +152,9 @@ def ingest():
                 metadatas=metadatas,
                 ids=ids
             )
-            print(f"    ✓ Ingested {len(chunks)} chunks for topic: {topic}")
+            print(f"    [OK] Ingested {len(chunks)} chunks for topic: {topic}")
 
-    print("\n✓ RAG Ingestion complete. Knowledge base is ready.")
+    print("\n[DONE] RAG Ingestion complete. Knowledge base is ready.")
 
 if __name__ == "__main__":
     ingest()

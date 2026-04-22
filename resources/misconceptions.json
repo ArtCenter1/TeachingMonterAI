@@ -2,73 +2,139 @@
   "Computer Science": {
     "variables": [
       "Variables are physical containers that store data like boxes",
-      "Variables can only hold one type of data (e.g., only numbers)"
+      "Variables can only hold one type of data (e.g., only numbers)",
+      "Changing a variable's value 'uses up' the old value forever (not understanding pointers/references)"
     ],
     "loops": [
       "Loops always run an infinite number of times",
-      "Loops can only repeat the exact same action each time"
+      "Loops can only repeat the exact same action each time",
+      "A 'while' loop checks its condition constantly during the execution of the body, not just at the start of each iteration"
     ],
     "algorithms": [
       "Algorithms are only for computers, not humans",
-      "An algorithm must be written in code to be valid"
+      "An algorithm must be written in code to be valid",
+      "There is only one correct algorithm for any given problem"
     ],
     "binary numbers": [
       "Binary is just another number system with no special meaning",
-      "Computers use binary because it's faster than decimal"
+      "Computers use binary because it's faster than decimal",
+      "Binary 10 is the same as decimal 10"
+    ],
+    "data structures": [
+      "Linked lists are always slower than arrays because they are 'linked'",
+      "Arrays can grow in size automatically without performance cost",
+      "A stack and a queue are basically the same thing because they both hold data"
+    ],
+    "sorting": [
+      "Bubble sort is the most efficient because it's the easiest to understand",
+      "Sorting only works on numbers, not text or complex objects",
+      "Quicksort is always $O(n \log n)$ regardless of the pivot choice"
+    ],
+    "oop": [
+      "An object is just a list of variables",
+      "Inheritance means the child class 'steals' code from the parent",
+      "Private variables are for security against hackers, not for encapsulation"
+    ],
+    "recursion": [
+      "Recursion is just a loop with a different name",
+      "A recursive function calls itself 'at the same time' (parallelism confusion)",
+      "Recursion will always eventually stop even without a base case"
     ]
   },
   "Physics": {
     "force": [
       "Force always causes motion (objects at rest have no forces)",
-      "Force is the same as energy"
+      "Force is the same as energy",
+      "An object moving at a constant speed must have a net force acting on it"
     ],
     "gravity": [
       "Gravity only affects objects on Earth",
-      "Heavier objects fall faster due to stronger gravity"
+      "Heavier objects fall faster due to stronger gravity",
+      "There is no gravity in space (the 'vacuum' misconception)"
     ],
     "energy": [
       "Energy is a physical substance that can be used up",
-      "Kinetic energy only comes from motion, not potential"
+      "Kinetic energy only comes from motion, not potential",
+      "Energy is 'lost' when a machine isn't 100% efficient (not realizing it's converted to heat)"
     ],
-    "photosynthesis": [
-      "Plants get their food directly from the soil",
-      "Photosynthesis only happens during the day"
+    "thermodynamics": [
+      "Cold is a substance that flows into objects",
+      "Heat and Temperature are the same thing",
+      "Entropy only applies to messy rooms, not closed systems"
+    ],
+    "waves": [
+      "Sound waves can travel through a vacuum like light",
+      "The medium (e.g., water) moves along with the wave",
+      "Waves 'die out' because they run out of energy (not understanding dissipation/attenuation)"
+    ],
+    "electromagnetism": [
+      "Electric current is used up by a lightbulb",
+      "Magnetic fields are just a different type of gravitational field",
+      "Battery 'stores' electrons (rather than providing the potential difference to move existing ones)"
     ]
   },
   "Biology": {
     "cells": [
       "All cells are identical regardless of function",
-      "Cells are just empty spaces filled with water"
+      "Cells are just empty spaces filled with water",
+      "Plant cells have cell walls *instead* of cell membranes (they have both)"
     ],
     "dna": [
       "DNA is only found in humans, not other organisms",
-      "DNA determines everything about an organism immediately"
+      "DNA determines everything about an organism immediately",
+      "Mutations are always 'bad' or 'deadly'"
     ],
     "evolution": [
       "Evolution only happens to animals, not plants",
-      "Species evolve because they want to improve"
+      "Species evolve because they want to improve",
+      "Humans evolved *from* monkeys (rather than sharing a common ancestor)"
     ],
     "cellular respiration": [
       "Respiration is the same as breathing",
-      "Cells only use oxygen for respiration"
+      "Cells only use oxygen for respiration",
+      "Photosynthesis and Respiration are 'opposites' that cancel each other out"
+    ],
+    "cell division": [
+      "Mitosis and Meiosis are the same thing but for different animals",
+      "Chromosomes only exist during cell division",
+      "Interphase is a 'resting' phase where nothing happens"
+    ],
+    "circulatory system": [
+      "Deoxygenated blood is blue",
+      "The heart is the source of all 'feelings' and 'soul'",
+      "Arteries always carry oxygenated blood (forgetting the pulmonary artery)"
     ]
   },
   "Mathematics": {
     "fractions": [
       "Fractions are just division problems",
-      "Multiplying fractions always makes them larger"
+      "Multiplying fractions always makes them larger",
+      "The larger the denominator, the larger the fraction"
     ],
     "probability": [
       "Probability means something will definitely happen",
-      "Past events don't affect future probabilities"
+      "Past events don't affect future probabilities (Gambler's Fallacy vs. Independent Events)",
+      "50% chance means if I do it twice, it will definitely happen once"
     ],
     "geometry": [
       "Area and perimeter are the same thing",
-      "Shapes can only be measured in whole units"
+      "Shapes can only be measured in whole units",
+      "A square is not a rectangle"
     ],
     "algebra": [
       "Variables are just placeholders with no meaning",
-      "Equations must always have a solution"
+      "Equations must always have a solution",
+      "You can't add $x$ and $y$ because they are different 'letters'"
+    ],
+    "calculus": [
+      "A derivative is just the 'slope' and nothing else",
+      "Integration is just finding the area under a curve",
+      "Infinity is a number you can reach"
+    ],
+    "matrices": [
+      "Matrix multiplication is commutative ($AB=BA$)",
+      "Matrices are just spreadsheets for storing data",
+      "A matrix with a zero determinant still has an inverse"
     ]
   }
 }

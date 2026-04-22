@@ -1,35 +1,36 @@
 # config/domains.yaml
 # This file is the single source of truth for subject domains and topics.
-# Use scripts/setup_domains.py (interactive) to modify this file safely.
+# Updated to match the current high-quality RAG corpus.
 
 domains:
-  - name: "AP Physics"
+  - name: "Physics"
     level: "secondary"
     topics:
-      - "Mechanics and Newton's Laws"
-      - "Electricity and Magnetism"
-      - "Waves and Optics"
-      - "Thermodynamics"
+      - "Newton's Laws"
+      - "Thermodynamics Laws"
+      - "Wave Properties"
+      - "Electromagnetism Basics"
 
-  - name: "AP Biology"
+  - name: "Biology"
     level: "secondary"
     topics:
-      - "Cell Biology and Cell Division"
-      - "Genetics and Heredity"
-      - "Evolution and Natural Selection"
-      - "Ecology and Ecosystems"
+      - "DNA Structure"
+      - "Cell Division Mitosis Meiosis"
+      - "Evolution Mechanisms"
+      - "Human Circulatory System"
 
-  - name: "IB Computer Science"
+  - name: "CS"
     level: "secondary"
     topics:
-      - "Algorithms and Data Structures"
-      - "Object-Oriented Programming"
-      - "Networks and the Internet"
-      - "Computational Thinking"
+      - "Data Structures Basics"
+      - "Sorting Algorithms"
+      - "OOP Principles"
+      - "Recursion Fundamentals"
 
-  - name: "AP Mathematics"
+  - name: "Mathematics"
     level: "secondary"
     topics:
-      - "Calculus — Derivatives and Integrals"
-      - "Statistics and Probability"
-      - "Algebra and Functions"
+      - "Derivatives Intro"
+      - "Integration Basics"
+      - "Probability Theory"
+      - "Matrices and Vectors"

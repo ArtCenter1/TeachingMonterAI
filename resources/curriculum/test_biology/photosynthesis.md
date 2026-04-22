@@ -1,1 +1,0 @@
-Photosynthesis is a process used by plants and other organisms to convert light energy into chemical energy.
