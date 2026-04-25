@@ -23,11 +23,11 @@
     "strategy": "Intuition-First",
     "level": "high_school",
     "subject": "General",
-    "wins": 14,
+    "wins": 17,
     "losses": 1,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 15
+    "total": 18
   },
   "Intuition-First|StudentLevel.HIGH_SCHOOL|Biology": {
     "strategy": "Intuition-First",
