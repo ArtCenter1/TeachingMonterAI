@@ -14,6 +14,7 @@ services:
     volumes:
       - .:/app
       - ./temp:/app/temp
+      - ./resources/avatar:/app/resources/avatar   # character images — no rebuild needed
       - ./m8_feedback.json:/app/m8_feedback.json
       - ./m8_errors.json:/app/m8_errors.json
       - ./strategy_stats.json:/app/strategy_stats.json

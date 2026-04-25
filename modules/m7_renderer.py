@@ -6,11 +6,13 @@ Why pure FFmpeg instead of MoviePy?
 - FFmpeg's drawtext filter renders text at mux time, not per-frame → 10× faster.
 - A 3-segment 720×1280 video now encodes in ~30–60 seconds instead of 6 minutes.
 
-Architecture: 
-  _generate_audio()   → Cartesia TTS → .wav file per segment
-  _source_visual()    → Pexels download or color fallback → local .mp4 file path
-  _render_segment()   → FFmpeg: trim/resize B-roll + overlay audio + drawtext caption
-  render()            → concat segments + mix BGM → final .mp4
+Architecture:
+  _generate_audio()             → Cartesia TTS → .wav file per segment
+  _source_visual_path()         → Pexels download or color fallback → local .mp4 file path
+  _render_infographic_segment() → FFmpeg: Ken Burns zoom on static AI infographic PNG
+  _render_segment()             → FFmpeg: B-roll trim/resize + drawtext caption
+  AvatarCompositor              → overlays professor avatar PiP on every segment
+  render()                      → concat segments + mix BGM → final .mp4
 """
 
 import os
@@ -24,6 +26,7 @@ from loguru import logger
 
 from .schemas import FullScript
 from .pexels_client import PexelsClient
+from .m6c_avatar_gen import get_avatar_compositor
 
 
 # ── Cartesia Key Pool ───────────────────────────────────────────────────────
@@ -133,6 +136,13 @@ class VideoRenderer:
         if len(self.cartesia_pool._keys) == 0:
             logger.warning("No CARTESIA_API_KEY configured. Video rendering will fail.")
 
+        # Avatar compositor (professor PiP overlay)
+        self.avatar = get_avatar_compositor()
+        if self.avatar.is_enabled():
+            logger.info("M7: Professor avatar overlay ENABLED")
+        else:
+            logger.info("M7: Avatar overlay disabled (no character file found)")
+
     def _get_cartesia_client(self):
         from cartesia import Cartesia
         key = self.cartesia_pool.get_key()
@@ -180,23 +190,52 @@ class VideoRenderer:
                 logger.warning(f"M7: Zero duration audio for {segment.segment_id}, skipping")
                 continue
 
-            # 3. Source B-roll video (or generate solid color fallback)
-            broll_path = self._source_visual_path(visual, run_video_dir, i)
-
-            # 4. Render this segment: resize B-roll + mix audio + burn subtitle
-            seg_out = os.path.join(run_video_dir, f"seg_{i:02d}.mp4")
+            # 3. Render segment: AI infographic (Ken Burns) OR Pexels B-roll
+            seg_raw = os.path.join(run_video_dir, f"seg_{i:02d}_raw.mp4")
             caption = self._truncate_caption(segment.narration, 80)
-            self._render_segment(
-                broll_path=broll_path,
-                audio_path=audio_path,
-                duration=duration,
-                caption=caption,
-                visual=visual,
+            visual_source = visual.get("visual_source", "pexels_broll")
+
+            if visual_source == "gemini_infographic":
+                infographic_path = visual.get("infographic_path")
+                if infographic_path and os.path.exists(infographic_path):
+                    logger.info(f"M7: Segment {i} → AI infographic")
+                    self._render_infographic_segment(
+                        infographic_path=infographic_path,
+                        audio_path=audio_path,
+                        duration=duration,
+                        caption=caption,
+                        visual=visual,
+                        output_path=seg_raw,
+                        step=i,
+                    )
+                else:
+                    logger.warning(f"M7: Infographic missing for seg {i}, fallback to B-roll")
+                    broll_path = self._source_visual_path(visual, run_video_dir, i)
+                    self._render_segment(
+                        broll_path=broll_path, audio_path=audio_path,
+                        duration=duration, caption=caption,
+                        visual=visual, output_path=seg_raw, step=i,
+                    )
+            else:
+                broll_path = self._source_visual_path(visual, run_video_dir, i)
+                self._render_segment(
+                    broll_path=broll_path, audio_path=audio_path,
+                    duration=duration, caption=caption,
+                    visual=visual, output_path=seg_raw, step=i,
+                )
+
+            # 4. Composite professor avatar PiP overlay
+            seg_out = os.path.join(run_video_dir, f"seg_{i:02d}.mp4")
+            seg_out = self.avatar.composite_segment(
+                segment_video_path=seg_raw,
                 output_path=seg_out,
-                step=i,
+                duration=duration,
+                video_width=self.WIDTH,
+                video_height=self.HEIGHT,
             )
+
             segment_paths.append(seg_out)
-            logger.info(f"M7: Segment {i} rendered ({duration:.1f}s)")
+            logger.info(f"M7: Segment {i} done ({duration:.1f}s) [{visual_source}]")
 
         if not segment_paths:
             logger.error("M7: No segments rendered — aborting")
@@ -298,28 +337,9 @@ class VideoRenderer:
         )
         return color_path
 
-    def _render_segment(
-        self,
-        broll_path: str,
-        audio_path: str,
-        duration: float,
-        caption: str,
-        visual: Dict[str, Any],
-        output_path: str,
-        step: int,
-    ):
-        """
-        Single FFmpeg command that:
-          1. Takes the B-roll, trims/loops to match audio duration
-          2. Scales+crops to WIDTH×HEIGHT (portrait)
-          3. Burns subtitle text via drawtext filter
-          4. Mixes the narration audio
-          5. Outputs a self-contained .mp4 at libx264 ultrafast
-        """
-        W, H = self.WIDTH, self.HEIGHT
-
-        # drawtext filter — white text with black outline, positioned at 75% height
-        # Use typographic apostrophe to completely avoid FFmpeg single-quote parsing bugs
+    def _build_drawtext(self, caption: str, duration: float, visual: Dict[str, Any]) -> str:
+        """Build the drawtext + reveal filter string (shared by both render paths)."""
+        H = self.HEIGHT
         safe_caption = caption.replace("'", "\u2019").replace(":", "\\:")
         fontsize = 52
         text_y = int(H * 0.72)
@@ -335,15 +355,13 @@ class VideoRenderer:
             f":fix_bounds=true"
         )
 
-        # Progressive reveal elements
         elements = visual.get("elements", [])
         if visual.get("reveal_sequential") and elements:
             interval = duration / (len(elements) + 1)
             for j, elem in enumerate(elements):
                 safe_elem = self._truncate_caption(elem, 40).replace("'", "\u2019").replace(":", "\\:")
                 delay = interval * (j + 1)
-                elem_y = int(H * 0.25) + j * 70  # stack them starting at 25% height
-                
+                elem_y = int(H * 0.25) + j * 70
                 drawtext += (
                     f",drawtext=text='- {safe_elem}'"
                     f":fontsize=42"
@@ -353,29 +371,121 @@ class VideoRenderer:
                     f":y={elem_y}"
                     f":enable='gte(t,{delay})'"
                 )
+        return drawtext
 
-        # scale+crop to portrait: scale so shortest edge fills, then center-crop
+    def _render_infographic_segment(
+        self,
+        infographic_path: str,
+        audio_path: str,
+        duration: float,
+        caption: str,
+        visual: Dict[str, Any],
+        output_path: str,
+        step: int,
+    ):
+        """
+        Render a segment using a static AI-generated infographic PNG.
+
+        - Infographic is 16:9 (1920x1080); video frame is portrait 720x1280.
+        - Image is scaled to fill the width, centered vertically on a dark navy pad.
+        - Ken Burns slow zoom-in (1.0 → ~1.08) adds natural motion to the still image.
+        - Subtitle drawtext overlaid at the bottom as usual.
+        """
+        W, H = self.WIDTH, self.HEIGHT
+        fps = self.FPS
+        total_frames = max(int(duration * fps), 1)
+
+        # Height of the infographic when scaled to fill WIDTH (16:9 ratio)
+        infographic_h = int(W * 9 / 16)  # e.g. 720 * 9/16 = 405px
+        infographic_y = (H - infographic_h) // 2  # center vertically in portrait frame
+
+        # Ken Burns: gentle zoom-in, 0.0008 per frame (barely noticeable but adds life)
+        zoom_speed = 0.0008
+        max_zoom = min(1.0 + zoom_speed * total_frames, 1.12)  # cap at 12% zoom
+        ken_burns = (
+            f"zoompan="
+            f"z='min(zoom+{zoom_speed},{max_zoom:.4f})':"
+            f"d={total_frames}:"
+            f"x='iw/2-(iw/zoom/2)':"
+            f"y='ih/2-(ih/zoom/2)':"
+            f"s={W}x{infographic_h}"  # output size of zoompan = infographic_h slot
+        )
+
+        drawtext = self._build_drawtext(caption, duration, visual)
+
+        # Full filter chain:
+        # 1. Scale infographic to WIDTH (preserving 16:9 aspect)
+        # 2. Pad to full portrait height with dark navy background
+        # 3. Ken Burns zoom on the padded frame
+        # 4. Subtitle drawtext on top
+        video_filter = (
+            f"scale={W}:{infographic_h}:force_original_aspect_ratio=decrease,"
+            f"pad={W}:{H}:0:{infographic_y}:color=0x0a1628,"
+            f"zoompan=z='min(zoom+{zoom_speed},{max_zoom:.4f})':d={total_frames}"
+            f":x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={W}x{H},"
+            f"{drawtext}"
+        )
+
+        _run_ffmpeg(
+            [
+                "-loop", "1",               # loop the static image
+                "-framerate", str(fps),
+                "-i", infographic_path,      # input 0: AI infographic PNG
+                "-i", audio_path,            # input 1: TTS audio
+                "-t", str(duration),
+                "-vf", video_filter,
+                "-c:v", "libx264",
+                "-preset", "ultrafast",
+                "-crf", "25",               # slightly better quality for crisp text
+                "-c:a", "aac",
+                "-b:a", "128k",
+                "-pix_fmt", "yuv420p",      # required for zoompan filter compatibility
+                "-shortest",
+                "-movflags", "+faststart",
+                output_path,
+            ],
+            f"render_infographic_{step}",
+        )
+
+    def _render_segment(
+        self,
+        broll_path: str,
+        audio_path: str,
+        duration: float,
+        caption: str,
+        visual: Dict[str, Any],
+        output_path: str,
+        step: int,
+    ):
+        """
+        Render a segment from Pexels B-roll video:
+          1. Loop/trim to match audio duration
+          2. Scale+crop to portrait WIDTH×HEIGHT
+          3. Burn subtitle via drawtext
+          4. Mix narration audio
+        """
+        W, H = self.WIDTH, self.HEIGHT
+        drawtext = self._build_drawtext(caption, duration, visual)
+
         scale_crop = (
             f"scale={W}:{H}:force_original_aspect_ratio=increase,"
             f"crop={W}:{H}"
         )
-
         video_filter = f"{scale_crop},{drawtext}"
 
-        # Loop the video input to cover audio duration (stream_loop -1 = infinite loop)
         _run_ffmpeg(
             [
-                "-stream_loop", "-1",          # loop B-roll indefinitely
-                "-i", broll_path,              # video input
-                "-i", audio_path,              # audio input
-                "-t", str(duration),           # trim to exact audio length
+                "-stream_loop", "-1",
+                "-i", broll_path,
+                "-i", audio_path,
+                "-t", str(duration),
                 "-vf", video_filter,
                 "-c:v", "libx264",
                 "-preset", "ultrafast",
                 "-crf", "28",
                 "-c:a", "aac",
                 "-b:a", "128k",
-                "-shortest",                   # stop at whichever stream ends first
+                "-shortest",
                 "-movflags", "+faststart",
                 output_path,
             ],

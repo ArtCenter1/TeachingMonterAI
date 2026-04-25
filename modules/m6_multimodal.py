@@ -1,109 +1,173 @@
+"""
+M6 MultimodalPlanner — Visual Planning with AI Infographic Generation
+
+Visual source routing (priority):
+  1. Gemini infographic (generated from narration text) — for concept/diagram/data/slide types
+  2. Pexels B-roll (keyword search)                    — for action/demo/real_world types
+  3. Fallback solid-color slide                         — when both fail
+
+Feature flags (in .env):
+  INFOGRAPHIC_ENABLED=true    — enables Gemini image gen (default: true)
+  AVATAR_ENABLED=true         — enables professor avatar PiP (default: true)
+"""
+
 import os
+import asyncio
 from typing import List, Dict, Any
 from .schemas import FullScript, ScriptSegment
 from utils.visuals import SlideGenerator
 from .llm_client import LLMClient
 from loguru import logger
 
+# Import the new infographic generator
+from .m6b_infographic_gen import InfographicGenerator
+
+
+# Visual types that benefit from AI-generated infographics
+_INFOGRAPHIC_TYPES = {"concept", "diagram", "data", "slide", "theory", "definition"}
+# Visual types that prefer real-world B-roll footage
+_BROLL_TYPES = {"action", "demo", "real_world", "example", "story"}
+
+
 class MultimodalPlanner:
     def __init__(self, output_dir="temp/visuals"):
         self.generator = SlideGenerator()
         self.output_dir = output_dir
         self.llm = LLMClient()
+        self.infographic_gen = InfographicGenerator(
+            output_dir=os.path.join(output_dir, "infographics")
+        )
         os.makedirs(self.output_dir, exist_ok=True)
 
     async def plan_visuals(self, script: FullScript) -> List[Dict[str, Any]]:
         visual_plan = []
-        
-        # 1. Batch generate search keywords for all segments
-        logger.info("M6: Planning Pexels search keywords for segments...")
-        keywords_prompt = self._build_keywords_prompt(script)
-        keywords_raw = await self.llm.generate_text(keywords_prompt, temperature=0.1)
-        
-        # Parse result
-        try:
-            import re
-            import json
-            match = re.search(r'\{.*\}', keywords_raw, re.DOTALL)
-            raw_map = json.loads(match.group(0)) if match else {}
-            # Normalize keys to string and strip any whitespace/prefixes the LLM might add
-            keywords_map = {str(k).strip().replace("ID ", "").replace("seg_", ""): v for k, v in raw_map.items()}
-        except Exception as e:
-            logger.warning(f"M6: Failed to parse keywords JSON: {e}")
-            keywords_map = {}
+
+        # 1. Batch generate Pexels keywords (always, used as audio-search + B-roll fallback)
+        logger.info("M6: Planning visual assets for all segments...")
+        keywords_map = await self._generate_keywords_map(script)
+
+        # 2. Pre-generate all infographics concurrently
+        subject = getattr(script, "subject", None) or getattr(script, "topic", None)
+        infographic_map = await self.infographic_gen.generate_all(
+            script.segments, subject=subject
+        )
 
         for i, segment in enumerate(script.segments):
+            # ── Route visual source ──────────────────────────────────────────
+            visual_type = str(segment.visual_type).lower().strip()
+            seg_id_str = str(segment.segment_id)
+
+            infographic_path = infographic_map.get(seg_id_str)
+            use_infographic = (
+                infographic_path is not None
+                and visual_type not in _BROLL_TYPES
+            )
+
+            if use_infographic:
+                visual_source = "gemini_infographic"
+                logger.info(
+                    f"M6: Seg {seg_id_str} → AI infographic ({visual_type})"
+                )
+            else:
+                visual_source = "pexels_broll"
+                logger.info(
+                    f"M6: Seg {seg_id_str} → Pexels B-roll ({visual_type})"
+                )
+
+            # ── Fallback slide (used by renderer if both Pexels and infographic fail) ──
             slide_path = os.path.join(self.output_dir, f"slide_{segment.segment_id}.png")
-            
-            # 2. Generate fallback slide
             try:
                 self.generator.generate_slide(
                     title=segment.concept,
                     content=segment.visual_content_spec,
-                    output_path=slide_path
+                    output_path=slide_path,
                 )
             except Exception as e:
-                logger.error(f"M6: Slide generation failed for segment {segment.segment_id}: {e}")
+                logger.warning(f"M6: Fallback slide failed for {segment.segment_id}: {e}")
 
-            # 3. Assemble visual entry
-            # Normalize segment_id for lookup
-            lookup_id = str(segment.segment_id).replace("seg_", "")
-            
-            # Fallback chain: [LLM-provided] -> [narration-derived] -> [concept-derived] -> [subject-generic]
+            # ── Pexels keywords ──────────────────────────────────────────────
+            lookup_id = seg_id_str.replace("seg_", "")
             search_terms = keywords_map.get(lookup_id)
-            
             if not search_terms or not isinstance(search_terms, list):
-                # Local fallback if LLM failed or ID mismatch
                 search_terms = [
-                    segment.concept, 
+                    segment.concept,
                     "educational visualization",
                     "learning background",
-                    "abstract science"
+                    "abstract science",
                 ]
-                
-            # Progressive reveal logic
+
+            # ── Sequential reveal logic (unchanged from original) ─────────────
             content_spec = segment.visual_content_spec
             reveal_sequential = False
             elements = []
-            
-            # Heuristic: if it explicitly requests sequential reveal, or contains multiple bullet-like elements
-            if "reveal:sequential" in content_spec.lower() or content_spec.count(',') >= 3 or content_spec.count(';') >= 2:
+            if (
+                "reveal:sequential" in content_spec.lower()
+                or content_spec.count(",") >= 3
+                or content_spec.count(";") >= 2
+            ):
                 reveal_sequential = True
-                delimiter = ';' if ';' in content_spec else ','
+                delimiter = ";" if ";" in content_spec else ","
                 raw_elements = [e.strip() for e in content_spec.split(delimiter) if e.strip()]
-                # Clean elements
                 elements = [e.replace("reveal:sequential", "").strip() for e in raw_elements]
                 elements = [e for e in elements if e]
 
             visual_plan.append({
                 "segment_id": segment.segment_id,
-                "visual_type": segment.visual_type,
+                "visual_type": visual_type,
+                "visual_source": visual_source,          # NEW: routing flag
+                "infographic_path": infographic_path,    # NEW: path to AI image (or None)
                 "content_spec": segment.visual_content_spec,
                 "duration_seconds": segment.duration_seconds,
-                "image_path": slide_path,
+                "image_path": slide_path,                # fallback slide
                 "pexels_keywords": search_terms,
-                "narration_context": segment.narration[:200], # For downstream debugging
+                "narration_context": segment.narration[:200],
                 "reveal_sequential": reveal_sequential,
-                "elements": elements
+                "elements": elements,
             })
-            
-        logger.success(f"M6: Visual plan complete with {len(visual_plan)} segments.")
+
+        infographic_count = sum(
+            1 for v in visual_plan if v["visual_source"] == "gemini_infographic"
+        )
+        broll_count = len(visual_plan) - infographic_count
+        logger.success(
+            f"M6: Visual plan complete — "
+            f"{infographic_count} AI infographics, {broll_count} B-roll segments."
+        )
         return visual_plan
+
+    async def _generate_keywords_map(self, script: FullScript) -> dict:
+        """Batch-generate Pexels search keywords for all segments via LLM."""
+        keywords_raw = await self.llm.generate_text(
+            self._build_keywords_prompt(script), temperature=0.1
+        )
+        try:
+            import re
+            import json
+            match = re.search(r"\{.*\}", keywords_raw, re.DOTALL)
+            raw_map = json.loads(match.group(0)) if match else {}
+            return {
+                str(k).strip().replace("ID ", "").replace("seg_", ""): v
+                for k, v in raw_map.items()
+            }
+        except Exception as e:
+            logger.warning(f"M6: Failed to parse keywords JSON: {e}")
+            return {}
 
     def _build_keywords_prompt(self, script: FullScript) -> str:
         segments_info = "\n".join([
             f"ID {s.segment_id}: '{s.concept}'\nNarration: {s.narration}\nVisual Spec: {s.visual_content_spec}\n---"
             for s in script.segments
         ])
-        
+
         return f"""
 Act as a Visual Director for a high-end educational YouTube channel.
 Your task is to extract concrete, search-friendly visual keywords from the narration of each lesson segment.
+These keywords will be used for B-roll video search AND background music matching.
 
 Rules:
 1. Keywords must be highly specific to the *narration* context.
 2. Avoid abstract words like "education", "science", "knowledge".
-3. Use realistic B-roll scene descriptions.
+3. Use realistic B-roll scene descriptions (useful also for audio mood matching).
 4. Provide 5 distinct keywords/phrases per segment.
 
 Example:
