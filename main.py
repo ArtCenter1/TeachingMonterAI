@@ -39,7 +39,7 @@ from keyrotator import KeyPool, KeyRotatorRouter
 from modules.llm_client import get_gemini_pool, get_router_pool
 
 
-app = FastAPI(title="Teaching Monster AI Agent API", version="0.5.0")
+app = FastAPI(title="Teaching Monster AI Agent API", version="0.5.1")
 
 _gemini_pool = get_gemini_pool()
 _openrouter_pool = get_router_pool()
@@ -160,7 +160,10 @@ async def _run_pipeline_and_stream(request_data, request, x_dry_run):
             current_stage = "m5_critic"
             logger.info("Stage 5: CIDPP Critic Selection")
             script, selection_log = await m5.score_variants(
-                scripts, student_model, model_override=request_data.model_override
+                scripts, student_model,
+                fact_bundle=fact_bundle,
+                concept_graph=concept_graph,
+                model_override=request_data.model_override
             )
             logger.info(f"[HEARTBEAT] {run_id} | M5 complete | Selected: {script.title}")
 

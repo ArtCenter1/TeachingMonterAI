@@ -152,3 +152,18 @@ class AIStudentFeedback(BaseModel):
     elo_outcome: Optional[str] = Field(
         None, description="Elo arena result: 'win' or 'loss' (Phase 3 meta-policy)"
     )
+
+
+class ComprehensionProbe(BaseModel):
+    """A single comprehension probe derived from M1 ground-truth facts."""
+    question: str
+    correct_answer: str
+    concept: str          # which concept node this probe tests
+
+
+class RLTScore(BaseModel):
+    """Comprehension score from the Naive Student evaluator."""
+    probes_total: int
+    probes_correct: float
+    comprehension_score: float      # probes_correct / probes_total  (0.0–1.0)
+    student_answers: List[Dict[str, Any]]   # raw per-probe responses for M8 logging

@@ -239,6 +239,23 @@ class FeedbackLogger:
 
         return False  # Run ID not found
 
+    def get_rlt_run_count(self) -> int:
+        """Count how many runs have RLT scores recorded."""
+        if not os.path.exists(self.log_file):
+            return 0
+        try:
+            with open(self.log_file, "r") as f:
+                logs = json.load(f)
+                count = 0
+                for entry in logs:
+                    sel_log = entry.get("selection_log", [])
+                    # If the first variant in selection_log has RLT metrics, count it
+                    if sel_log and "rlt_comprehension_score" in sel_log[0]:
+                        count += 1
+                return count
+        except (json.JSONDecodeError, IOError):
+            return 0
+
 
 # ── Error Logger ────────────────────────────────────────────────────────────
 class ErrorLogger:

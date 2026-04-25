@@ -4,7 +4,7 @@
 | Field | Value |
 |---|---|
 | Last Updated | 2026-04-22 |
-| Current System Version | v0.5.0 |
+| Current System Version | v0.5.1 |
 | Pipeline Status | Phase 3 COMPLETE — Phase 4 IN PROGRESS |
 | Next Milestone | Phase 5: Pedagogical Strategy Integration (I2) |
 

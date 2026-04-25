@@ -1,10 +1,12 @@
 import os
 import json
 import asyncio
-from typing import List, Dict, Any, Tuple
-from .schemas import FullScript, StudentModel, CIDPPScores
+from typing import List, Dict, Any, Tuple, Optional
+from .schemas import FullScript, StudentModel, CIDPPScores, FactBundle, ConceptGraph, RLTScore
 from .utils import extract_json
 from .llm_client import LLMClient
+from .m5b_probe_generator import probe_gen
+from .m8_logger import FeedbackLogger
 from loguru import logger
 
 
@@ -169,6 +171,102 @@ Return ONLY a JSON array with exactly 4 objects (one per persona):
             ]
 
 
+class NaiveStudentEvaluator:
+    """Simulates a naive student answering comprehension probes based ONLY on the script.
+
+    This implements the P4-B 'RLT-Style' reward signal.
+    """
+
+    def __init__(self):
+        self.llm = LLMClient()
+        self.model = os.getenv("RLT_STUDENT_MODEL", "google/gemini-2.0-flash-exp:free")
+
+    async def evaluate(self, script: FullScript, probes: List[Any]) -> RLTScore:
+        """Answer probes based strictly on narration text."""
+        if not probes:
+            return RLTScore(probes_total=0, probes_correct=0, comprehension_score=0, student_answers=[])
+
+        # Concatenate all narration segments
+        narration_text = "\n".join([s.narration for s in script.segments])
+        
+        # Build probe questions for LLM
+        questions_text = "\n".join([f"{i+1}. {p.question}" for i, p in enumerate(probes)])
+
+        prompt = f"""
+        You are a student who has ONLY read the lesson transcript below.
+        Answer each question using ONLY information present in the transcript.
+        
+        LESSON TRANSCRIPT:
+        {narration_text[:4000]}
+        
+        QUESTIONS:
+        {questions_text}
+        
+        RULES:
+        1. If the transcript does NOT contain the answer, write exactly: "Not covered"
+        2. Do not use any outside knowledge.
+        3. Be concise (1 sentence max).
+        
+        Return ONLY a JSON array of objects:
+        [
+          {{"question": "...", "student_answer": "..."}}
+        ]
+        """
+
+        try:
+            logger.info(f"[RLT] Naive Student evaluating script: '{script.title}'")
+            response = await self.llm.generate_text(
+                prompt=prompt,
+                model_override=self.model,
+                system_instruction="You are a naive student answering based on a provided text. Return ONLY JSON.",
+                temperature=0.0, # Deterministic answering
+                model_size="small"
+            )
+            
+            answers = extract_json(response)
+            if not isinstance(answers, list):
+                raise ValueError("Expected list of answers")
+
+            correct_count = 0.0
+            results = []
+            
+            for i, probe in enumerate(probes):
+                # Match answer from LLM to original probe
+                student_ans = "Not covered"
+                if i < len(answers):
+                    student_ans = answers[i].get("student_answer", "Not covered")
+                
+                # Check for correct keyphrase (case-insensitive substring match)
+                is_correct = False
+                if student_ans.lower() != "not covered":
+                    if probe.correct_answer.lower() in student_ans.lower():
+                        is_correct = True
+                        correct_count += 1.0
+                    elif "not covered" not in student_ans.lower():
+                        # Partial credit could go here, but stick to binary for now
+                        pass
+                
+                results.append({
+                    "question": probe.question,
+                    "student_answer": student_ans,
+                    "correct_keyphrase": probe.correct_answer,
+                    "is_correct": is_correct
+                })
+
+            score = RLTScore(
+                probes_total=len(probes),
+                probes_correct=correct_count,
+                comprehension_score=correct_count / len(probes),
+                student_answers=results
+            )
+            logger.success(f"[RLT] Evaluation complete: {correct_count}/{len(probes)} correct")
+            return score
+
+        except Exception as e:
+            logger.error(f"[RLT] Naive Student evaluation failed: {e}")
+            return RLTScore(probes_total=len(probes), probes_correct=0, comprehension_score=0, student_answers=[])
+
+
 class CIDPPCritic:
     def __init__(self):
         self.llm = LLMClient()
@@ -178,45 +276,89 @@ class CIDPPCritic:
             "SYNTHETIC_STUDENT_MODEL", "google/gemini-2.0-flash-exp:free"
         )
         self.tester = SyntheticStudentTester(self.synthetic_model)
+        self.naive_student = NaiveStudentEvaluator()
 
     async def score_variants(
         self,
         scripts: List[FullScript],
         student_model: StudentModel,
+        fact_bundle: Optional[FactBundle] = None,
+        concept_graph: Optional[ConceptGraph] = None,
         model_override: str = None,
         max_revisions: int = 1,
     ) -> Tuple[FullScript, List[Dict[str, Any]]]:
-        """Review multiple scripts and select the one with the highest pedagogical score."""
+        """Review multiple scripts and select the one with the highest pedagogical score (CIDPP + RLT)."""
         is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
-        reviews = []
+        
+        # ── Dynamic Weight Graduation (P4-B) ────────────────────────────────
+        # Default weights
+        rlt_weight = float(os.getenv("RLT_BLEND_WEIGHT", "0.30"))
+        
+        # Graduation Logic: check accumulated RLT runs
+        try:
+            m8 = FeedbackLogger()
+            rlt_runs = m8.get_rlt_run_count()
+            if rlt_runs >= 50:
+                logger.info(f"[P4-B] Graduation threshold reached ({rlt_runs} runs). Using 0.60/0.40 blend.")
+                rlt_weight = 0.40
+            else:
+                logger.info(f"[P4-B] Status: {rlt_runs}/50 runs for graduation. Using {rlt_weight:.2f} RLT weight.")
+        except Exception as e:
+            logger.warning(f"[P4-B] Weight graduation check failed: {e}. Using default {rlt_weight}")
 
-        # Score sequentially with a short sleep to avoid rate limiting across 9 Gemini keys.
+        cidpp_weight = 1.0 - rlt_weight
+        
+        # ── Generate shared probes ───────────────────────────────────────────
+        probes = []
+        if fact_bundle and concept_graph:
+            probes = await probe_gen.generate(fact_bundle, concept_graph, model_override=model_override)
+
+        reviews = []
+        # Score CIDPP sequentially
         for script in scripts:
             review = await self.review(script, student_model, model_override)
             reviews.append(review)
-            await asyncio.sleep(1)  # Brief pause between variant reviews
+            await asyncio.sleep(1)
 
         scored_data = []
         for script, review in zip(scripts, reviews):
-            # Calculate aggregate score
-            total_score = (
+            # CIDPP normalisation (0-50 -> 0-1)
+            cidpp_total = (
                 review.clarity
                 + review.integrity
                 + review.depth
                 + review.practicality
                 + review.pertinence
             )
+            cidpp_n = cidpp_total / 50.0
+
+            # RLT scoring (0-1)
+            rlt_res = None
+            if probes:
+                rlt_res = await self.naive_student.evaluate(script, probes)
+                rlt_val = rlt_res.comprehension_score
+            else:
+                rlt_val = cidpp_n # neutral fallback if no probes
+
+            # Final Blended Score
+            blended = (cidpp_weight * cidpp_n) + (rlt_weight * rlt_val)
+
             scored_data.append(
                 {
                     "script": script,
                     "review": review,
-                    "total_score": total_score,
+                    "cidpp_total": cidpp_total,
+                    "cidpp_normalised": cidpp_n,
+                    "cidpp_weight": cidpp_weight,
+                    "rlt_score": rlt_res,
+                    "rlt_weight": rlt_weight,
+                    "blended_score": blended,
                     "strategy": script.scaffolding_strategy,
                 }
             )
 
-        # Sort by total score descending
-        scored_data.sort(key=lambda x: x["total_score"], reverse=True)
+        # Sort by blended score descending
+        scored_data.sort(key=lambda x: x["blended_score"], reverse=True)
 
         best_variant = scored_data[0]["script"]
 
@@ -249,7 +391,15 @@ class CIDPPCritic:
         selection_log = [
             {
                 "strategy": d["strategy"],
-                "total_score": d["total_score"],
+                "blended_score": d["blended_score"],
+                "cidpp_normalised": d["cidpp_normalised"],
+                "cidpp_weight": d["cidpp_weight"],
+                "rlt_comprehension_score": d["rlt_score"].comprehension_score if d["rlt_score"] else None,
+                "rlt_weight": d["rlt_weight"],
+                "rlt_probes_total": d["rlt_score"].probes_total if d["rlt_score"] else 0,
+                "rlt_probes_correct": d["rlt_score"].probes_correct if d["rlt_score"] else 0,
+                "cidpp_total": d["cidpp_total"],
+                "blend_note": "conservative_0.70_0.30 → graduate to 0.60_0.40 at ≥50 RLT runs",
                 "breakdown": {
                     "clarity": d["review"].clarity,
                     "integrity": d["review"].integrity,
@@ -269,7 +419,7 @@ class CIDPPCritic:
                 break
 
         logger.info(
-            f"Selected strategy: {scored_data[0]['strategy']} with score {scored_data[0]['total_score']}"
+            f"Selected strategy: {scored_data[0]['strategy']} with blended score {scored_data[0]['blended_score']:.4f}"
         )
         return refined_script, selection_log
 
