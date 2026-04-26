@@ -15,7 +15,7 @@ def _extract_error_code(exc: Exception) -> int:
     Returns the code as int, or 500 if unparseable.
     """
     msg = str(exc)
-    for code in [429, 402, 403, 404, 500]:
+    for code in [429, 402, 403, 404, 500, 503]:
         if str(code) in msg:
             return code
     return 500
@@ -24,7 +24,7 @@ def _extract_error_code(exc: Exception) -> int:
 def _is_quota_error(exc: Exception) -> bool:
     """Returns True for errors we should rotate on (quota/auth related)."""
     code = _extract_error_code(exc)
-    return code in (429, 402, 403)
+    return code in (429, 402, 403, 503)
 
 
 async def call_with_pool(

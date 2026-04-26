@@ -23,11 +23,11 @@
     "strategy": "Intuition-First",
     "level": "high_school",
     "subject": "General",
-    "wins": 18,
+    "wins": 19,
     "losses": 1,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 19
+    "total": 20
   },
   "Intuition-First|StudentLevel.HIGH_SCHOOL|Biology": {
     "strategy": "Intuition-First",
@@ -83,6 +83,36 @@
     "strategy": "Inductive",
     "level": "high_school",
     "subject": "Mathematics",
+    "wins": 0,
+    "losses": 1,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 1
+  },
+  "Intuition-First|StudentLevel.MIDDLE_SCHOOL|General": {
+    "strategy": "Intuition-First",
+    "level": "middle_school",
+    "subject": "General",
+    "wins": 1,
+    "losses": 0,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 1
+  },
+  "Cognitive-Conflict|StudentLevel.MIDDLE_SCHOOL|General": {
+    "strategy": "Cognitive-Conflict",
+    "level": "middle_school",
+    "subject": "General",
+    "wins": 0,
+    "losses": 1,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 1
+  },
+  "Inductive|StudentLevel.MIDDLE_SCHOOL|General": {
+    "strategy": "Inductive",
+    "level": "middle_school",
+    "subject": "General",
     "wins": 0,
     "losses": 1,
     "elo_wins": 0,
