@@ -317,6 +317,37 @@ class LLMClient:
         logger.error(f"All models failed for prompt. Last error: {str(last_exception)}")
         raise last_exception
 
+    async def generate_multimodal(
+        self,
+        contents: List[Any],
+        system_instruction: Optional[str] = None,
+        model_override: Optional[str] = "models/gemini-2.0-flash",
+        temperature: float = 0.2,
+        max_tokens: int = 4096,
+    ) -> str:
+        """
+        Multimodal generation (e.g. for audio transcription/analysis).
+        Currently only supported via Gemini native path.
+        """
+        # Ensure we use a Gemini model
+        model = model_override or "models/gemini-2.0-flash"
+        if not (model.startswith("models/") or model.startswith("gemini-")):
+             model = "models/gemini-2.0-flash"
+             
+        logger.info(f"LLMClient: Multimodal request with {model}")
+        
+        # Space the request
+        async with global_gemini_lock:
+            now = time.time()
+            elapsed = now - global_last_gemini_time
+            if elapsed < 2.1:
+                await asyncio.sleep(2.1 - elapsed)
+            global_last_gemini_time = time.time()
+
+        return await self._call_gemini_sdk(
+            model, contents, system_instruction, temperature, max_tokens
+        )
+
     async def _execute_request(
         self,
         model_name: str,
@@ -415,7 +446,7 @@ class LLMClient:
             return await gemini_provider.call_with_pool(
                 pool=self.gemini_pool,
                 model_name=model_name,
-                prompt=prompt,
+                contents=prompt,
                 system_instruction=system_instruction,
                 temperature=temperature,
                 max_tokens=max_tokens,

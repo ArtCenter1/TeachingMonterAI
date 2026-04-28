@@ -7,6 +7,9 @@ from typing import Dict, Any, Optional, List
 from dotenv import load_dotenv
 from .schemas import FactBundle
 from loguru import logger
+from .m8_logger import StrategyTracker
+from .utils import infer_subject
+from .notebooklm_manager import notebooklm_manager
 from .rag_retriever import retriever
 import yaml
 
@@ -95,7 +98,31 @@ class SourcingModule:
         """
         start_time = time.time()
 
-        # Stage 1: Attempt local RAG sourcing
+        # Stage 0: Attempt NotebookLM Sourcing (New Primary Path)
+        domain = self._get_domain_for_topic(topic) or "General"
+        try:
+            logger.info("Attempting NotebookLM sourcing...")
+            
+            # 1. Create Notebook
+            notebook_id = await notebooklm_manager.create_notebook_for_topic(topic, domain)
+            if notebook_id:
+                # 2. Upload initial context (Local RAG chunks + Web Search snippets)
+                # This provides NotebookLM with enough base context to "research" properly
+                rag_chunks = retriever.retrieve(topic, domain=domain, n_results=5)
+                await notebooklm_manager.add_sources(notebook_id, rag_chunks)
+                
+                # 3. Get Facts
+                facts = await notebooklm_manager.ask_for_structured_facts(notebook_id, topic)
+                if facts:
+                    logger.info(f"NotebookLM sourcing successful: {len(facts)} facts retrieved")
+                    fact_bundle = FactBundle(facts=facts)
+                    # Attach notebook_id and subject to fact_bundle for later modules
+                    fact_bundle.metadata = {"notebook_id": notebook_id, "subject": domain}
+                    return await self._verify_and_enhance_facts(fact_bundle, topic)
+        except Exception as e:
+            logger.error(f"NotebookLM sourcing failed: {str(e)}")
+
+        # Stage 1: Attempt local RAG sourcing (Fallback)
         try:
             logger.info("Attempting local RAG sourcing...")
             fact_bundle = await self._rag_source(topic)
@@ -105,6 +132,7 @@ class SourcingModule:
                 logger.info(
                     f"RAG sourcing successful: {len(fact_bundle.facts)} facts retrieved"
                 )
+                fact_bundle.metadata["subject"] = domain
                 return await self._verify_and_enhance_facts(fact_bundle, topic)
 
         except Exception as e:
@@ -121,6 +149,7 @@ class SourcingModule:
                 logger.info(
                     f"Web search fallback successful: {len(fact_bundle.facts)} facts retrieved"
                 )
+                fact_bundle.metadata["subject"] = domain
                 return await self._verify_and_enhance_facts(fact_bundle, topic)
 
         except Exception as e:
@@ -135,6 +164,7 @@ class SourcingModule:
                 logger.info(
                     f"AI Research Fallback successful: {len(fact_bundle.facts)} facts retrieved"
                 )
+                fact_bundle.metadata["subject"] = domain
                 return await self._verify_and_enhance_facts(fact_bundle, topic)
         except Exception as e:
             logger.error(f"AI Research Fallback failed: {str(e)}")
@@ -312,7 +342,9 @@ class SourcingModule:
             )
 
         return FactBundle(
-            facts=verified_facts, study_guide_url=fact_bundle.study_guide_url
+            facts=verified_facts, 
+            study_guide_url=fact_bundle.study_guide_url,
+            metadata=fact_bundle.metadata
         )
 
     async def _ai_research_fallback(self, topic: str, model_override: Optional[str] = None) -> FactBundle:

@@ -70,5 +70,41 @@
       "search_api_key": null,
       "request_id": "celery_1961_1777099113"
     }
+  },
+  {
+    "run_id": "0834a593-00cc-4a03-a71f-18586afe73db",
+    "timestamp": "2026-04-28T00:50:51.878368+00:00",
+    "failed_stage": "m4_generator",
+    "error_type": "AttributeError",
+    "error_message": "'StudentModel' object has no attribute 'subject'",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 154, in pipeline_task\n    scripts = await m4.generate_variants(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 142, in generate_variants\n    level, subject = student_model.level, student_model.subject\n                                          ^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/pydantic/main.py\", line 1042, in __getattr__\n    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')\nAttributeError: 'StudentModel' object has no attribute 'subject'\n",
+    "request": {
+      "course_requirement": "Big Concept: Biodiversity\nTopic: Taxonomy\nBloom's Taxonomy: apply\nLearning Goal: 1. Describe the hierarchical classification system (Kingdom → Species).\n 2. Understand basic rules of scientific naming (binomial nomenclature).\n 3. Explain that classification reflects similarities among organisms.\nKey Learning Points: 1. Taxonomic hierarchy (Kingdom, Phylum, Class, Order, Family, Genus, Species)\n 2. Binomial nomenclature (Genus + species)\n 3. Basic idea of grouping organisms by shared characteristics\nNote: Apply: Apply the appropriate taxonomic (or systematic) and naming rules when referring to organisms.",
+      "student_persona": "Grade: 7th gradeFocus Time: 20 minBackground Knowledge: 1. Familiarity with common organisms (animals, plants) 2. No prior knowledge of evolution requiredNote: Apply: Apply the appropriate taxonomic (or systematic) and naming rules when referring to organisms.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2102_1777308601"
+    }
+  },
+  {
+    "run_id": "5f8e9b01-617d-4a80-92cc-4f279f94cd27",
+    "timestamp": "2026-04-28T01:44:35.248899+00:00",
+    "failed_stage": "m6_multimodal",
+    "error_type": "TypeError",
+    "error_message": "call_with_pool() got an unexpected keyword argument 'prompt'",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 512, in _call_openrouter\n    return await openrouter_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/openrouter.py\", line 46, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All OpenRouter keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 198, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 402, in _execute_request\n    return await self._call_openrouter(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 522, in _call_openrouter\n    raise RuntimeError(f\"All OpenRouter keys exhausted — falling through to Gemini pool.\")\nRuntimeError: All OpenRouter keys exhausted — falling through to Gemini pool.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/main.py\", line 172, in pipeline_task\n    visual_plan = await m6.plan_visuals(script)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 47, in plan_visuals\n    keywords_map = await self._generate_keywords_map(script)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 138, in _generate_keywords_map\n    keywords_raw = await self.llm.generate_text(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 318, in generate_text\n    raise last_exception\n  File \"/app/modules/llm_client.py\", line 299, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 418, in _execute_request\n    return await self._call_gemini_sdk(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 446, in _call_gemini_sdk\n    return await gemini_provider.call_with_pool(\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: call_with_pool() got an unexpected keyword argument 'prompt'\n",
+    "request": {
+      "course_requirement": "Big Concept: Biodiversity\nTopic: Taxonomy\nBloom's Taxonomy: apply\nLearning Goal: 1. Describe the hierarchical classification system (Kingdom → Species).\n 2. Understand basic rules of scientific naming (binomial nomenclature).\n 3. Explain that classification reflects similarities among organisms.\nKey Learning Points: 1. Taxonomic hierarchy (Kingdom, Phylum, Class, Order, Family, Genus, Species)\n 2. Binomial nomenclature (Genus + species)\n 3. Basic idea of grouping organisms by shared characteristics\nNote: Apply: Apply the appropriate taxonomic (or systematic) and naming rules when referring to organisms.",
+      "student_persona": "Grade: 7th gradeFocus Time: 20 minBackground Knowledge: 1. Familiarity with common organisms (animals, plants) 2. No prior knowledge of evolution requiredNote: Apply: Apply the appropriate taxonomic (or systematic) and naming rules when referring to organisms.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2102_1777311695"
+    }
   }
 ]

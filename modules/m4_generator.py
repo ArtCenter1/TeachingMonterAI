@@ -10,6 +10,7 @@ from loguru import logger
 from utils.analogy_store import analogy_store
 from .m8_logger import StrategyTracker
 from .utils import infer_subject
+from .notebooklm_manager import notebooklm_manager
 
 
 class ScriptGenerator:
@@ -122,29 +123,37 @@ class ScriptGenerator:
         model_override: str = None,
     ) -> List[FullScript]:
         """Generate script variants based on meta-policy (Epsilon-Greedy)."""
+        # Check if we should use NotebookLM for script/audio
+        notebook_id = fact_bundle.metadata.get("notebook_id")
+        
+        if notebook_id:
+            topic_context = concept_graph.nodes[0].concept if concept_graph.nodes else "Education"
+            logger.info(f"M4: Using NotebookLM flow for script generation (ID: {notebook_id})")
+            script = await self._generate_with_notebooklm(notebook_id, concept_graph, student_model, topic_context)
+            return [script]
+
         is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
         
         if is_contest_mode:
             logger.info("[M4] Contest mode: generating all 3 variants for Best-of-3 Selection")
             return await self._generate_all(concept_graph, student_model, fact_bundle, model_override)
+
+        # Legacy LLM flow
+        level = student_model.level
+        subject = fact_bundle.metadata.get("subject", "General")
+        strategy, mode = self._select_strategy(level, subject)
         
-        # Dev mode: epsilon-greedy selection
-        level = student_model.level.value
-        subject = infer_subject(concept_graph.nodes[0].concept if concept_graph.nodes else "")
-        
-        chosen_strategy, mode = self._select_strategy(level, subject)
-        
-        if mode == 'ColdStart' or chosen_strategy is None:
+        if mode == 'ColdStart' or strategy is None:
             logger.info(f"[M4] Cold-start ({level}/{subject}): generating all 3 for exploration")
             return await self._generate_all(concept_graph, student_model, fact_bundle, model_override)
         
-        logger.info(f"[M4] [{mode}] ε={self._get_epsilon():.3f} → selected strategy '{chosen_strategy}' for {level}/{subject}")
-        strategy_desc = self.strategies[chosen_strategy]
+        logger.info(f"[M4] [{mode}] ε={self._get_epsilon():.3f} → selected strategy '{strategy}' for {level}/{subject}")
+        strategy_desc = self.strategies[strategy]
         variant = await self.generate(
             concept_graph,
             student_model,
             fact_bundle,
-            chosen_strategy,
+            strategy,
             strategy_desc,
             model_override,
         )
@@ -313,6 +322,94 @@ class ScriptGenerator:
             hook="Ready to learn?",
             checks=[],
         )
+
+    async def _generate_with_notebooklm(
+        self, 
+        notebook_id: str, 
+        concept_graph: ConceptGraph, 
+        student_model: StudentModel,
+        topic_context: str
+    ) -> FullScript:
+        """
+        NotebookLM-powered generation:
+        1. Generate Audio Overview (Podcast).
+        2. Transcribe and Plan visuals based on the actual audio.
+        """
+        import uuid
+        run_id = str(uuid.uuid4())[:8]
+        audio_dir = os.path.join("temp", "audio")
+        os.makedirs(audio_dir, exist_ok=True)
+        audio_path = os.path.join(audio_dir, f"notebooklm_{run_id}.mp3")
+
+        # 1. Generate and Download Audio
+        logger.info(f"M4: Generating NotebookLM Audio Overview for {notebook_id}...")
+        await notebooklm_manager.generate_audio_overview(notebook_id, audio_path)
+
+        if not os.path.exists(audio_path):
+            logger.error("M4: NotebookLM audio generation failed. Falling back to legacy LLM flow.")
+            raise RuntimeError("NotebookLM Audio Generation Failed")
+
+        # 2. Transcribe and Align Visuals via Gemini 2.0 Flash (Multimodal)
+        logger.info("M4: Transcribing and planning visuals via Gemini Multimodal...")
+        
+        from google.genai import types as genai_types
+        with open(audio_path, "rb") as f:
+            audio_bytes = f.read()
+        
+        audio_part = genai_types.Part.from_bytes(data=audio_bytes, mime_type="audio/mpeg")
+        
+        prompt = f"""
+        You are a video editor and pedagogical director. 
+        Listen to this educational podcast about '{topic_context}'.
+        
+        Create a high-fidelity visual script for a Teaching Monster video that matches this audio perfectly.
+        The student is at {student_model.level} level.
+        
+        Return a JSON object following this structure:
+        {{
+          "title": "...",
+          "scaffolding_strategy": "NotebookLM Podcast Alignment",
+          "hook": "...",
+          "segments": [
+            {{
+              "segment_id": "seg_0",
+              "concept": "...",
+              "narration": "The exact transcript part for this segment",
+              "visual_type": "gemini_infographic | pexels_broll",
+              "visual_content_spec": "Detailed prompt for the visual",
+              "duration_seconds": 12.5
+            }},
+            ...
+          ],
+          "checks": ["Socratic question 1", "Socratic question 2"]
+        }}
+        
+        Rules:
+        1. Segments must cover the ENTIRE audio file. 
+        2. 'duration_seconds' for all segments must sum up to the total length of the audio.
+        3. Be descriptive in 'visual_content_spec'.
+        """
+        
+        try:
+            response_text = await self.llm.generate_multimodal(
+                contents=[audio_part, prompt],
+                system_instruction="You are a JSON-only visual script generator.",
+                model_override="models/gemini-2.0-flash"
+            )
+            
+            script_data = extract_json(response_text)
+            full_script = FullScript(**script_data)
+            
+            # Attach the audio path to the script so M7 knows to use it
+            full_script.total_audio_path = audio_path
+            full_script.notebook_id = notebook_id
+            
+            logger.success(f"M4: Successfully generated script aligned with NotebookLM audio ({len(full_script.segments)} segments)")
+            return full_script
+            
+        except Exception as e:
+            logger.error(f"M4: Gemini Multimodal alignment failed: {e}")
+            raise
 
     def get_relevant_analogies(self, concept_graph: ConceptGraph) -> Dict[str, str]:
         """Fetch pre-curated analogies for concepts in the graph."""

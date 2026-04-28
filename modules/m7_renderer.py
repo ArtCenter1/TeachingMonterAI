@@ -114,9 +114,9 @@ def _run_ffmpeg(args: list[str], step_label: str = ""):
 # ── Main Renderer ───────────────────────────────────────────────────────────
 
 class VideoRenderer:
-    # Target resolution — 720p vertical (fast to encode, still looks great)
-    WIDTH = 720
-    HEIGHT = 1280
+    # Target resolution — 720p landscape (High Definition, contest requirement)
+    WIDTH = 1280
+    HEIGHT = 720
     FPS = 24
 
     def __init__(self, output_dir="temp/output"):
@@ -156,8 +156,10 @@ class VideoRenderer:
         script: FullScript,
         run_id: str = "default",
     ) -> Dict[str, str]:
-        if len(self.cartesia_pool._keys) == 0:
-            logger.error("M7: No Cartesia API key — cannot render video")
+        has_total_audio = getattr(script, "total_audio_path", None) is not None
+        
+        if not has_total_audio and len(self.cartesia_pool._keys) == 0:
+            logger.error("M7: No Cartesia API key and no NotebookLM audio — cannot render video")
             return {"video": "error", "subtitles": "error"}
 
         run_audio_dir = os.path.join(self.temp_audio_dir, run_id)
@@ -170,6 +172,8 @@ class VideoRenderer:
 
         segment_paths: list[str] = []
 
+        has_total_audio = getattr(script, "total_audio_path", None) is not None
+        
         for i, segment in enumerate(script.segments):
             visual = next(
                 (v for v in visual_plan if v["segment_id"] == segment.segment_id), None
@@ -177,17 +181,22 @@ class VideoRenderer:
             if not visual:
                 continue
 
-            # 1. TTS audio
-            try:
-                audio_path = await self._generate_audio(segment, run_audio_dir)
-            except Exception as e:
-                logger.error(f"M7: Audio failed for segment {segment.segment_id}: {e}")
-                continue
+            # 1. Handle Audio
+            audio_path = None
+            if has_total_audio:
+                # Use segment duration from script
+                duration = segment.duration_seconds
+            else:
+                # Legacy flow: generate segment audio
+                try:
+                    audio_path = await self._generate_audio(segment, run_audio_dir)
+                    duration = self._get_audio_duration(audio_path)
+                except Exception as e:
+                    logger.error(f"M7: Audio failed for segment {segment.segment_id}: {e}")
+                    continue
 
-            # 2. Get audio duration (needed to size the video clip)
-            duration = self._get_audio_duration(audio_path)
             if duration <= 0:
-                logger.warning(f"M7: Zero duration audio for {segment.segment_id}, skipping")
+                logger.warning(f"M7: Zero duration for {segment.segment_id}, skipping")
                 continue
 
             # 3. Render segment: AI infographic (Ken Burns) OR Pexels B-roll
@@ -242,28 +251,40 @@ class VideoRenderer:
             return {"video": "error", "subtitles": "error"}
 
         # 5. Concatenate all segments
-        concat_path = os.path.join(run_video_dir, "concat.mp4")
-        self._concat_segments(segment_paths, concat_path)
+        concat_no_audio_path = os.path.join(run_video_dir, "concat_no_audio.mp4")
+        self._concat_segments(segment_paths, concat_no_audio_path)
         logger.info(f"M7: Segments concatenated ({time.time() - t0:.1f}s elapsed)")
 
-        # 6. Mix BGM
+        # 6. Final Audio Mux (NotebookLM total audio or segment-based audio)
         output_filename = f"TeachingMonster_{run_id}.mp4"
         output_path = os.path.join(self.output_dir, output_filename)
-        bgm_path = "resources/bg_music.mp3"
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-        logger.info(f"M7: Starting final export → {output_path}")
-        try:
+        if has_total_audio:
+            logger.info("M7: Muxing single NotebookLM audio track...")
+            # For NotebookLM, we have the continuous audio file
+            _run_ffmpeg([
+                "-i", concat_no_audio_path,
+                "-i", script.total_audio_path,
+                "-map", "0:v",
+                "-map", "1:a",
+                "-c:v", "copy",
+                "-c:a", "aac",
+                "-shortest",
+                output_path
+            ], f"final_mux_{run_id}")
+        else:
+            # Legacy: segments already contain audio, just mix BGM
+            bgm_path = "resources/bg_music.mp3"
             if os.path.exists(bgm_path):
-                self._mix_bgm(concat_path, bgm_path, output_path)
+                logger.info("M7: Mixing background music...")
+                self._mix_bgm(concat_no_audio_path, bgm_path, output_path)
             else:
-                # No BGM — just copy concat to output
+                logger.info("M7: No BGM found, copying concatenated segments to output.")
                 _run_ffmpeg(
-                    ["-i", concat_path, "-c", "copy", output_path],
+                    ["-i", concat_no_audio_path, "-c", "copy", output_path],
                     "copy_no_bgm",
                 )
-        except Exception as export_err:
-            logger.error(f"M7: Final export failed: {export_err}")
-            return {"video": "error", "subtitles": "error"}
 
         elapsed = time.time() - t0
         logger.success(f"M7: Export complete → {output_path} ({elapsed:.1f}s total)")
@@ -343,9 +364,13 @@ class VideoRenderer:
         safe_caption = caption.replace("'", "\u2019").replace(":", "\\:")
         fontsize = 52
         text_y = int(H * 0.72)
+        
+        # Windows-specific font path
+        font_path = "C\\:/Windows/Fonts/arial.ttf"
 
         drawtext = (
             f"drawtext=text='{safe_caption}'"
+            f":fontfile='{font_path}'"
             f":fontsize={fontsize}"
             f":fontcolor=white"
             f":borderw=3:bordercolor=black"
@@ -355,22 +380,6 @@ class VideoRenderer:
             f":fix_bounds=true"
         )
 
-        elements = visual.get("elements", [])
-        if visual.get("reveal_sequential") and elements:
-            interval = duration / (len(elements) + 1)
-            for j, elem in enumerate(elements):
-                safe_elem = self._truncate_caption(elem, 40).replace("'", "\u2019").replace(":", "\\:")
-                delay = interval * (j + 1)
-                elem_y = int(H * 0.25) + j * 70
-                drawtext += (
-                    f",drawtext=text='- {safe_elem}'"
-                    f":fontsize=42"
-                    f":fontcolor=yellow"
-                    f":borderw=2:bordercolor=black"
-                    f":x=(w-text_w)/2"
-                    f":y={elem_y}"
-                    f":enable='gte(t,{delay})'"
-                )
         return drawtext
 
     def _render_infographic_segment(
@@ -386,66 +395,59 @@ class VideoRenderer:
         """
         Render a segment using a static AI-generated infographic PNG.
 
-        - Infographic is 16:9 (1920x1080); video frame is portrait 720x1280.
-        - Image is scaled to fill the width, centered vertically on a dark navy pad.
-        - Ken Burns slow zoom-in (1.0 → ~1.08) adds natural motion to the still image.
-        - Subtitle drawtext overlaid at the bottom as usual.
+        - Infographic is 16:9 (1920x1080); video frame is landscape 1280x720 (16:9).
+        - No padding needed since aspect ratios match.
+        - Ken Burns slow zoom-in adds natural motion.
+        - Subtitle drawtext overlaid at the bottom.
         """
         W, H = self.WIDTH, self.HEIGHT
         fps = self.FPS
         total_frames = max(int(duration * fps), 1)
 
-        # Height of the infographic when scaled to fill WIDTH (16:9 ratio)
-        infographic_h = int(W * 9 / 16)  # e.g. 720 * 9/16 = 405px
-        infographic_y = (H - infographic_h) // 2  # center vertically in portrait frame
-
-        # Ken Burns: gentle zoom-in, 0.0008 per frame (barely noticeable but adds life)
+        # Ken Burns: gentle zoom-in
         zoom_speed = 0.0008
-        max_zoom = min(1.0 + zoom_speed * total_frames, 1.12)  # cap at 12% zoom
-        ken_burns = (
-            f"zoompan="
-            f"z='min(zoom+{zoom_speed},{max_zoom:.4f})':"
-            f"d={total_frames}:"
-            f"x='iw/2-(iw/zoom/2)':"
-            f"y='ih/2-(ih/zoom/2)':"
-            f"s={W}x{infographic_h}"  # output size of zoompan = infographic_h slot
-        )
-
+        max_zoom = min(1.0 + zoom_speed * total_frames, 1.12)
+        
         drawtext = self._build_drawtext(caption, duration, visual)
 
         # Full filter chain:
-        # 1. Scale infographic to WIDTH (preserving 16:9 aspect)
-        # 2. Pad to full portrait height with dark navy background
-        # 3. Ken Burns zoom on the padded frame
-        # 4. Subtitle drawtext on top
+        # 1. Scale/Crop to fit 1280x720
+        # 2. Ken Burns zoompan
+        # 3. Subtitles
         video_filter = (
-            f"scale={W}:{infographic_h}:force_original_aspect_ratio=decrease,"
-            f"pad={W}:{H}:0:{infographic_y}:color=0x0a1628,"
+            f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
             f"zoompan=z='min(zoom+{zoom_speed},{max_zoom:.4f})':d={total_frames}"
             f":x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={W}x{H},"
             f"{drawtext}"
         )
 
-        _run_ffmpeg(
-            [
-                "-loop", "1",               # loop the static image
-                "-framerate", str(fps),
-                "-i", infographic_path,      # input 0: AI infographic PNG
-                "-i", audio_path,            # input 1: TTS audio
-                "-t", str(duration),
-                "-vf", video_filter,
-                "-c:v", "libx264",
-                "-preset", "ultrafast",
-                "-crf", "25",               # slightly better quality for crisp text
-                "-c:a", "aac",
-                "-b:a", "128k",
-                "-pix_fmt", "yuv420p",      # required for zoompan filter compatibility
-                "-shortest",
-                "-movflags", "+faststart",
-                output_path,
-            ],
-            f"render_infographic_{step}",
-        )
+        args = [
+            "-loop", "1",
+            "-framerate", str(fps),
+            "-i", infographic_path,
+        ]
+        
+        if audio_path:
+            args.extend(["-i", audio_path])
+        else:
+            # Silent audio source
+            args.extend(["-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo"])
+            
+        args.extend([
+            "-t", str(duration),
+            "-vf", video_filter,
+            "-c:v", "libx264",
+            "-preset", "ultrafast",
+            "-crf", "25",
+            "-c:a", "aac",
+            "-b:a", "128k",
+            "-pix_fmt", "yuv420p",
+            "-shortest",
+            "-movflags", "+faststart",
+            output_path,
+        ])
+        
+        _run_ffmpeg(args, f"render_infographic_{step}")
 
     def _render_segment(
         self,
@@ -473,24 +475,31 @@ class VideoRenderer:
         )
         video_filter = f"{scale_crop},{drawtext}"
 
-        _run_ffmpeg(
-            [
-                "-stream_loop", "-1",
-                "-i", broll_path,
-                "-i", audio_path,
-                "-t", str(duration),
-                "-vf", video_filter,
-                "-c:v", "libx264",
-                "-preset", "ultrafast",
-                "-crf", "28",
-                "-c:a", "aac",
-                "-b:a", "128k",
-                "-shortest",
-                "-movflags", "+faststart",
-                output_path,
-            ],
-            f"render_seg_{step}",
-        )
+        args = [
+            "-stream_loop", "-1",
+            "-i", broll_path,
+        ]
+        
+        if audio_path:
+            args.extend(["-i", audio_path])
+        else:
+            args.extend(["-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo"])
+            
+        args.extend([
+            "-t", str(duration),
+            "-vf", video_filter,
+            "-c:v", "libx264",
+            "-preset", "ultrafast",
+            "-crf", "25",
+            "-c:a", "aac",
+            "-b:a", "128k",
+            "-pix_fmt", "yuv420p",
+            "-shortest",
+            "-movflags", "+faststart",
+            output_path,
+        ])
+        
+        _run_ffmpeg(args, f"render_segment_{step}")
 
     def _concat_segments(self, segment_paths: list[str], output_path: str):
         """Concatenate segments using FFmpeg concat demuxer (fast, no re-encode)."""

@@ -19,6 +19,7 @@ class ModalityPreference(str, Enum):
 
 class StudentModel(BaseModel):
     level: StudentLevel = Field(..., description="Educational level of the student")
+    subject: str = Field("General", description="Subject being taught (Physics, Biology, etc.)")
     knowledge_embedding: List[str] = Field(
         default_factory=list, description="Implied known concepts"
     )
@@ -67,6 +68,8 @@ class FullScript(BaseModel):
     checks: List[str] = Field(
         default_factory=list, description="Socratic question prompts"
     )
+    total_audio_path: Optional[str] = None
+    notebook_id: Optional[str] = None
 
     class Config:
         extra = "allow"
@@ -137,6 +140,7 @@ class GenerationResponse(BaseModel):
 class FactBundle(BaseModel):
     facts: List[Dict[str, Any]]
     study_guide_url: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class AIStudentFeedback(BaseModel):

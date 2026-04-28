@@ -26,25 +26,8 @@ import asyncio
 from typing import Optional
 from loguru import logger
 
-# ── Google GenAI SDK ────────────────────────────────────────────────────────
-
-def _get_google_key() -> Optional[str]:
-    """Pull a random key from GOOGLE_API_KEY_POOL, falling back to GOOGLE_API_KEY."""
-    pool_raw = os.getenv("GOOGLE_API_KEY_POOL", "").strip()
-    if pool_raw:
-        keys = [k.strip() for k in pool_raw.split(",") if k.strip()]
-        if keys:
-            return random.choice(keys)
-    return os.getenv("GOOGLE_API_KEY", "").strip() or None
-
-
-def _make_genai_client():
-    """Create a google.genai Client instance with a valid API key."""
-    from google import genai
-    key = _get_google_key()
-    if not key:
-        raise RuntimeError("No GOOGLE_API_KEY / GOOGLE_API_KEY_POOL configured.")
-    return genai.Client(api_key=key)
+from modules.llm_client import get_gemini_pool
+from keyrotator.pool import KeyPool, KeyState
 
 
 # ── Style prompt templates ──────────────────────────────────────────────────
@@ -141,18 +124,19 @@ class InfographicGenerator:
     Falls back to None (triggering Pexels B-roll fallback) on API failure.
     """
 
-    # Primary model — free tier, handles infographics well
-    PRIMARY_MODEL = "gemini-2.5-flash-preview-05-20"
-    # Fallback — older flash image model
-    FALLBACK_MODEL = "gemini-2.0-flash-exp"
+    # Primary model — "Nano Banana Pro" for high-quality infographics and diagrams
+    PRIMARY_MODEL = "gemini-3-pro-image-preview"
+    # Fallback — "Nano Banana 2" 
+    FALLBACK_MODEL = "gemini-3.1-flash-image-preview"
 
     def __init__(self, output_dir: str = "temp/visuals/infographics"):
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
         self._enabled = os.getenv("INFOGRAPHIC_ENABLED", "true").lower() == "true"
+        self.pool = get_gemini_pool()
         logger.info(
             f"[M6B] InfographicGenerator initialized. "
-            f"Enabled={self._enabled}, output={self.output_dir}"
+            f"Enabled={self._enabled}, output={self.output_dir}, keys={self.pool.get_status()['total_keys']}"
         )
 
     async def generate_segment_infographic(
@@ -186,33 +170,69 @@ class InfographicGenerator:
         logger.info(f"[M6B] Generating infographic for '{concept}' (style={style})")
         t0 = time.time()
 
-        for model in [self.PRIMARY_MODEL, self.FALLBACK_MODEL]:
-            try:
-                result = await asyncio.to_thread(
-                    self._call_gemini_image, prompt, model, out_path
-                )
-                if result:
-                    elapsed = time.time() - t0
-                    logger.success(
-                        f"[M6B] ✓ Infographic ready: {out_path} ({elapsed:.1f}s, model={model})"
-                    )
-                    return out_path
-            except Exception as e:
-                logger.warning(f"[M6B] Model {model} failed for {segment_id}: {e}")
-                await asyncio.sleep(2)  # brief backoff before fallback model
+        # Try models in sequence
+        for model in [self.PRIMARY_MODEL, self.FALLBACK_MODEL, "pollinations"]:
+            # Retry each model up to 3 times with different keys
+            for attempt in range(3):
+                entry = None
+                try:
+                    if model == "pollinations":
+                        logger.info(f"[M6B] Attempting free Pollinations.ai fallback for '{concept}'")
+                        result = await asyncio.to_thread(self._call_pollinations_image, prompt, out_path)
+                    else:
+                        entry = self.pool.get_key()
+                        if not entry:
+                            logger.error("[M6B] No Gemini keys available in pool")
+                            break
+                        
+                        result = await asyncio.to_thread(
+                            self._call_gemini_image, prompt, model, out_path, entry.key
+                        )
 
-        logger.error(f"[M6B] All models failed for segment {segment_id} — using B-roll fallback")
+                    if result:
+                        if entry:
+                            self.pool.report_success(entry)
+                        elapsed = time.time() - t0
+                        logger.success(
+                            f"[M6B] ✓ Infographic ready: {out_path} ({elapsed:.1f}s, model={model})"
+                        )
+                        return out_path
+                except Exception as e:
+                    err_msg = str(e).lower()
+                    
+                    # Handle pool rotation for Gemini errors
+                    if entry and model != "pollinations":
+                        code = 500
+                        if "429" in err_msg: code = 429
+                        elif "503" in err_msg or "service unavailable" in err_msg or "high demand" in err_msg:
+                            code = 503
+                        elif "403" in err_msg: code = 403
+                        elif "402" in err_msg: code = 402
+                        
+                        if code in (429, 503, 403, 402):
+                            self.pool.report_error(entry, code, str(e))
+                            logger.warning(f"[M6B] Gemini {code} for {model} (attempt {attempt+1}), rotating key...")
+                            await asyncio.sleep(2 * (attempt + 1))
+                            continue
+
+                    logger.warning(f"[M6B] Model {model} failed for {segment_id} on attempt {attempt+1}: {e}")
+                    if attempt < 2:
+                        await asyncio.sleep(1)
+                    else:
+                        break # Go to next model
+
+        logger.error(f"[M6B] All models/attempts failed for segment {segment_id} — using B-roll fallback")
         return None
 
-    def _call_gemini_image(self, prompt: str, model: str, out_path: str) -> bool:
+    def _call_gemini_image(self, prompt: str, model: str, out_path: str, api_key: str) -> bool:
         """
         Synchronous Gemini image API call (run in thread via asyncio.to_thread).
         Returns True on success, raises on failure.
         """
         from google import genai
         from google.genai import types
-
-        client = _make_genai_client()
+        
+        client = genai.Client(api_key=api_key)
 
         response = client.models.generate_content(
             model=model,
@@ -240,6 +260,33 @@ class InfographicGenerator:
         if not saved:
             raise RuntimeError("Gemini returned no image data in response")
         return True
+
+    def _call_pollinations_image(self, prompt: str, out_path: str) -> bool:
+        """
+        Fallback to free, auth-less Pollinations API when Gemini quota is exhausted.
+        This ensures the pipeline remains autonomous even on a 100% free setup.
+        """
+        import urllib.request
+        import urllib.parse
+        
+        # Pollinations uses the prompt in the URL path. 
+        # We cap the prompt length to avoid URL-too-long errors.
+        encoded_prompt = urllib.parse.quote(prompt[:1000])
+        
+        # Request 16:9 1080p resolution matching our contest requirements
+        url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1920&height=1080&nologo=true"
+        
+        req = urllib.request.Request(
+            url, 
+            headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 TeachingMonsterAI'}
+        )
+        with urllib.request.urlopen(req, timeout=45) as response:
+            if response.status == 200:
+                with open(out_path, "wb") as f:
+                    f.write(response.read())
+                return True
+            else:
+                raise RuntimeError(f"Pollinations API failed with status {response.status}")
 
     async def generate_all(
         self,

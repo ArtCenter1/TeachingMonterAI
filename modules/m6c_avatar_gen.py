@@ -33,7 +33,7 @@ REPLICATE_API_KEY_ENV     = "REPLICATE_API_KEY"
 DEFAULT_CHARACTER_PATH = "resources/avatar/character_idle.jpg"
 
 # PiP window dimensions (pixels in the final video)
-AVATAR_SIZE_PX = 280   # diameter of the circular window
+AVATAR_SIZE_PX = 200   # diameter for 720p landscape
 
 
 def _ffmpeg_path() -> str:
@@ -242,10 +242,10 @@ class AvatarCompositor:
             filter_complex: string to pass as -filter_complex
             output_label:   the label of the final composited stream (e.g. "[vout]")
         """
-        size = AVATAR_SIZE_PX
-        margin_x = 20
-        margin_y = 80  # above subtitle area
-
+        size = 200
+        margin_x = 40
+        margin_y = 40  # closer to bottom in landscape, but still safe
+ 
         # Target position (bottom-right corner, resting state)
         base_x = video_width - size - margin_x
         base_y = video_height - size - margin_y

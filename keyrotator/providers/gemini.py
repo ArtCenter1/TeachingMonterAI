@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional
+from typing import Optional, Any
 from loguru import logger
 from google import genai
 from google.genai import types as genai_types
@@ -30,7 +30,7 @@ def _is_quota_error(exc: Exception) -> bool:
 async def call_with_pool(
     pool: KeyPool,
     model_name: str,
-    prompt: str,
+    contents: Any,
     system_instruction: Optional[str],
     temperature: float,
     max_tokens: int,
@@ -78,7 +78,7 @@ async def call_with_pool(
                 None,
                 lambda: client.models.generate_content(
                     model=clean_name,
-                    contents=prompt,
+                    contents=contents,
                     config=config,
                 )
             )

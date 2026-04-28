@@ -24,9 +24,9 @@ from .m6b_infographic_gen import InfographicGenerator
 
 
 # Visual types that benefit from AI-generated infographics
-_INFOGRAPHIC_TYPES = {"concept", "diagram", "data", "slide", "theory", "definition"}
-# Visual types that prefer real-world B-roll footage
-_BROLL_TYPES = {"action", "demo", "real_world", "example", "story"}
+_INFOGRAPHIC_TYPES = {"concept", "diagram", "data", "slide", "theory", "definition", "example", "story", "lesson"}
+# Visual types that prefer real-world B-roll footage (only used if explicitly requested)
+_BROLL_TYPES = {"action", "real_world", "footage"}
 
 
 class MultimodalPlanner:
@@ -58,10 +58,8 @@ class MultimodalPlanner:
             seg_id_str = str(segment.segment_id)
 
             infographic_path = infographic_map.get(seg_id_str)
-            use_infographic = (
-                infographic_path is not None
-                and visual_type not in _BROLL_TYPES
-            )
+            # FORCE infographic if it was successfully generated, regardless of type
+            use_infographic = (infographic_path is not None)
 
             if use_infographic:
                 visual_source = "gemini_infographic"

@@ -366,6 +366,12 @@ class CIDPPCritic:
         refined_script = best_variant
         all_feedback = []
         
+        # If we have a total_audio_path (NotebookLM flow), we SKIP refinement 
+        # because the script must match the pre-generated audio exactly.
+        if best_variant.total_audio_path:
+            logger.info("[M5] NotebookLM audio detected. Skipping refinement to maintain audio-script alignment.")
+            max_revisions = 0
+
         for rev in range(max_revisions):
             logger.info(
                 f"Running synthetic student tests on selected variant (revision {rev+1}/{max_revisions})"

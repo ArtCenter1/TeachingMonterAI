@@ -23,11 +23,11 @@
 
 | Section | Change | Reason |
 |---|---|---|
-| M1 — Sourcing | **Replaced NotebookLM** (MCP + unofficial `notebooklm-py`) with **Local RAG** (ChromaDB + sentence-transformers) | NotebookLM session cookies expire every ~2 weeks, causing unpredictable production failures inside the 30-minute window |
+| M1 — Sourcing | **Hybrid RAG & NotebookLM** | Restored NotebookLM as a premium/optional high-fidelity path alongside Local RAG (ChromaDB) for maximum reliability and quality. |
 | M6 — Multimodal Planner | Added **Pexels B-roll keyword generation** in visual plan output | Enables dynamic video backgrounds vs. static PNG slides |
 | M7 — Video Renderer | **Full rewrite** using **moviepy v2 + Pexels B-roll + karaoke subtitles + BGM** (inspired by MoneyPrinterTurbo) | Static slides are visually uncompetitive in human-judges Elo Arena (Phase 2) |
 | Global | **OpenSpace MCP removed** from project | Was causing workflow confusion with no production benefit for this specific pipeline |
-| Roadmap | Phases 1–3 resequenced to reflect RAG-first implementation order and updated Week 1–2 priorities | |
+| Roadmap | Phases 1–4 updated to reflect v0.6.0 stabilization and completion of foundation phases. | |
 | Section 4 | NotebookLM integration replaced with **Local RAG architecture** | |
 | Section 8 | Updated required tools and dependencies | |
 
@@ -225,15 +225,14 @@ CIDPP Rubric (unchanged):
 
 ---
 
-## 4. Local RAG Architecture (Replaces NotebookLM in v1.0)
+## 4. Hybrid RAG & NotebookLM Architecture
 
-### 4.1 Motivation for Change
+### 4.1 Motivation for Hybrid Approach
 
-In v1.0, M1 used Google NotebookLM (via unofficial `notebooklm-py` wrapper and MCP) for source grounding. This approach has been **deprecated** due to:
+In v1.0, M1 used Google NotebookLM exclusively. While high-quality, session fragility led to a shift toward Local RAG in v2.0. We have now stabilized the pipeline to support a **Hybrid Architecture**:
 
-1. **Session fragility**: Google OAuth cookies expire every ~2 weeks, requiring manual renewal that can interrupt competition runs
-2. **30-minute budget risk**: Any external API dependency inside the generation window is a reliability risk
-3. **No offline capability**: NotebookLM requires network access to Google's infrastructure
+1. **Local RAG (Reliability)**: ChromaDB-backed local storage for zero-dependency baseline sourcing.
+2. **NotebookLM (Premium)**: Optional, high-fidelity path for generating advanced scripts and study guides when session state is valid.
 
 ### 4.2 Local RAG Stack
 
@@ -260,6 +259,8 @@ In v1.0, M1 used Google NotebookLM (via unofficial `notebooklm-py` wrapper and M
 Stage 1: Local RAG query (ChromaDB) — target < 2s, offline
   ↓ (if insufficient results)
 Stage 2: AI Research fallback (LLM with pedagogical expert prompt) — target < 30s
+  ↓ (optional premium path)
+Stage 4: NotebookLM Sourcing (for high-fidelity audio/guides) — target < 90s
   ↓ (if explicitly needed for citations)
 Stage 3: Web Search fallback (Google Custom Search) — target < 60s
 ```
@@ -484,7 +485,6 @@ The CIDPP critic's Integrity dimension (minimum 9/10) remains the final safety n
 | Script generation exceeds time budget | Pipeline stalls | Hard timeout per M4 call; single-variant fallback |
 | CIDPP critic infinite revision loop | Pipeline stalls | Hard cap: 3 loops maximum |
 | Video rendering failure | No output URL | Retry once; return partial output with error flag |
-| ~~NotebookLM session expired~~ | ~~M1 sourcing failed~~ | **Eliminated — no longer applicable** |
 
 ---
 
@@ -534,8 +534,8 @@ The CIDPP critic's Integrity dimension (minimum 9/10) remains the final safety n
 | Pedagogy memory bank | Retrieval store of highest-scoring past lessons used as few-shot examples in M4 |
 | Ken Burns effect | Slow zoom/pan animation applied to static images to create motion in the absence of B-roll video |
 | BGM | Background Music — low-volume royalty-free audio looped beneath narration to improve perceived production quality |
-| ~~NLM~~ | ~~NotebookLM~~ — **Deprecated in v2.0. Replaced by Local RAG.** |
-| ~~MCP (OpenSpace)~~ | ~~OpenSpace Model Context Protocol~~ — **Removed in v2.0.** |
+| NLM | NotebookLM — Restored as hybrid premium path in v2.0 for high-fidelity sourcing and study guides. |
+| MCP (OpenSpace) | OpenSpace Model Context Protocol — Removed in v2.0 to simplify local pipeline. |
 
 ---
 
