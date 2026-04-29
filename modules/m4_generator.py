@@ -100,20 +100,30 @@ class ScriptGenerator:
         fact_bundle: FactBundle,
         model_override: str = None,
     ) -> List[FullScript]:
-        """Generate all 3 variants (Best-of-N mode)."""
-        variants = []
-        for strategy_name, strategy_desc in self.strategies.items():
-            variant = await self.generate(
-                concept_graph,
-                student_model,
-                fact_bundle,
-                strategy_name,
-                strategy_desc,
-                model_override,
-            )
-            variants.append(variant)
-            await asyncio.sleep(1)
-        return variants
+        """Generate all 3 variants (Best-of-N mode) with throttled concurrency."""
+        # Semaphore limits simultaneous LLM calls to avoid exhausting all API keys at once
+        sem = asyncio.Semaphore(3)
+
+        async def _guarded_generate(strategy_name, strategy_desc):
+            async with sem:
+                result = await self.generate(
+                    concept_graph,
+                    student_model,
+                    fact_bundle,
+                    strategy_name,
+                    strategy_desc,
+                    model_override,
+                )
+                await asyncio.sleep(2)  # stagger calls to spread rate-limit windows
+                return result
+
+        tasks = [
+            _guarded_generate(name, desc)
+            for name, desc in self.strategies.items()
+        ]
+        variants = await asyncio.gather(*tasks, return_exceptions=False)
+        return list(variants)
+
 
     async def generate_variants(
         self,
@@ -296,6 +306,7 @@ class ScriptGenerator:
                     # We could trigger a retry here, but for now we just log it.
             # Ensure strategy name is preserved
             data["scaffolding_strategy"] = strategy_name
+            data["subject"] = subject
             return FullScript(**data)
         except Exception as e:
             logger.error(f"Error generating script ({strategy_name}): {str(e)}")
@@ -398,6 +409,7 @@ class ScriptGenerator:
             )
             
             script_data = extract_json(response_text)
+            script_data["subject"] = infer_subject(topic_context)
             full_script = FullScript(**script_data)
             
             # Attach the audio path to the script so M7 knows to use it

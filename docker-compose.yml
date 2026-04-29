@@ -3,7 +3,7 @@ services:
   # ── Teaching Monster FastAPI Backend ──────────────────────────────────────
   app:
     build: .
-    image: teachingmonsterai-app:0.6.0
+    image: teachingmonsterai-app:0.7.0
 
     container_name: teaching-monster-app
     restart: unless-stopped
@@ -18,12 +18,19 @@ services:
       - ./m8_feedback.json:/app/m8_feedback.json
       - ./m8_errors.json:/app/m8_errors.json
       - ./strategy_stats.json:/app/strategy_stats.json
+      - "${USERPROFILE}/.notebooklm:/root/.notebooklm:rw"
     environment:
       - PYTHONUNBUFFERED=1
       # Uvicorn keeps HTTP connections alive for up to 30 minutes (contest timeout)
       - UVICORN_TIMEOUT_KEEP_ALIVE=1800
       - UVICORN_TIMEOUT=1800
       - UVICORN_H11_MAX_INCOMPLETE_EVENT_SIZE=16384
+      - NLM_SLIDES_ENABLED=${NLM_SLIDES_ENABLED:-true}
+      - NLM_AUDIO_ENABLED=${NLM_AUDIO_ENABLED:-true}
+      - NLM_SLIDE_TIMEOUT_S=${NLM_SLIDE_TIMEOUT_S:-480}
+      - NLM_AUDIO_TIMEOUT_S=${NLM_AUDIO_TIMEOUT_S:-600}
+      - NLM_QUIZ_TIMEOUT_S=${NLM_QUIZ_TIMEOUT_S:-300}
+      - PYTHONUTF8=1
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:

@@ -17,4 +17,5 @@ moviepy<2.0.0
 pyyaml
 requests
 torch
-notebooklm-py
+notebooklm-py[browser]>=0.3.0
+playwright>=1.40.0

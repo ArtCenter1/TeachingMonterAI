@@ -27,6 +27,9 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install Playwright Chromium for NLM headless auth refresh (no manual login needed at runtime)
+RUN playwright install chromium --with-deps
+
 # Copy application code
 COPY . .
 

@@ -106,5 +106,130 @@
       "search_api_key": null,
       "request_id": "celery_2102_1777311695"
     }
+  },
+  {
+    "run_id": "c19d6390-fc63-4c1b-83d9-f2558f60765f",
+    "timestamp": "2026-04-29T08:29:36.623360+00:00",
+    "failed_stage": "m5_critic",
+    "error_type": "AttributeError",
+    "error_message": "'FactBundle' object has no attribute 'notebook_id'",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 165, in pipeline_task\n    script, selection_log = await m5.score_variants(\n                            ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m5_critic.py\", line 368, in score_variants\n    if fact_bundle.notebook_id and nlm_studio.is_available():\n       ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/pydantic/main.py\", line 1042, in __getattr__\n    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')\nAttributeError: 'FactBundle' object has no attribute 'notebook_id'\n",
+    "request": {
+      "course_requirement": "Big Concept: Plant form and function\nTopic: Plant Hormones\nBloom's Taxonomy: apply\nLearning Goal: 1. Identify major plant hormones (auxin, gibberellin, cytokinin, ethylene, ABA).\n 2. Describe the basic function of each hormone.\n 3. Explain interactions among multiple plant hormones.\n 4. Understand how hormone manipulation can be applied in agriculture.\nKey Learning Points: 1. Types of plant hormones\n 2. Simple cause-effect relationships (e.g., auxin -> bending toward light)\n 3. Hormone interactions (e.g., auxin vs cytokinin balance)\n 4. Multiple hormone control of a single process\n 5. Application (e.g., fruit ripening control, growth regulation)\nNote: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "student_persona": "Grade: 11th gradeFocus Time: 25 minBackground Knowledge: 1. Basic plant structure (root, stem, leaf) 2. General idea that plants respond to environmental stimuli (e.g., light, gravity)Note: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2139_1777422054"
+    }
+  },
+  {
+    "run_id": "8c27dc28-384d-4e48-950b-a8dd212220cf",
+    "timestamp": "2026-04-29T09:40:57.473556+00:00",
+    "failed_stage": "m5_critic",
+    "error_type": "AttributeError",
+    "error_message": "'FactBundle' object has no attribute 'notebook_id'",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 165, in pipeline_task\n    script, selection_log = await m5.score_variants(\n                            ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m5_critic.py\", line 368, in score_variants\n    if fact_bundle.notebook_id and nlm_studio.is_available():\n       ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/pydantic/main.py\", line 1042, in __getattr__\n    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')\nAttributeError: 'FactBundle' object has no attribute 'notebook_id'\n",
+    "request": {
+      "course_requirement": "Big Concept: Plant form and function\nTopic: Plant Hormones\nBloom's Taxonomy: apply\nLearning Goal: 1. Identify major plant hormones (auxin, gibberellin, cytokinin, ethylene, ABA).\n 2. Describe the basic function of each hormone.\n 3. Explain interactions among multiple plant hormones.\n 4. Understand how hormone manipulation can be applied in agriculture.\nKey Learning Points: 1. Types of plant hormones\n 2. Simple cause-effect relationships (e.g., auxin -> bending toward light)\n 3. Hormone interactions (e.g., auxin vs cytokinin balance)\n 4. Multiple hormone control of a single process\n 5. Application (e.g., fruit ripening control, growth regulation)\nNote: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "student_persona": "Grade: 11th gradeFocus Time: 25 minBackground Knowledge: 1. Basic plant structure (root, stem, leaf) 2. General idea that plants respond to environmental stimuli (e.g., light, gravity)Note: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2139_1777426625"
+    }
+  },
+  {
+    "run_id": "39205488-86a8-43b2-b82a-d39cff57bbb2",
+    "timestamp": "2026-04-29T10:58:23.793799+00:00",
+    "failed_stage": "m5_critic",
+    "error_type": "AttributeError",
+    "error_message": "'FactBundle' object has no attribute 'notebook_id'",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 165, in pipeline_task\n    script, selection_log = await m5.score_variants(\n                            ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m5_critic.py\", line 368, in score_variants\n    if fact_bundle.notebook_id and nlm_studio.is_available():\n       ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/pydantic/main.py\", line 1042, in __getattr__\n    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')\nAttributeError: 'FactBundle' object has no attribute 'notebook_id'\n",
+    "request": {
+      "course_requirement": "Big Concept: Plant form and function\nTopic: Plant Hormones\nBloom's Taxonomy: apply\nLearning Goal: 1. Identify major plant hormones (auxin, gibberellin, cytokinin, ethylene, ABA).\n 2. Describe the basic function of each hormone.\n 3. Explain interactions among multiple plant hormones.\n 4. Understand how hormone manipulation can be applied in agriculture.\nKey Learning Points: 1. Types of plant hormones\n 2. Simple cause-effect relationships (e.g., auxin -> bending toward light)\n 3. Hormone interactions (e.g., auxin vs cytokinin balance)\n 4. Multiple hormone control of a single process\n 5. Application (e.g., fruit ripening control, growth regulation)\nNote: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "student_persona": "Grade: 11th gradeFocus Time: 25 minBackground Knowledge: 1. Basic plant structure (root, stem, leaf) 2. General idea that plants respond to environmental stimuli (e.g., light, gravity)Note: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2139_1777430387"
+    }
+  },
+  {
+    "run_id": "a783c073-7847-443e-8867-2ef217bae845",
+    "timestamp": "2026-04-29T11:13:43.673014+00:00",
+    "failed_stage": "m5_critic",
+    "error_type": "AttributeError",
+    "error_message": "'FactBundle' object has no attribute 'notebook_id'",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 165, in pipeline_task\n    script, selection_log = await m5.score_variants(\n                            ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m5_critic.py\", line 368, in score_variants\n    nlm_notebook_id = fact_bundle.metadata.get(\"notebook_id\") if fact_bundle else None\n       ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/pydantic/main.py\", line 1042, in __getattr__\n    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')\nAttributeError: 'FactBundle' object has no attribute 'notebook_id'\n",
+    "request": {
+      "course_requirement": "Big Concept: Plant form and function\nTopic: Plant Hormones\nBloom's Taxonomy: apply\nLearning Goal: 1. Identify major plant hormones (auxin, gibberellin, cytokinin, ethylene, ABA).\n 2. Describe the basic function of each hormone.\n 3. Explain interactions among multiple plant hormones.\n 4. Understand how hormone manipulation can be applied in agriculture.\nKey Learning Points: 1. Types of plant hormones\n 2. Simple cause-effect relationships (e.g., auxin -> bending toward light)\n 3. Hormone interactions (e.g., auxin vs cytokinin balance)\n 4. Multiple hormone control of a single process\n 5. Application (e.g., fruit ripening control, growth regulation)\nNote: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "student_persona": "Grade: 11th gradeFocus Time: 25 minBackground Knowledge: 1. Basic plant structure (root, stem, leaf) 2. General idea that plants respond to environmental stimuli (e.g., light, gravity)Note: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2139_1777431843"
+    }
+  },
+  {
+    "run_id": "bbf307e4-3035-46c1-8bb0-1d8641ef8404",
+    "timestamp": "2026-04-29T11:33:10.333302+00:00",
+    "failed_stage": "m5_critic",
+    "error_type": "AttributeError",
+    "error_message": "'FactBundle' object has no attribute 'notebook_id'",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 165, in pipeline_task\n    script, selection_log = await m5.score_variants(\n                            ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m5_critic.py\", line 368, in score_variants\n    nlm_notebook_id = fact_bundle.metadata.get(\"notebook_id\") if fact_bundle else None\n       ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/pydantic/main.py\", line 1042, in __getattr__\n    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')\nAttributeError: 'FactBundle' object has no attribute 'notebook_id'\n",
+    "request": {
+      "course_requirement": "Big Concept: Plant form and function\nTopic: Plant Hormones\nBloom's Taxonomy: apply\nLearning Goal: 1. Identify major plant hormones (auxin, gibberellin, cytokinin, ethylene, ABA).\n 2. Describe the basic function of each hormone.\n 3. Explain interactions among multiple plant hormones.\n 4. Understand how hormone manipulation can be applied in agriculture.\nKey Learning Points: 1. Types of plant hormones\n 2. Simple cause-effect relationships (e.g., auxin -> bending toward light)\n 3. Hormone interactions (e.g., auxin vs cytokinin balance)\n 4. Multiple hormone control of a single process\n 5. Application (e.g., fruit ripening control, growth regulation)\nNote: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "student_persona": "Grade: 11th gradeFocus Time: 25 minBackground Knowledge: 1. Basic plant structure (root, stem, leaf) 2. General idea that plants respond to environmental stimuli (e.g., light, gravity)Note: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2139_1777433176"
+    }
+  },
+  {
+    "run_id": "eea6d505-f319-41fc-9520-502c7146f966",
+    "timestamp": "2026-04-29T11:46:04.292377+00:00",
+    "failed_stage": "m6_multimodal",
+    "error_type": "RuntimeError",
+    "error_message": "All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 512, in _call_openrouter\n    return await openrouter_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/openrouter.py\", line 46, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All OpenRouter keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 198, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 402, in _execute_request\n    return await self._call_openrouter(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 522, in _call_openrouter\n    raise RuntimeError(f\"All OpenRouter keys exhausted — falling through to Gemini pool.\")\nRuntimeError: All OpenRouter keys exhausted — falling through to Gemini pool.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 446, in _call_gemini_sdk\n    return await gemini_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/gemini.py\", line 49, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/main.py\", line 175, in pipeline_task\n    visual_plan = await m6.plan_visuals(script)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 48, in plan_visuals\n    keywords_map = await self._generate_keywords_map(script)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 166, in _generate_keywords_map\n    keywords_raw = await self.llm.generate_text(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 318, in generate_text\n    raise last_exception\n  File \"/app/modules/llm_client.py\", line 299, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 418, in _execute_request\n    return await self._call_gemini_sdk(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 456, in _call_gemini_sdk\n    raise RuntimeError(f\"All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\")\nRuntimeError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n",
+    "request": {
+      "course_requirement": "Big Concept: Plant form and function\nTopic: Plant Hormones\nBloom's Taxonomy: apply\nLearning Goal: 1. Identify major plant hormones (auxin, gibberellin, cytokinin, ethylene, ABA).\n 2. Describe the basic function of each hormone.\n 3. Explain interactions among multiple plant hormones.\n 4. Understand how hormone manipulation can be applied in agriculture.\nKey Learning Points: 1. Types of plant hormones\n 2. Simple cause-effect relationships (e.g., auxin -> bending toward light)\n 3. Hormone interactions (e.g., auxin vs cytokinin balance)\n 4. Multiple hormone control of a single process\n 5. Application (e.g., fruit ripening control, growth regulation)\nNote: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "student_persona": "Grade: 11th gradeFocus Time: 25 minBackground Knowledge: 1. Basic plant structure (root, stem, leaf) 2. General idea that plants respond to environmental stimuli (e.g., light, gravity)Note: Apply: Learn to use plant hormones effectively to control plant growth.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2139_1777433767"
+    }
+  },
+  {
+    "run_id": "8df8e63c-cd46-4cfc-a35f-507ad03d877b",
+    "timestamp": "2026-04-29T13:30:38.287057+00:00",
+    "failed_stage": "m6_multimodal",
+    "error_type": "RuntimeError",
+    "error_message": "All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 512, in _call_openrouter\n    return await openrouter_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/openrouter.py\", line 46, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All OpenRouter keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 198, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 402, in _execute_request\n    return await self._call_openrouter(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 522, in _call_openrouter\n    raise RuntimeError(f\"All OpenRouter keys exhausted — falling through to Gemini pool.\")\nRuntimeError: All OpenRouter keys exhausted — falling through to Gemini pool.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 446, in _call_gemini_sdk\n    return await gemini_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/gemini.py\", line 49, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/main.py\", line 175, in pipeline_task\n    visual_plan = await m6.plan_visuals(script)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 48, in plan_visuals\n    keywords_map = await self._generate_keywords_map(script)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 166, in _generate_keywords_map\n    keywords_raw = await self.llm.generate_text(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 318, in generate_text\n    raise last_exception\n  File \"/app/modules/llm_client.py\", line 299, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 418, in _execute_request\n    return await self._call_gemini_sdk(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 456, in _call_gemini_sdk\n    raise RuntimeError(f\"All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\")\nRuntimeError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n",
+    "request": {
+      "course_requirement": "Quantum Computing Basics",
+      "student_persona": "College freshman",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
   }
 ]

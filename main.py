@@ -37,6 +37,7 @@ from modules.m7_renderer import VideoRenderer
 from modules.m8_logger import FeedbackLogger, ErrorLogger
 from keyrotator import KeyPool, KeyRotatorRouter
 from modules.llm_client import get_gemini_pool, get_router_pool
+from modules import nlm_studio
 
 
 app = FastAPI(title="Teaching Monster AI Agent API", version="0.6.0")
@@ -124,6 +125,8 @@ async def _run_pipeline_and_stream(request_data, request, x_dry_run):
         nonlocal current_stage
         try:
             logger.info(f"Starting generation for run_id: {run_id}")
+            # 0. NLM Preflight
+            await nlm_studio.preflight_check()
 
             current_stage = "m1_sourcing"
             logger.info("Stage 1: Sourcing")

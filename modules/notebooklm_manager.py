@@ -11,20 +11,38 @@ class NotebookLMManager:
         self._init_lock = asyncio.Lock()
 
     async def _ensure_client(self) -> Optional[NotebookLMClient]:
-        """Ensures the client is initialised lazily."""
+        """Ensures the client is initialised lazily.
+        
+        Prioritises NOTEBOOKLM_AUTH_JSON env var so Docker containers work
+        without needing the host's ~/.notebooklm filesystem mounted.
+        """
         async with self._init_lock:
             if self.client and self.client.is_connected():
                 return self.client
-            
+
+            auth_json = os.getenv("NOTEBOOKLM_AUTH_JSON")
             try:
-                # from_storage is async!
-                self.client = await NotebookLMClient.from_storage()
-                logger.info("NotebookLMManager: Successfully initialised from storage.")
+                if auth_json:
+                    # Docker-friendly path: auth injected via .env
+                    import tempfile, json as _json
+                    _json.loads(auth_json)  # validate before writing
+                    with tempfile.NamedTemporaryFile(
+                        mode="w", suffix=".json", delete=False
+                    ) as tmp:
+                        tmp.write(auth_json)
+                        tmp_path = tmp.name
+                    self.client = await NotebookLMClient.from_storage(tmp_path)
+                    logger.info("NotebookLMManager: Initialised from NOTEBOOKLM_AUTH_JSON env var.")
+                else:
+                    # Host path: from_storage reads ~/.notebooklm/storage_state.json
+                    self.client = await NotebookLMClient.from_storage()
+                    logger.info("NotebookLMManager: Successfully initialised from storage.")
                 return self.client
             except Exception as e:
                 logger.error(f"NotebookLMManager: Failed to initialise from storage: {e}")
                 self.client = None
                 return None
+
 
     async def create_notebook_for_topic(self, topic: str, domain: str) -> Optional[str]:
         """Creates a new notebook and returns the notebook_id."""

@@ -27,6 +27,7 @@ from loguru import logger
 from .schemas import FullScript
 from .pexels_client import PexelsClient
 from .m6c_avatar_gen import get_avatar_compositor
+from . import nlm_studio
 
 
 # ── Cartesia Key Pool ───────────────────────────────────────────────────────
@@ -200,11 +201,43 @@ class VideoRenderer:
                 continue
 
             # 3. Render segment: AI infographic (Ken Burns) OR Pexels B-roll
+            visual_source = visual.get("visual_source", "pexels_broll")
             seg_raw = os.path.join(run_video_dir, f"seg_{i:02d}_raw.mp4")
             caption = self._truncate_caption(segment.narration, 80)
-            visual_source = visual.get("visual_source", "pexels_broll")
-
-            if visual_source == "gemini_infographic":
+            if visual_source == "nlm_slide":
+                nlm_slide_path = visual.get("nlm_slide_path")
+                if nlm_slide_path and os.path.exists(nlm_slide_path):
+                    logger.info(f"M7: Segment {i} → NLM slide")
+                    self._render_infographic_segment(
+                        infographic_path=nlm_slide_path,
+                        audio_path=audio_path,
+                        duration=duration,
+                        caption=caption,
+                        visual=visual,
+                        output_path=seg_raw,
+                        step=i,
+                    )
+                else:
+                    logger.warning(f"M7: NLM slide missing for seg {i}, fallback to Gemini infographic")
+                    infographic_path = visual.get("infographic_path")
+                    if infographic_path and os.path.exists(infographic_path):
+                        self._render_infographic_segment(
+                            infographic_path=infographic_path,
+                            audio_path=audio_path,
+                            duration=duration,
+                            caption=caption,
+                            visual=visual,
+                            output_path=seg_raw,
+                            step=i,
+                        )
+                    else:
+                        broll_path = self._source_visual_path(visual, run_video_dir, i)
+                        self._render_segment(
+                            broll_path=broll_path, audio_path=audio_path,
+                            duration=duration, caption=caption,
+                            visual=visual, output_path=seg_raw, step=i,
+                        )
+            elif visual_source == "gemini_infographic":
                 infographic_path = visual.get("infographic_path")
                 if infographic_path and os.path.exists(infographic_path):
                     logger.info(f"M7: Segment {i} → AI infographic")

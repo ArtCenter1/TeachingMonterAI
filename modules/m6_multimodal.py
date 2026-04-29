@@ -21,6 +21,7 @@ from loguru import logger
 
 # Import the new infographic generator
 from .m6b_infographic_gen import InfographicGenerator
+from . import nlm_studio
 
 
 # Visual types that benefit from AI-generated infographics
@@ -52,16 +53,42 @@ class MultimodalPlanner:
             script.segments, subject=subject
         )
 
+        # Get notebook_id from script metadata (set by M1)
+        notebook_id = getattr(script, "notebook_id", None)
+        nlm_slide_map: dict = {}
+        
+        # Pre-generate NLM slides concurrently if available
+        if notebook_id and nlm_studio.is_available():
+            logger.info("M6: Pre-generating NLM slides for all segments...")
+            slide_tasks = [
+                nlm_studio.generate_slides(
+                    notebook_id=notebook_id,
+                    concept=seg.concept,
+                    segment_id=str(seg.segment_id),
+                    visual_content_spec=seg.visual_content_spec,
+                    output_dir=self.output_dir,
+                )
+                for seg in script.segments
+            ]
+            slide_results = await asyncio.gather(*slide_tasks, return_exceptions=True)
+            for seg, result in zip(script.segments, slide_results):
+                if isinstance(result, str) and result:
+                    nlm_slide_map[str(seg.segment_id)] = result
+            logger.info(f"M6: NLM slides generated: {len(nlm_slide_map)}/{len(script.segments)}")
+
         for i, segment in enumerate(script.segments):
             # ── Route visual source ──────────────────────────────────────────
             visual_type = str(segment.visual_type).lower().strip()
             seg_id_str = str(segment.segment_id)
 
+            # Priority: NLM slide → Gemini infographic → Pexels B-roll
+            nlm_slide_path = nlm_slide_map.get(seg_id_str)
             infographic_path = infographic_map.get(seg_id_str)
-            # FORCE infographic if it was successfully generated, regardless of type
-            use_infographic = (infographic_path is not None)
 
-            if use_infographic:
+            if nlm_slide_path:
+                visual_source = "nlm_slide"
+                logger.info(f"M6: Seg {seg_id_str} → NLM slide")
+            elif infographic_path is not None:
                 visual_source = "gemini_infographic"
                 logger.info(
                     f"M6: Seg {seg_id_str} → AI infographic ({visual_type})"
@@ -112,8 +139,9 @@ class MultimodalPlanner:
             visual_plan.append({
                 "segment_id": segment.segment_id,
                 "visual_type": visual_type,
-                "visual_source": visual_source,          # NEW: routing flag
-                "infographic_path": infographic_path,    # NEW: path to AI image (or None)
+                "visual_source": visual_source,
+                "nlm_slide_path": nlm_slide_path,        # NLM slide PNG (highest priority)
+                "infographic_path": infographic_path,    # Gemini infographic (fallback 1)
                 "content_spec": segment.visual_content_spec,
                 "duration_seconds": segment.duration_seconds,
                 "image_path": slide_path,                # fallback slide

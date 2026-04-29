@@ -39,6 +39,12 @@ _STYLE_PROMPTS = {
         "Technical, precise, like an engineering schematic or 3Blue1Brown visualization. "
         "Use clean arrows, boxes, and callout labels. Dark background is mandatory."
     ),
+    "nature": (
+        "Style: warm cream or parchment paper background (#fdf5e6), high-quality botanical "
+        "and scientific illustrations. Realistic but stylized drawings (like a modern naturalist's "
+        "field guide). Earthy palette: olive green, terracotta, soft browns. "
+        "Clean, elegant serif labels. Organic, high-fidelity, no messy lines."
+    ),
     "sketchbook": (
         "Style: warm cream/ivory background, dark ink hand-drawn diagrams, "
         "subtle watercolor accent fills (muted greens, blues, oranges). "
@@ -57,33 +63,34 @@ _STYLE_PROMPTS = {
     ),
 }
 
-# Visual type → default style mapping
-_TYPE_TO_STYLE = {
-    "diagram":   "blueprint",
-    "concept":   "blueprint",
-    "data":      "clean_slide",
-    "slide":     "clean_slide",
-    "action":    "illustrated",
-    "demo":      "sketchbook",
-    "real_world": "illustrated",
-}
-
-
 def _select_style(visual_type: str, subject: Optional[str] = None) -> str:
     """Pick style based on visual_type; optionally refine by subject."""
     env_style = os.getenv("INFOGRAPHIC_STYLE", "").strip().lower()
     if env_style and env_style in _STYLE_PROMPTS:
         return env_style
 
-    # Subject-level override
+    # Subject-based overrides (Highest Priority)
     if subject:
         subject_lower = subject.lower()
-        if any(s in subject_lower for s in ["biology", "history", "anatomy"]):
+        if any(s in subject_lower for s in ["biology", "nature", "environment", "taxonomy", "anatomy", "evolution", "biodiversity"]):
+            return "nature"
+        if any(s in subject_lower for s in ["history", "archaeology", "social"]):
             return "sketchbook"
-        if any(s in subject_lower for s in ["math", "statistics", "economics"]):
+        if any(s in subject_lower for s in ["math", "statistics", "economics", "physics", "logic"]):
             return "clean_slide"
+        if any(s in subject_lower for s in ["computer", "engineering", "tech", "coding", "robot"]):
+            return "blueprint"
 
-    return _TYPE_TO_STYLE.get(visual_type, "blueprint")
+    # Type-based defaults
+    vt = str(visual_type).lower().strip()
+    if any(t in vt for t in ["diagram", "concept", "map"]):
+        return "blueprint"
+    if any(t in vt for t in ["story", "lesson", "intro"]):
+        return "illustrated"
+    if any(t in vt for t in ["data", "chart", "slide"]):
+        return "clean_slide"
+        
+    return "blueprint"  # Default
 
 
 # ── Prompt builder ──────────────────────────────────────────────────────────
@@ -102,17 +109,13 @@ NARRATION CONTEXT: "{narration_excerpt}"
 
 {style_desc}
 
-MANDATORY RULES — follow exactly:
-1. Diagram the concept directly — NO generic stock photo backgrounds.
-2. Include 3–5 bold key terms as labeled callouts with arrows.
-3. Show data flow, causality, or process steps where relevant.
-4. All text must be large enough to read at 1080p (minimum 28pt equivalent).
-5. Keep the composition clean — no clutter, no unnecessary decorations.
-6. DO NOT include the word "infographic" or "slide" in the image.
-7. Aspect ratio MUST be 16:9 (landscape), filling the entire frame.
-
-The infographic should make a student immediately understand the concept in 5 seconds of viewing.
-Think: What would a skilled science communicator draw on a whiteboard to explain this?
+INSTRUCTIONS:
+1. FOCUS: The image must precisely illustrate the KEY CONCEPT using the requested style.
+2. TEXT: Minimize text. Use ONLY 1-3 short, perfectly spelled labels. NO generic filler text or gibberish.
+3. QUALITY: Ensure the diagram is technically accurate to the subject matter.
+4. COMPOSITION: Centered layout with clear margins. Professional educational graphics only.
+5. NO PHOTOREALISM: Stick strictly to the specified illustration style. NO generic stock photos.
+6. CLARITY: The graphic should make a student immediately understand the concept in 5 seconds.
 """
 
 

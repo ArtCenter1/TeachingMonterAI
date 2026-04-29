@@ -7,9 +7,9 @@
 
 | Field | Value |
 |---|---|
-| Version | 2.0 — RAG Architecture Revision |
-| Previous Version | 1.0 — Initial Release |
-| Status | In Engineering (RAG Branch) |
+| Version | 2.2 — NLM Studio Integration |
+| Previous Version | 2.1 — Visual Pipeline & Hybrid RAG |
+| Status | Pre-Execution Planning (v0.7.0) |
 | Date | April 2026 |
 | Competition | Teaching Monster Challenge — teaching.monster |
 | Team Size | 3–6 engineers |
@@ -23,13 +23,13 @@
 
 | Section | Change | Reason |
 |---|---|---|
-| M1 — Sourcing | **Hybrid RAG & NotebookLM** | Restored NotebookLM as a premium/optional high-fidelity path alongside Local RAG (ChromaDB) for maximum reliability and quality. |
-| M6 — Multimodal Planner | Added **Pexels B-roll keyword generation** in visual plan output | Enables dynamic video backgrounds vs. static PNG slides |
-| M7 — Video Renderer | **Full rewrite** using **moviepy v2 + Pexels B-roll + karaoke subtitles + BGM** (inspired by MoneyPrinterTurbo) | Static slides are visually uncompetitive in human-judges Elo Arena (Phase 2) |
-| Global | **OpenSpace MCP removed** from project | Was causing workflow confusion with no production benefit for this specific pipeline |
+| M1 — Sourcing | **Hybrid RAG & NotebookLM** | Restored NotebookLM as a premium high-fidelity path alongside Local RAG (ChromaDB) for maximum reliability and quality. |
+| M6 — Multimodal Planner | Added **Subject-Aware Aesthetics** | Biological subjects now trigger the 'Nature' style (parchment/botanical) to improve visual accuracy vs. dark blueprint. |
+| M7 — Video Renderer | **Full rewrite** using **moviepy v2 + Pexels B-roll + karaoke subtitles + BGM** | Visual pipeline verified and stable in v0.6.0. |
 | Roadmap | Phases 1–4 updated to reflect v0.6.0 stabilization and completion of foundation phases. | |
-| Section 4 | NotebookLM integration replaced with **Local RAG architecture** | |
-| Section 8 | Updated required tools and dependencies | |
+| **v2.2 — M6 NLM Slide Deck** | **NLM-generated slides replace Pexels B-roll as primary visual source** | Pexels clips are contextually inaccurate; NLM slides are sourced from curriculum content. |
+| **v2.2 — M7 NLM Audio Path** | **NLM Audio Overview (Deep Dive) replaces Cartesia TTS as primary narration path** | NLM produces natural two-voice pedagogical dialogue; significantly higher quality than single-voice TTS. |
+| **v2.2 — M5 NLM Quiz** | **NLM Quiz/Study Guide as supplementary synthetic student test** | Replaces pure LLM-prompted personas with quiz grounded in actual curriculum sources. |
 
 ---
 
@@ -117,16 +117,16 @@ POST /generate
 
 ### 2.3 Module Map
 
-| Module | Primary Responsibility | Key Output |
-|---|---|---|
-| **M1** — RAG Sourcing | Query local ChromaDB → AI Research → Web Search | Cited content bundle (JSON) |
-| **M2** — Persona Parser | Infer learner state from `student_persona` string | Student model object |
-| **M3** — Concept Planner | Build prerequisite dependency graph, sequence lesson arc | Ordered concept graph (JSON) |
-| **M4** — Script Generator | Write pedagogical narration (3 variants) | Annotated script (Markdown) |
-| **M5** — CIDPP Critic | Score and select the best script variant | Rubric scores + revision instructions |
-| **M6** — MM Planner | Map segments to visual type + Pexels search keywords | Visual plan (JSON) |
-| **M7** — Video Renderer | Assemble B-roll + TTS + subtitles + BGM into final video | `video_url` string |
-| **M8** — Feedback Logger | Record all inputs, decisions, scores, and outcomes | Logged run record |
+| Module | Primary Responsibility | Key Output | v0.7.0 NLM Upgrade |
+|---|---|---|---|
+| **M1** — RAG Sourcing | Query local ChromaDB → AI Research → Web Search | Cited content bundle (JSON) | NLM notebook created; sources injected from curriculum |
+| **M2** — Persona Parser | Infer learner state from `student_persona` string | Student model object | Unchanged |
+| **M3** — Concept Planner | Build prerequisite dependency graph, sequence lesson arc | Ordered concept graph (JSON) | NLM Study Guide used to seed concept graph |
+| **M4** — Script Generator | Write pedagogical narration (3 variants) | Annotated script (Markdown) | Unchanged |
+| **M5** — CIDPP Critic | Score and select the best script variant | Rubric scores + revision instructions | NLM Quiz validates script coverage |
+| **M6** — MM Planner | Map segments to visual type + NLM slide keywords | Visual plan (JSON) | **NLM Slide Deck is primary visual source (replaces Pexels B-roll)** |
+| **M7** — Video Renderer | Assemble slides + NLM audio + subtitles + BGM | `video_url` string | **NLM Audio Overview is primary narration path (replaces Cartesia TTS)** |
+| **M8** — Feedback Logger | Record all inputs, decisions, scores, and outcomes | Logged run record | Unchanged |
 
 ---
 
@@ -198,6 +198,7 @@ Persona strings like `"High schooler, no calculus"` imply: comfort with algebra,
 | Algorithm / process | Flowchart animation | steps, loop, if, repeat, sequence |
 | Physics phenomena | Simulation with labelled parameters | Physics subject + dynamic concept |
 | Biology structure | Labeled diagram with callout highlights | Anatomy, cell, molecule, organism |
+| **Natural/Biological** | **Nature Style (Parchment/Botanical)** | **Subject: Biology, Taxonomy, Ecology** |
 | Abstract concept | Spatial metaphor animation | No physical referent |
 | Analogy | Side-by-side split-screen | Script contains "think of it like..." |
 
@@ -358,54 +359,107 @@ The CIDPP critic's Integrity dimension (minimum 9/10) remains the final safety n
 
 ---
 
-## 6. Capability Roadmap (v2.0 — Revised)
+## 6. Capability Roadmap (v2.2 — NLM Studio Edition)
 
-### Phase 1 — RAG Foundation & Visual Upgrade *(Current Sprint — RAG Branch)*
+> **Strategic Decision:** NotebookLM Studio outputs (slides, audio, quiz, study guide) are the highest-leverage upgrade available at zero additional cost. We integrate NLM Studio **before** pedagogical intelligence upgrades because it directly fixes the two most visible contest weaknesses: inaccurate visuals and robotic TTS voice.
 
-**Goal:** Replace all fragile external dependencies and close the visual quality gap with leading competitors.
+---
 
-- [ ] Implement `modules/rag_retriever.py` (ChromaDB + sentence-transformers)
-- [ ] Create `resources/curriculum/` subject corpus (4 subjects)
-- [ ] Implement `scripts/ingest_rag.py` (build-time corpus ingestion)
-- [ ] Rewrite `modules/m1_sourcing.py` — swap NotebookLM → RAG primary
-- [ ] Implement `modules/pexels_client.py` (Pexels search + download + local cache)
-- [ ] Upgrade `modules/m6_multimodal.py` — add Pexels keyword generation
-- [ ] Rewrite `modules/m7_renderer.py` — moviepy B-roll + subtitles + BGM pipeline
-- [ ] Remove OpenSpace MCP from all files
-- [ ] Update `Dockerfile` — CPU-only torch, model pre-download, RAG ingestion
-- [ ] Update `requirements.txt`
-- [ ] Verify: full Docker build + end-to-end pipeline test on all 4 subjects
+### Phase 1 — RAG Foundation & Visual Upgrade ✅ COMPLETE (v0.6.0)
 
-### Phase 2 — Pedagogical Intelligence (Weeks 3–4)
+**Goal:** Replace all fragile external dependencies and close the visual quality gap.
 
-**Goal:** Activate the reward model and Best-of-3 selection to maximize CIDPP scores.
+- [x] Implement `modules/rag_retriever.py` (ChromaDB + sentence-transformers)
+- [x] Create `resources/curriculum/` subject corpus (4 subjects)
+- [x] Implement `scripts/ingest_rag.py` (build-time corpus ingestion)
+- [x] Rewrite `modules/m1_sourcing.py` — Hybrid RAG + NLM path
+- [x] Implement `modules/pexels_client.py` (Pexels search + download + local cache)
+- [x] Upgrade `modules/m6_multimodal.py` — Subject-aware styles (nature/blueprint/sketchbook)
+- [x] Rewrite `modules/m7_renderer.py` — FFmpeg B-roll + subtitles + BGM pipeline
+- [x] Remove OpenSpace MCP
+- [x] Update `Dockerfile` to v0.6.0
+- [x] Full pipeline test on Biology/Taxonomy (Subject-Aware Visuals Verified)
+
+---
+
+### Phase 2 — NLM Studio Visual & Audio Upgrade 🎯 NEXT (v0.7.0)
+
+**Goal:** Fix the #1 and #2 competition weaknesses — contextually inaccurate visuals and robotic TTS narration — using NotebookLM Studio outputs as primary sources.
+
+**Why Phase 2 before Phase 3 (Pedagogical Intelligence)?**
+- Pexels B-roll inaccuracy is immediately visible to human judges in Phase 2 (Elo Arena)
+- NLM Audio Overview produces natural two-voice pedagogical dialogue vs. single-voice Cartesia TTS
+- NLM slides are grounded in the same curriculum sources as the script — guaranteed visual accuracy
+- All of this is **zero additional cost** (9 Gemini keys via KeyRotator already support free NLM)
+- Implementation is **2–3 days** vs. weeks for reward model training
+
+**Sub-phase 2A — NLM Skill Integration (Pre-requisite)**
+
+| Task | File | Notes |
+|---|---|---|
+| Install `notebooklm-py[browser]` | `requirements.txt` | Use pinned release tag |
+| Install Playwright Chromium | `Dockerfile` | `playwright install chromium` |
+| Copy `scripts/nlm.py` from robonuggets/notebooklm-skill | `scripts/nlm.py` | CLI wrapper for all NLM operations |
+| Copy `scripts/refresh_auth.py` from robonuggets/notebooklm-skill | `scripts/refresh_auth.py` | Headless cookie refresh |
+| One-time login | manual | `python scripts/nlm.py login` — saves cookies to `~/.notebooklm/` |
+| Mount cookie volume in Docker | `docker-compose.yml` | `~/.notebooklm:/root/.notebooklm` |
+| Add `NLM_ENABLED=true` env var | `.env` + `docker-compose.yml` | Feature flag for NLM path |
+
+**Sub-phase 2B — NLM Slide Deck as M6 Primary Visual (fixes inaccurate B-roll)**
+
+| Task | File | Notes |
+|---|---|---|
+| Create `modules/nlm_studio.py` | NEW | Thin async wrapper around `scripts/nlm.py` CLI |
+| Add `generate_slides(notebook_id, concept, style)` method | `nlm_studio.py` | Uses `generate-report --format CUSTOM --prompt SLIDE_PROMPT` |
+| Define Teaching Monster slide prompt template | `nlm_studio.py` | Blackboard style: `#1a1a2e` bg, `#00d4ff` accent (matches blueprint style) |
+| Integrate NLM slides into M6 visual plan | `modules/m6_multimodal.py` | New visual_type: `nlm_slide`; call `nlm_studio.generate_slides()` |
+| Integrate NLM slide PNGs into M7 renderer | `modules/m7_renderer.py` | Feed slide images into `_render_infographic_segment()` (Ken Burns) |
+| Fallback: keep Gemini infographic / Pexels | `modules/m7_renderer.py` | If NLM fails → M6B Gemini infographic → Pexels B-roll |
+
+**Sub-phase 2C — NLM Audio Overview as M7 Primary Narration (fixes robotic TTS)**
+
+| Task | File | Notes |
+|---|---|---|
+| Add `generate_audio(notebook_id, output_path)` to `nlm_studio.py` | `nlm_studio.py` | Uses `generate-audio --format DEEP_DIVE --output path.mp3` |
+| Add NLM audio path to M7 renderer | `modules/m7_renderer.py` | If `NLM_AUDIO_ENABLED=true`: call NLM audio, download MP3, use as narration track |
+| Sync NLM audio with slide images | `modules/m7_renderer.py` | Split NLM audio by segment duration; map to slide images |
+| Fallback: keep Cartesia TTS | `modules/m7_renderer.py` | If NLM audio fails → Cartesia pool |
+
+**Sub-phase 2D — NLM Quiz as M5 Supplementary Test**
+
+| Task | File | Notes |
+|---|---|---|
+| Add `generate_quiz(notebook_id)` to `nlm_studio.py` | `nlm_studio.py` | Uses `generate-quiz --difficulty MEDIUM --quantity STANDARD` |
+| Add NLM quiz check to M5 critic | `modules/m5_critic.py` | Post-script check: NLM quiz pass rate < 70% → flag for revision |
+
+**Deliverable:** A pipeline run where NLM-generated slides and audio are the primary outputs, with full fallback chain. Verification: watch output video — visual should match narration topic exactly.
+
+---
+
+### Phase 3 — Pedagogical Intelligence (v0.8.0)
+
+**Goal:** Activate reward model and Best-of-3 selection to maximize CIDPP scores.
 
 - Add Best-of-3 script variant generation to M4
-- Train initial reward model (LLM judge) on first 20 AI Student critique records from Phase 1 competition submissions
+- Train initial LLM reward model on first 20 AI Student critique records from Phase 1 submissions
 - Implement CIDPP multi-variant selection in M5
 - Add misconception library (domain-specific, all 4 subjects) into M4 context
 - Add PCK analogy retrieval store (seed 20+ entries per subject)
-- Add synthetic student testing loop (4 personas) before video commit
-- Expand RAG corpus with richer content as Phase 1 critiques identify knowledge gaps
+- Add NLM Study Guide as seed for M3 concept graph (replaces pure LLM-generated graph)
+- Expand RAG corpus from Phase 1 Integrity failures
 
-### Phase 3 — Meta-Policy & Compounding Learning (Weeks 5+)
+---
 
-**Goal:** Build the self-improving loop that creates a compounding advantage as the competition progresses.
+### Phase 4 — Meta-Policy & Self-Improvement (v0.9.0)
+
+**Goal:** Build the self-improving loop that compounds advantage over the competition.
 
 - Implement strategy win-rate tracker in M8 (strategy × level × subject)
 - Implement ε-greedy strategy selector using accumulated meta-policy in M4
 - Add pedagogy memory bank queries (top-2 few-shot examples per concept × level)
 - Ingest Phase 2 Elo outcomes into M8 reward model
-- Update reward model on combined AI Student + Elo preference data
 - Add progressive reveal enforcement to M6 + M7
-- Refine hook-rate and Socratic question injection in M4
-- Continuously expand RAG corpus based on recurring low-Integrity CIDPP failures
-
-### Phase 4 — Advanced / Pre-Finals
-
-- Implement RLT-style student-aligned reward (student model log-probability of recovering correct answer)
-- Fine-tune script generator on accumulated pedagogy memory bank as positive examples
-- Pipeline meta-optimizer: identify which module most often causes low CIDPP scores; dynamically allocate stronger model there
+- Implement RLT-style student-aligned reward (student model log-probability)
 - Expand analogy store to 100+ entries across all subjects and levels
 
 ---
@@ -444,16 +498,19 @@ The CIDPP critic's Integrity dimension (minimum 9/10) remains the final safety n
 
 | Tool | Role | Required |
 |---|---|---|
-| ChromaDB | Local vector store for RAG | Yes — replaces NotebookLM |
-| sentence-transformers | Local embedding model | Yes — `all-MiniLM-L6-v2`, CPU-only |
-| Pexels API | B-roll video sourcing | Yes — `PEXELS_API_KEY` in `.env` |
-| Cartesia API | Neural TTS | Yes — `CARTESIA_API_KEY` in `.env` |
-| moviepy v2 | Video compositing (B-roll + subtitles + BGM) | Yes — replaces raw FFmpeg for composition |
+| ChromaDB | Local vector store for RAG | Yes — `all-MiniLM-L6-v2`, CPU-only |
+| sentence-transformers | Local embedding model | Yes — CPU-only |
+| notebooklm-py | NLM Studio API (slides, audio, quiz) | Yes (v0.7.0+) — `pip install notebooklm-py[browser]` |
+| Playwright Chromium | NLM authentication browser | Yes (v0.7.0+) — one-time login, cookies persisted |
+| Pexels API | B-roll fallback video sourcing | Fallback — `PEXELS_API_KEY` in `.env` |
+| Cartesia API | TTS narration fallback | Fallback — `CARTESIA_API_KEY` in `.env` |
+| moviepy v2 | Video compositing (slides + subtitles + BGM) | Yes |
 | FFmpeg | Video encoding and concatenation | Yes — system-installed in Docker |
-| Google LLM API | M2–M5 reasoning modules | Yes — `GOOGLE_API_KEY` in `.env` |
+| Google LLM API | M2–M5 reasoning modules (9-key pool) | Yes — `GOOGLE_API_KEY_POOL` in `.env` |
 | Web Search API | Stage 3 M1 fallback only | Optional — `SEARCH_API_KEY` in `.env` |
 
-> **Removed from v1.0:** NotebookLM MCP, OpenSpace MCP, `notebooklm-py`
+> **Restored in v2.2:** `notebooklm-py` — used via `robonuggets/notebooklm-skill` CLI pattern for slides, audio, and quiz. Auth cookies persisted via Docker volume mount.
+> **Removed from v1.0:** NotebookLM MCP, OpenSpace MCP
 
 ### 8.2 Performance Constraints (Unchanged)
 
@@ -534,11 +591,12 @@ The CIDPP critic's Integrity dimension (minimum 9/10) remains the final safety n
 | Pedagogy memory bank | Retrieval store of highest-scoring past lessons used as few-shot examples in M4 |
 | Ken Burns effect | Slow zoom/pan animation applied to static images to create motion in the absence of B-roll video |
 | BGM | Background Music — low-volume royalty-free audio looped beneath narration to improve perceived production quality |
+| NLM Studio | NotebookLM Studio — v2.2 primary visual and audio source. Generates slides (via custom focus prompt), Audio Overview (Deep Dive podcast), Quiz, and Study Guide. Accessed via `notebooklm-py` library using `robonuggets/notebooklm-skill` CLI pattern. |
 | NLM | NotebookLM — Restored as hybrid premium path in v2.0 for high-fidelity sourcing and study guides. |
 | MCP (OpenSpace) | OpenSpace Model Context Protocol — Removed in v2.0 to simplify local pipeline. |
 
 ---
 
 *teaching.monster — Internal Engineering Document*  
-*PRD v2.0 — Updated by Antigravity AI Agent — April 2026*  
+*PRD v2.2 — Updated by Antigravity AI Agent — April 2026 (NLM Studio Integration)*  
 *Supersedes: Teaching_Monster_AI_Agent_PRD_v1.0.txt*

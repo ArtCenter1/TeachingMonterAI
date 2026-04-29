@@ -10,6 +10,7 @@ from loguru import logger
 from .m8_logger import StrategyTracker
 from .utils import infer_subject
 from .notebooklm_manager import notebooklm_manager
+from . import nlm_studio
 from .rag_retriever import retriever
 import yaml
 
@@ -98,45 +99,60 @@ class SourcingModule:
         """
         start_time = time.time()
 
-        # Stage 0: Attempt NotebookLM Sourcing (New Primary Path)
+        # ── Constants ────────────────────────────────────────────────────────
+        MIN_FACTS = 8  # Minimum acceptable fact count; below this we force AI fallback
+
+        # Stage 0: Attempt NotebookLM Sourcing (Primary Path — only if NLM is available)
         domain = self._get_domain_for_topic(topic) or "General"
-        try:
-            logger.info("Attempting NotebookLM sourcing...")
-            
-            # 1. Create Notebook
-            notebook_id = await notebooklm_manager.create_notebook_for_topic(topic, domain)
-            if notebook_id:
-                # 2. Upload initial context (Local RAG chunks + Web Search snippets)
-                # This provides NotebookLM with enough base context to "research" properly
-                rag_chunks = retriever.retrieve(topic, domain=domain, n_results=5)
-                await notebooklm_manager.add_sources(notebook_id, rag_chunks)
-                
-                # 3. Get Facts
-                facts = await notebooklm_manager.ask_for_structured_facts(notebook_id, topic)
-                if facts:
-                    logger.info(f"NotebookLM sourcing successful: {len(facts)} facts retrieved")
-                    fact_bundle = FactBundle(facts=facts)
-                    # Attach notebook_id and subject to fact_bundle for later modules
-                    fact_bundle.metadata = {"notebook_id": notebook_id, "subject": domain}
-                    return await self._verify_and_enhance_facts(fact_bundle, topic)
-        except Exception as e:
-            logger.error(f"NotebookLM sourcing failed: {str(e)}")
+        notebook_id = None
+        if nlm_studio.is_available():
+            try:
+                logger.info("Attempting NotebookLM sourcing...")
+
+                # 1. Create Notebook via nlm_studio (autonomous, with preflight)
+                notebook_id = await nlm_studio.ensure_notebook(topic, domain)
+                if not notebook_id:
+                    # Try legacy manager as backup
+                    notebook_id = await notebooklm_manager.create_notebook_for_topic(topic, domain)
+
+                if notebook_id:
+                    # 2. Upload RAG chunks as sources
+                    rag_chunks = retriever.retrieve(topic, domain=domain, n_results=5)
+                    await nlm_studio.add_sources_to_notebook(notebook_id, rag_chunks)
+                    await notebooklm_manager.add_sources(notebook_id, rag_chunks)
+
+                    # 3. Get Facts from NLM chat
+                    facts = await notebooklm_manager.ask_for_structured_facts(notebook_id, topic)
+                    if facts and len(facts) >= MIN_FACTS:
+                        logger.info(f"NotebookLM sourcing successful: {len(facts)} facts retrieved")
+                        fact_bundle = FactBundle(facts=facts)
+                        fact_bundle.metadata = {"notebook_id": notebook_id, "subject": domain}
+                        return await self._verify_and_enhance_facts(fact_bundle, topic)
+                    elif facts:
+                        logger.warning(f"NLM returned only {len(facts)} facts (< {MIN_FACTS}). Continuing to RAG fallback for enrichment.")
+            except Exception as e:
+                logger.error(f"NotebookLM sourcing failed: {str(e)}")
+        else:
+            logger.info("NLM Studio not available in this environment. Skipping NLM sourcing.")
 
         # Stage 1: Attempt local RAG sourcing (Fallback)
         try:
             logger.info("Attempting local RAG sourcing...")
             fact_bundle = await self._rag_source(topic)
 
-            # Verify the sourcing succeeded
-            if fact_bundle and fact_bundle.facts and len(fact_bundle.facts) > 0:
+            # Verify the sourcing succeeded with enough facts
+            if fact_bundle and fact_bundle.facts and len(fact_bundle.facts) >= MIN_FACTS:
                 logger.info(
                     f"RAG sourcing successful: {len(fact_bundle.facts)} facts retrieved"
                 )
                 fact_bundle.metadata["subject"] = domain
                 return await self._verify_and_enhance_facts(fact_bundle, topic)
+            elif fact_bundle and fact_bundle.facts:
+                logger.warning(f"RAG returned only {len(fact_bundle.facts)} facts (< {MIN_FACTS}). Falling back further.")
 
         except Exception as e:
             logger.error(f"RAG sourcing failed: {str(e)}")
+
 
         # Stage 2: Fallback to web_search + web_fetch
         try:

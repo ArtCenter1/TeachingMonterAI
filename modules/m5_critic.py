@@ -7,6 +7,7 @@ from .utils import extract_json
 from .llm_client import LLMClient
 from .m5b_probe_generator import probe_gen
 from .m8_logger import FeedbackLogger
+from . import nlm_studio
 from loguru import logger
 
 
@@ -362,6 +363,13 @@ class CIDPPCritic:
 
         best_variant = scored_data[0]["script"]
 
+        # advisory check: NLM Quiz for curriculum coverage
+        nlm_quiz = []
+        nlm_notebook_id = fact_bundle.metadata.get("notebook_id") if fact_bundle else None
+        if nlm_notebook_id and nlm_studio.is_available():
+            logger.info(f"[M5] NLM available. Generating advisory quiz for coverage check...")
+            nlm_quiz = await nlm_studio.generate_quiz(nlm_notebook_id)
+
         # Phase 4 - Part 2 & 3: Synthetic Student Testing & Refinement Loop
         refined_script = best_variant
         all_feedback = []
@@ -422,6 +430,7 @@ class CIDPPCritic:
         for entry in selection_log:
             if entry["strategy"] == scored_data[0]["strategy"]:
                 entry["synthetic_student_feedback"] = all_feedback
+                entry["nlm_advisory_quiz"] = nlm_quiz
                 break
 
         logger.info(

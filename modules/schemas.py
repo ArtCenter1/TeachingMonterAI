@@ -70,6 +70,7 @@ class FullScript(BaseModel):
     )
     total_audio_path: Optional[str] = None
     notebook_id: Optional[str] = None
+    subject: Optional[str] = "General"
 
     class Config:
         extra = "allow"
