@@ -3,11 +3,11 @@
     "strategy": "Inductive",
     "level": "high_school",
     "subject": "General",
-    "wins": 1,
+    "wins": 2,
     "losses": 10,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 11
+    "total": 12
   },
   "Cognitive-Conflict|StudentLevel.HIGH_SCHOOL|General": {
     "strategy": "Cognitive-Conflict",

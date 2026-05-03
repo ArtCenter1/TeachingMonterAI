@@ -49,3 +49,4 @@ bin/
 # NLM Auth and WSL Environments
 .notebooklm_linux/
 .venv_wsl/
+AionUi
