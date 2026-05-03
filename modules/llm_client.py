@@ -239,7 +239,10 @@ class LLMClient:
                             candidates = [
                                 m
                                 for m in self._discovered_models
-                                if m not in models_to_try and m not in self._avoid_models
+                                if m not in models_to_try 
+                                and m not in self._avoid_models
+                                and "tts" not in m.lower()
+                                and "audio" not in m.lower()
                             ]
 
                             # Preference: gemini-2.5-flash > gemini-1.5-flash > anything else

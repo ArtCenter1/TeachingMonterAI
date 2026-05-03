@@ -231,5 +231,247 @@
       "search_cx": null,
       "search_api_key": null
     }
+  },
+  {
+    "run_id": "64d2bd4b-f54b-4166-9f17-ed38d288e61a",
+    "timestamp": "2026-05-01T07:04:57.264567+00:00",
+    "failed_stage": "m6_multimodal",
+    "error_type": "RuntimeError",
+    "error_message": "All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 512, in _call_openrouter\n    return await openrouter_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/openrouter.py\", line 46, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All OpenRouter keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 198, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 402, in _execute_request\n    return await self._call_openrouter(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 522, in _call_openrouter\n    raise RuntimeError(f\"All OpenRouter keys exhausted — falling through to Gemini pool.\")\nRuntimeError: All OpenRouter keys exhausted — falling through to Gemini pool.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 446, in _call_gemini_sdk\n    return await gemini_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/gemini.py\", line 49, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/main.py\", line 175, in pipeline_task\n    visual_plan = await m6.plan_visuals(script)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 48, in plan_visuals\n    keywords_map = await self._generate_keywords_map(script)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 166, in _generate_keywords_map\n    keywords_raw = await self.llm.generate_text(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 318, in generate_text\n    raise last_exception\n  File \"/app/modules/llm_client.py\", line 299, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 418, in _execute_request\n    return await self._call_gemini_sdk(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 456, in _call_gemini_sdk\n    raise RuntimeError(f\"All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\")\nRuntimeError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n",
+    "request": {
+      "course_requirement": "Dynamic Programming",
+      "student_persona": "Undergraduate student",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
+  },
+  {
+    "run_id": "76503438-0caf-4d47-9362-c6c8f90518a1",
+    "timestamp": "2026-05-01T07:05:05.586334+00:00",
+    "failed_stage": "m6_multimodal",
+    "error_type": "RuntimeError",
+    "error_message": "All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 512, in _call_openrouter\n    return await openrouter_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/openrouter.py\", line 46, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All OpenRouter keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 198, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 402, in _execute_request\n    return await self._call_openrouter(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 522, in _call_openrouter\n    raise RuntimeError(f\"All OpenRouter keys exhausted — falling through to Gemini pool.\")\nRuntimeError: All OpenRouter keys exhausted — falling through to Gemini pool.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 446, in _call_gemini_sdk\n    return await gemini_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/gemini.py\", line 49, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/main.py\", line 175, in pipeline_task\n    visual_plan = await m6.plan_visuals(script)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 48, in plan_visuals\n    keywords_map = await self._generate_keywords_map(script)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 166, in _generate_keywords_map\n    keywords_raw = await self.llm.generate_text(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 318, in generate_text\n    raise last_exception\n  File \"/app/modules/llm_client.py\", line 299, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 418, in _execute_request\n    return await self._call_gemini_sdk(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 456, in _call_gemini_sdk\n    raise RuntimeError(f\"All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\")\nRuntimeError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n",
+    "request": {
+      "course_requirement": "Quantum Mechanics Basics",
+      "student_persona": "High school student",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
+  },
+  {
+    "run_id": "425f9d19-f5f0-44fb-ab68-e5731626f2a0",
+    "timestamp": "2026-05-01T07:05:13.987105+00:00",
+    "failed_stage": "m6_multimodal",
+    "error_type": "RuntimeError",
+    "error_message": "All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 512, in _call_openrouter\n    return await openrouter_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/openrouter.py\", line 46, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All OpenRouter keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 198, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 402, in _execute_request\n    return await self._call_openrouter(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 522, in _call_openrouter\n    raise RuntimeError(f\"All OpenRouter keys exhausted — falling through to Gemini pool.\")\nRuntimeError: All OpenRouter keys exhausted — falling through to Gemini pool.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 446, in _call_gemini_sdk\n    return await gemini_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/gemini.py\", line 49, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/main.py\", line 175, in pipeline_task\n    visual_plan = await m6.plan_visuals(script)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 48, in plan_visuals\n    keywords_map = await self._generate_keywords_map(script)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 166, in _generate_keywords_map\n    keywords_raw = await self.llm.generate_text(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 318, in generate_text\n    raise last_exception\n  File \"/app/modules/llm_client.py\", line 299, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 418, in _execute_request\n    return await self._call_gemini_sdk(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 456, in _call_gemini_sdk\n    raise RuntimeError(f\"All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\")\nRuntimeError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n",
+    "request": {
+      "course_requirement": "Dynamic Programming",
+      "student_persona": "Undergraduate student",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
+  },
+  {
+    "run_id": "77fe9b61-fb5b-47ed-b301-2d9660b2b858",
+    "timestamp": "2026-05-01T07:05:47.455105+00:00",
+    "failed_stage": "m6_multimodal",
+    "error_type": "RuntimeError",
+    "error_message": "All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 512, in _call_openrouter\n    return await openrouter_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/openrouter.py\", line 46, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All OpenRouter keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 198, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 402, in _execute_request\n    return await self._call_openrouter(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 522, in _call_openrouter\n    raise RuntimeError(f\"All OpenRouter keys exhausted — falling through to Gemini pool.\")\nRuntimeError: All OpenRouter keys exhausted — falling through to Gemini pool.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 446, in _call_gemini_sdk\n    return await gemini_provider.call_with_pool(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/keyrotator/providers/gemini.py\", line 49, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/main.py\", line 175, in pipeline_task\n    visual_plan = await m6.plan_visuals(script)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 48, in plan_visuals\n    keywords_map = await self._generate_keywords_map(script)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 166, in _generate_keywords_map\n    keywords_raw = await self.llm.generate_text(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 318, in generate_text\n    raise last_exception\n  File \"/app/modules/llm_client.py\", line 299, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 418, in _execute_request\n    return await self._call_gemini_sdk(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 456, in _call_gemini_sdk\n    raise RuntimeError(f\"All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\")\nRuntimeError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n",
+    "request": {
+      "course_requirement": "Cell Division Mitosis Meiosis",
+      "student_persona": "High school student",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
+  },
+  {
+    "run_id": "9c9a3ac8-89f4-4b7f-a3c4-9b0fcf99a2a3",
+    "timestamp": "2026-05-02T04:14:21.463593+00:00",
+    "failed_stage": "m6_multimodal",
+    "error_type": "RuntimeError",
+    "error_message": "All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 512, in _call_openrouter\n    ) -> str:\n              \n  File \"/app/keyrotator/providers/openrouter.py\", line 46, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All OpenRouter keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 198, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 402, in _execute_request\n    await asyncio.sleep(4.2 - elapsed)\n  File \"/app/modules/llm_client.py\", line 522, in _call_openrouter\n    )\nRuntimeError: All OpenRouter keys exhausted — falling through to Gemini pool.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 446, in _call_gemini_sdk\n    ) -> str:\n              \n  File \"/app/keyrotator/providers/gemini.py\", line 49, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/main.py\", line 175, in pipeline_task\n    logger.info(f\"[HEARTBEAT] {run_id} | M5 complete | Selected: {script.title}\")\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 48, in plan_visuals\n    keywords_map = await self._generate_keywords_map(script)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 166, in _generate_keywords_map\n    try:\n         \n  File \"/app/modules/llm_client.py\", line 318, in generate_text\n    continue\n  File \"/app/modules/llm_client.py\", line 299, in generate_text\n    f\"Pool exhaustion: jumping directly to Gemini fallback: {gemini_fallback}\"\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 418, in _execute_request\n    clean_name = clean_name.replace(\"google/\", \"models/\")\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 456, in _call_gemini_sdk\n    )\nRuntimeError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n",
+    "request": {
+      "course_requirement": "Differential Equations",
+      "student_persona": "Undergraduate student",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
+  },
+  {
+    "run_id": "5a236e32-7838-4903-9568-d3e660a7b373",
+    "timestamp": "2026-05-02T04:14:23.546554+00:00",
+    "failed_stage": "m6_multimodal",
+    "error_type": "RuntimeError",
+    "error_message": "All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 512, in _call_openrouter\n    ) -> str:\n              \n  File \"/app/keyrotator/providers/openrouter.py\", line 46, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All OpenRouter keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 198, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 402, in _execute_request\n    await asyncio.sleep(4.2 - elapsed)\n  File \"/app/modules/llm_client.py\", line 522, in _call_openrouter\n    )\nRuntimeError: All OpenRouter keys exhausted — falling through to Gemini pool.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 446, in _call_gemini_sdk\n    ) -> str:\n              \n  File \"/app/keyrotator/providers/gemini.py\", line 49, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/main.py\", line 175, in pipeline_task\n    logger.info(f\"[HEARTBEAT] {run_id} | M5 complete | Selected: {script.title}\")\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 48, in plan_visuals\n    keywords_map = await self._generate_keywords_map(script)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 166, in _generate_keywords_map\n    try:\n         \n  File \"/app/modules/llm_client.py\", line 318, in generate_text\n    continue\n  File \"/app/modules/llm_client.py\", line 299, in generate_text\n    f\"Pool exhaustion: jumping directly to Gemini fallback: {gemini_fallback}\"\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 418, in _execute_request\n    clean_name = clean_name.replace(\"google/\", \"models/\")\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 456, in _call_gemini_sdk\n    )\nRuntimeError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n",
+    "request": {
+      "course_requirement": "Quantum Mechanics Basics",
+      "student_persona": "High school student",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
+  },
+  {
+    "run_id": "530e2c3a-2053-4e3d-971e-47ce00a7d632",
+    "timestamp": "2026-05-02T04:14:31.977605+00:00",
+    "failed_stage": "m6_multimodal",
+    "error_type": "RuntimeError",
+    "error_message": "All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 512, in _call_openrouter\n    ) -> str:\n              \n  File \"/app/keyrotator/providers/openrouter.py\", line 46, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All OpenRouter keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 198, in generate_text\n    result = await self._execute_request(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 402, in _execute_request\n    await asyncio.sleep(4.2 - elapsed)\n  File \"/app/modules/llm_client.py\", line 522, in _call_openrouter\n    )\nRuntimeError: All OpenRouter keys exhausted — falling through to Gemini pool.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/modules/llm_client.py\", line 446, in _call_gemini_sdk\n    ) -> str:\n              \n  File \"/app/keyrotator/providers/gemini.py\", line 49, in call_with_pool\n    raise AllKeysExhaustedError(\nkeyrotator.pool.AllKeysExhaustedError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/app/main.py\", line 175, in pipeline_task\n    logger.info(f\"[HEARTBEAT] {run_id} | M5 complete | Selected: {script.title}\")\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 48, in plan_visuals\n    keywords_map = await self._generate_keywords_map(script)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m6_multimodal.py\", line 166, in _generate_keywords_map\n    try:\n         \n  File \"/app/modules/llm_client.py\", line 318, in generate_text\n    continue\n  File \"/app/modules/llm_client.py\", line 299, in generate_text\n    f\"Pool exhaustion: jumping directly to Gemini fallback: {gemini_fallback}\"\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 418, in _execute_request\n    clean_name = clean_name.replace(\"google/\", \"models/\")\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/llm_client.py\", line 456, in _call_gemini_sdk\n    )\nRuntimeError: All Gemini keys in pool are exhausted. Check /dev/pool-status/ui for details.\n",
+    "request": {
+      "course_requirement": "Big Concept: Cellular Energetics\nTopic: Photosynthesis\nBloom's Taxonomy: understand\nLearning Goal: 1. Understand that photosynthesis takes place in chloroplasts in plant cells.\n 2. Understand that photosynthesis converts light energy into chemical energy stored in sugars.\n 3. Explain that water and carbon dioxide are used to produce sugars and oxygen during photosynthesis.\n 4. Understand the role of photosynthesis in energy storage in living systems.\nKey Learning Points: 1. Chloroplast as the site of photosynthesis\n 2. Conversion of light energy into chemical energy\n 3. Inputs and outputs of photosynthesis\n 4. Energy storage in sugars\nNote: Understand: Explain how photosynthesis transforms light energy into chemical energy in plant cells.",
+      "student_persona": "Grade: 10th gradeFocus Time: 20 minBackground Knowledge: 1. Basic understanding of plant cell structures 2. Basic understanding of matter and energy 3. Familiarity with the idea that plants make their own food 4. Basic knowledge of substances involved in life processesNote: Understand: Explain how photosynthesis transforms light energy into chemical energy in plant cells.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2426_1777666038"
+    }
+  },
+  {
+    "run_id": "2ace539b-b65a-46e6-86fc-da61eb50c093",
+    "timestamp": "2026-05-02T05:00:01.840171+00:00",
+    "failed_stage": "m7_renderer",
+    "error_type": "RuntimeError",
+    "error_message": "FFmpeg render_infographic_3 failed: 24x576, 24 fps, 24 tbr, 24 tbn\n[aist#1:0/pcm_s16le @ 0x60b964654a40] Guessed Channel Layout: mono\nInput #1, wav, from 'temp/audio/2ace539b-b65a-46e6-86fc-da61eb50c093/segment_4.wav':\n  Duration: 00:00:00.00, bitrate: 4722 kb/s\n  Stream #1:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 24000 Hz, mono, s16, 384 kb/s\nInvalid duration for option t: 8.3e-05\nError parsing options for output file temp/video/2ace539b-b65a-46e6-86fc-da61eb50c093/seg_03_raw.mp4.\nError opening output files: Invalid argument\n",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 185, in pipeline_task\n    render_results = await m7.render(visual_plan, script, run_id=run_id)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m7_renderer.py\", line 350, in render\n    self._render_infographic_segment(\n  File \"/app/modules/m7_renderer.py\", line 589, in _render_infographic_segment\n    _run_ffmpeg(args, f\"render_infographic_{step}\")\n  File \"/app/modules/m7_renderer.py\", line 115, in _run_ffmpeg\n    raise RuntimeError(f\"FFmpeg {step_label} failed: {result.stderr[-500:]}\")\nRuntimeError: FFmpeg render_infographic_3 failed: 24x576, 24 fps, 24 tbr, 24 tbn\n[aist#1:0/pcm_s16le @ 0x60b964654a40] Guessed Channel Layout: mono\nInput #1, wav, from 'temp/audio/2ace539b-b65a-46e6-86fc-da61eb50c093/segment_4.wav':\n  Duration: 00:00:00.00, bitrate: 4722 kb/s\n  Stream #1:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 24000 Hz, mono, s16, 384 kb/s\nInvalid duration for option t: 8.3e-05\nError parsing options for output file temp/video/2ace539b-b65a-46e6-86fc-da61eb50c093/seg_03_raw.mp4.\nError opening output files: Invalid argument\n\n",
+    "request": {
+      "course_requirement": "Photosynthesis",
+      "student_persona": "An 8-year-old who loves plants",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
+  },
+  {
+    "run_id": "6a76e559-ba70-4d27-ad32-7558b8f4b413",
+    "timestamp": "2026-05-02T05:00:30.151765+00:00",
+    "failed_stage": "m7_renderer",
+    "error_type": "RuntimeError",
+    "error_message": "FFmpeg mix_bgm failed:  : SoundHelix\n    date            : 2009\n    genre           : Electronic\n  Duration: 00:06:12.72, start: 0.000000, bitrate: 192 kb/s\n  Stream #1:0: Audio: mp3 (mp3float), 44100 Hz, stereo, fltp, 192 kb/s\nStream map '' matches no streams.\nTo ignore this, add a trailing '?' to the map.\nFailed to set value '0:v' for option 'map': Invalid argument\nError parsing options for output file temp/output/TeachingMonster_6a76e559-ba70-4d27-ad32-7558b8f4b413.mp4.\nError opening output files: Invalid argument\n",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 185, in pipeline_task\n    render_results = await m7.render(visual_plan, script, run_id=run_id)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m7_renderer.py\", line 420, in render\n    self._mix_bgm(concat_no_audio_path, bgm_path, output_path)\n  File \"/app/modules/m7_renderer.py\", line 667, in _mix_bgm\n    _run_ffmpeg(\n  File \"/app/modules/m7_renderer.py\", line 115, in _run_ffmpeg\n    raise RuntimeError(f\"FFmpeg {step_label} failed: {result.stderr[-500:]}\")\nRuntimeError: FFmpeg mix_bgm failed:  : SoundHelix\n    date            : 2009\n    genre           : Electronic\n  Duration: 00:06:12.72, start: 0.000000, bitrate: 192 kb/s\n  Stream #1:0: Audio: mp3 (mp3float), 44100 Hz, stereo, fltp, 192 kb/s\nStream map '' matches no streams.\nTo ignore this, add a trailing '?' to the map.\nFailed to set value '0:v' for option 'map': Invalid argument\nError parsing options for output file temp/output/TeachingMonster_6a76e559-ba70-4d27-ad32-7558b8f4b413.mp4.\nError opening output files: Invalid argument\n\n",
+    "request": {
+      "course_requirement": "Quantum Computing",
+      "student_persona": "A curious high school student who likes video games",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
+  },
+  {
+    "run_id": "0e4617c5-fef1-4089-97f6-d9bb93140081",
+    "timestamp": "2026-05-02T05:06:22.799143+00:00",
+    "failed_stage": "m7_renderer",
+    "error_type": "RuntimeError",
+    "error_message": "FFmpeg mix_bgm failed:  : SoundHelix\n    date            : 2009\n    genre           : Electronic\n  Duration: 00:06:12.72, start: 0.000000, bitrate: 192 kb/s\n  Stream #1:0: Audio: mp3 (mp3float), 44100 Hz, stereo, fltp, 192 kb/s\nStream map '' matches no streams.\nTo ignore this, add a trailing '?' to the map.\nFailed to set value '0:v' for option 'map': Invalid argument\nError parsing options for output file temp/output/TeachingMonster_0e4617c5-fef1-4089-97f6-d9bb93140081.mp4.\nError opening output files: Invalid argument\n",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 185, in pipeline_task\n    render_results = await m7.render(visual_plan, script, run_id=run_id)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m7_renderer.py\", line 420, in render\n    self._mix_bgm(concat_no_audio_path, bgm_path, output_path)\n  File \"/app/modules/m7_renderer.py\", line 667, in _mix_bgm\n    _run_ffmpeg(\n  File \"/app/modules/m7_renderer.py\", line 115, in _run_ffmpeg\n    raise RuntimeError(f\"FFmpeg {step_label} failed: {result.stderr[-500:]}\")\nRuntimeError: FFmpeg mix_bgm failed:  : SoundHelix\n    date            : 2009\n    genre           : Electronic\n  Duration: 00:06:12.72, start: 0.000000, bitrate: 192 kb/s\n  Stream #1:0: Audio: mp3 (mp3float), 44100 Hz, stereo, fltp, 192 kb/s\nStream map '' matches no streams.\nTo ignore this, add a trailing '?' to the map.\nFailed to set value '0:v' for option 'map': Invalid argument\nError parsing options for output file temp/output/TeachingMonster_0e4617c5-fef1-4089-97f6-d9bb93140081.mp4.\nError opening output files: Invalid argument\n\n",
+    "request": {
+      "course_requirement": "Black Holes",
+      "student_persona": "A physics enthusiast",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
+  },
+  {
+    "run_id": "b635c3d8-5f62-4a51-8b68-fa5075486751",
+    "timestamp": "2026-05-02T06:21:46.455963+00:00",
+    "failed_stage": "m7_renderer",
+    "error_type": "RuntimeError",
+    "error_message": "FFmpeg mix_bgm failed:  : SoundHelix\n    date            : 2009\n    genre           : Electronic\n  Duration: 00:06:12.72, start: 0.000000, bitrate: 192 kb/s\n  Stream #1:0: Audio: mp3 (mp3float), 44100 Hz, stereo, fltp, 192 kb/s\nStream map '' matches no streams.\nTo ignore this, add a trailing '?' to the map.\nFailed to set value '0:v' for option 'map': Invalid argument\nError parsing options for output file temp/output/TeachingMonster_b635c3d8-5f62-4a51-8b68-fa5075486751.mp4.\nError opening output files: Invalid argument\n",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 185, in pipeline_task\n    render_results = await m7.render(visual_plan, script, run_id=run_id)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m7_renderer.py\", line 420, in render\n    self._mix_bgm(concat_no_audio_path, bgm_path, output_path)\n  File \"/app/modules/m7_renderer.py\", line 673, in _mix_bgm\n    _run_ffmpeg(\n  File \"/app/modules/m7_renderer.py\", line 115, in _run_ffmpeg\n    raise RuntimeError(f\"FFmpeg {step_label} failed: {result.stderr[-500:]}\")\nRuntimeError: FFmpeg mix_bgm failed:  : SoundHelix\n    date            : 2009\n    genre           : Electronic\n  Duration: 00:06:12.72, start: 0.000000, bitrate: 192 kb/s\n  Stream #1:0: Audio: mp3 (mp3float), 44100 Hz, stereo, fltp, 192 kb/s\nStream map '' matches no streams.\nTo ignore this, add a trailing '?' to the map.\nFailed to set value '0:v' for option 'map': Invalid argument\nError parsing options for output file temp/output/TeachingMonster_b635c3d8-5f62-4a51-8b68-fa5075486751.mp4.\nError opening output files: Invalid argument\n\n",
+    "request": {
+      "course_requirement": "Big Concept: Cellular Energetics\nTopic: Photosynthesis\nBloom's Taxonomy: understand\nLearning Goal: 1. Understand that photosynthesis takes place in chloroplasts in plant cells.\n 2. Understand that photosynthesis converts light energy into chemical energy stored in sugars.\n 3. Explain that water and carbon dioxide are used to produce sugars and oxygen during photosynthesis.\n 4. Understand the role of photosynthesis in energy storage in living systems.\nKey Learning Points: 1. Chloroplast as the site of photosynthesis\n 2. Conversion of light energy into chemical energy\n 3. Inputs and outputs of photosynthesis\n 4. Energy storage in sugars\nNote: Understand: Explain how photosynthesis transforms light energy into chemical energy in plant cells.",
+      "student_persona": "Grade: 10th gradeFocus Time: 20 minBackground Knowledge: 1. Basic understanding of plant cell structures 2. Basic understanding of matter and energy 3. Familiarity with the idea that plants make their own food 4. Basic knowledge of substances involved in life processesNote: Understand: Explain how photosynthesis transforms light energy into chemical energy in plant cells.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2426_1777673056"
+    }
+  },
+  {
+    "run_id": "12a47e7d-cf85-4b79-ab90-8c0178cea258",
+    "timestamp": "2026-05-02T23:11:26.399034+00:00",
+    "failed_stage": "m7_renderer",
+    "error_type": "RuntimeError",
+    "error_message": "FFmpeg mix_bgm failed:  : SoundHelix\n    date            : 2009\n    genre           : Electronic\n  Duration: 00:06:12.72, start: 0.000000, bitrate: 192 kb/s\n  Stream #1:0: Audio: mp3 (mp3float), 44100 Hz, stereo, fltp, 192 kb/s\nStream map '' matches no streams.\nTo ignore this, add a trailing '?' to the map.\nFailed to set value '0:v' for option 'map': Invalid argument\nError parsing options for output file temp/output/TeachingMonster_12a47e7d-cf85-4b79-ab90-8c0178cea258.mp4.\nError opening output files: Invalid argument\n",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 185, in pipeline_task\n    render_results = await m7.render(visual_plan, script, run_id=run_id)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m7_renderer.py\", line 420, in render\n    logger.info(\"M7: Mixing background music...\")\n  File \"/app/modules/m7_renderer.py\", line 673, in _mix_bgm\n    # amix: input 0 = narration (full vol), input 1 = BGM (15% vol)\n  File \"/app/modules/m7_renderer.py\", line 115, in _run_ffmpeg\n    raise RuntimeError(f\"FFmpeg {step_label} failed: {result.stderr[-500:]}\")\nRuntimeError: FFmpeg mix_bgm failed:  : SoundHelix\n    date            : 2009\n    genre           : Electronic\n  Duration: 00:06:12.72, start: 0.000000, bitrate: 192 kb/s\n  Stream #1:0: Audio: mp3 (mp3float), 44100 Hz, stereo, fltp, 192 kb/s\nStream map '' matches no streams.\nTo ignore this, add a trailing '?' to the map.\nFailed to set value '0:v' for option 'map': Invalid argument\nError parsing options for output file temp/output/TeachingMonster_12a47e7d-cf85-4b79-ab90-8c0178cea258.mp4.\nError opening output files: Invalid argument\n\n",
+    "request": {
+      "course_requirement": "Big Concept: Cellular Energetics\nTopic: Photosynthesis\nBloom's Taxonomy: understand\nLearning Goal: 1. Understand that photosynthesis takes place in chloroplasts in plant cells.\n 2. Understand that photosynthesis converts light energy into chemical energy stored in sugars.\n 3. Explain that water and carbon dioxide are used to produce sugars and oxygen during photosynthesis.\n 4. Understand the role of photosynthesis in energy storage in living systems.\nKey Learning Points: 1. Chloroplast as the site of photosynthesis\n 2. Conversion of light energy into chemical energy\n 3. Inputs and outputs of photosynthesis\n 4. Energy storage in sugars\nNote: Understand: Explain how photosynthesis transforms light energy into chemical energy in plant cells.",
+      "student_persona": "Grade: 10th gradeFocus Time: 20 minBackground Knowledge: 1. Basic understanding of plant cell structures 2. Basic understanding of matter and energy 3. Familiarity with the idea that plants make their own food 4. Basic knowledge of substances involved in life processesNote: Understand: Explain how photosynthesis transforms light energy into chemical energy in plant cells.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2426_1777733611"
+    }
+  },
+  {
+    "run_id": "dadfac59-d9f0-411c-ad5d-5a3df047bd65",
+    "timestamp": "2026-05-02T23:29:29.296331+00:00",
+    "failed_stage": "m7_renderer",
+    "error_type": "RuntimeError",
+    "error_message": "FFmpeg mix_bgm failed:  : SoundHelix\n    date            : 2009\n    genre           : Electronic\n  Duration: 00:06:12.72, start: 0.000000, bitrate: 192 kb/s\n  Stream #1:0: Audio: mp3 (mp3float), 44100 Hz, stereo, fltp, 192 kb/s\nStream map '' matches no streams.\nTo ignore this, add a trailing '?' to the map.\nFailed to set value '0:v' for option 'map': Invalid argument\nError parsing options for output file temp/output/TeachingMonster_dadfac59-d9f0-411c-ad5d-5a3df047bd65.mp4.\nError opening output files: Invalid argument\n",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 185, in pipeline_task\n    render_results = await m7.render(visual_plan, script, run_id=run_id)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m7_renderer.py\", line 420, in render\n    logger.info(\"M7: Mixing background music...\")\n  File \"/app/modules/m7_renderer.py\", line 673, in _mix_bgm\n    # amix: input 0 = narration (full vol), input 1 = BGM (15% vol)\n  File \"/app/modules/m7_renderer.py\", line 115, in _run_ffmpeg\n    raise RuntimeError(f\"FFmpeg {step_label} failed: {result.stderr[-500:]}\")\nRuntimeError: FFmpeg mix_bgm failed:  : SoundHelix\n    date            : 2009\n    genre           : Electronic\n  Duration: 00:06:12.72, start: 0.000000, bitrate: 192 kb/s\n  Stream #1:0: Audio: mp3 (mp3float), 44100 Hz, stereo, fltp, 192 kb/s\nStream map '' matches no streams.\nTo ignore this, add a trailing '?' to the map.\nFailed to set value '0:v' for option 'map': Invalid argument\nError parsing options for output file temp/output/TeachingMonster_dadfac59-d9f0-411c-ad5d-5a3df047bd65.mp4.\nError opening output files: Invalid argument\n\n",
+    "request": {
+      "course_requirement": "Big Concept: Cellular Energetics\nTopic: Photosynthesis\nBloom's Taxonomy: understand\nLearning Goal: 1. Understand that photosynthesis takes place in chloroplasts in plant cells.\n 2. Understand that photosynthesis converts light energy into chemical energy stored in sugars.\n 3. Explain that water and carbon dioxide are used to produce sugars and oxygen during photosynthesis.\n 4. Understand the role of photosynthesis in energy storage in living systems.\nKey Learning Points: 1. Chloroplast as the site of photosynthesis\n 2. Conversion of light energy into chemical energy\n 3. Inputs and outputs of photosynthesis\n 4. Energy storage in sugars\nNote: Understand: Explain how photosynthesis transforms light energy into chemical energy in plant cells.",
+      "student_persona": "Grade: 10th gradeFocus Time: 20 minBackground Knowledge: 1. Basic understanding of plant cell structures 2. Basic understanding of matter and energy 3. Familiarity with the idea that plants make their own food 4. Basic knowledge of substances involved in life processesNote: Understand: Explain how photosynthesis transforms light energy into chemical energy in plant cells.",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2426_1777734865"
+    }
+  },
+  {
+    "run_id": "d9fae364-483a-4e3c-801d-3a5dd4b1b318",
+    "timestamp": "2026-05-03T09:52:26.422883+00:00",
+    "failed_stage": "m4_generator",
+    "error_type": "RuntimeError",
+    "error_message": "NotebookLM Audio Generation Failed",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 169, in pipeline_task\n    scripts = await m4.generate_variants(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 142, in generate_variants\n    script = await self._generate_with_notebooklm(notebook_id, concept_graph, student_model, topic_context)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 361, in _generate_with_notebooklm\n    raise RuntimeError(\"NotebookLM Audio Generation Failed\")\nRuntimeError: NotebookLM Audio Generation Failed\n",
+    "request": {
+      "course_requirement": "Introduction to Photosynthesis",
+      "student_persona": "High school student",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
   }
 ]

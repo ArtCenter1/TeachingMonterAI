@@ -180,7 +180,7 @@ class NaiveStudentEvaluator:
 
     def __init__(self):
         self.llm = LLMClient()
-        self.model = os.getenv("RLT_STUDENT_MODEL", "google/gemini-2.0-flash-exp:free")
+        self.model = os.getenv("RLT_STUDENT_MODEL", "models/gemini-2.0-flash")
 
     async def evaluate(self, script: FullScript, probes: List[Any]) -> RLTScore:
         """Answer probes based strictly on narration text."""
@@ -274,7 +274,7 @@ class CIDPPCritic:
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
         self.synthetic_model = os.getenv(
-            "SYNTHETIC_STUDENT_MODEL", "google/gemini-2.0-flash-exp:free"
+            "SYNTHETIC_STUDENT_MODEL", "models/gemini-2.0-flash"
         )
         self.tester = SyntheticStudentTester(self.synthetic_model)
         self.naive_student = NaiveStudentEvaluator()
@@ -582,17 +582,23 @@ class CIDPPCritic:
         }}
         """
 
-        try:
-            response_text = await self.llm.generate_text(
-                prompt=prompt,
-                model_override=model_override,
-                system_instruction="You are a rigorous educational critic who scores scripts based on clarity, integrity, depth, practicality, and pertinence (CIDPP).",
-            )
-            data = extract_json(response_text)
-            return CIDPPScores(**data)
-        except Exception as e:
-            logger.error(f"Error reviewing script: {str(e)}")
-            return self.get_mock_data()
+        for attempt in range(3):
+            try:
+                response_text = await self.llm.generate_text(
+                    prompt=prompt,
+                    model_override=model_override,
+                    system_instruction="You are a rigorous educational critic who scores scripts based on clarity, integrity, depth, practicality, and pertinence (CIDPP). Return ONLY raw JSON.",
+                )
+                data = extract_json(response_text)
+                return CIDPPScores(**data)
+            except Exception as e:
+                logger.warning(f"Error reviewing script (attempt {attempt+1}): {str(e)}")
+                if attempt < 2:
+                    await asyncio.sleep(1)
+                else:
+                    logger.error(f"Failed to review script after 3 attempts. Using mock data.")
+                    return self.get_mock_data()
+
 
     def get_mock_data(self) -> CIDPPScores:
         return CIDPPScores(

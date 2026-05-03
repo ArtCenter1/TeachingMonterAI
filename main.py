@@ -40,7 +40,9 @@ from modules.llm_client import get_gemini_pool, get_router_pool
 from modules import nlm_studio
 
 
-app = FastAPI(title="Teaching Monster AI Agent API", version="0.6.0")
+app = FastAPI(title="Teaching Monster AI Agent API", version="0.7.0")
+pipeline_semaphore = asyncio.Semaphore(2)
+
 
 _gemini_pool = get_gemini_pool()
 _openrouter_pool = get_router_pool()
@@ -123,101 +125,139 @@ async def _run_pipeline_and_stream(request_data, request, x_dry_run):
 
     async def pipeline_task():
         nonlocal current_stage
-        try:
-            logger.info(f"Starting generation for run_id: {run_id}")
-            # 0. NLM Preflight
-            await nlm_studio.preflight_check()
+        async with pipeline_semaphore:
+            try:
+                logger.info(f"Starting generation for run_id: {run_id} (acquired semaphore)")
 
-            current_stage = "m1_sourcing"
-            logger.info("Stage 1: Sourcing")
-            fact_bundle = await m1.source(
-                request_data.course_requirement,
-                search_cx=request_data.search_cx,
-                search_api_key=request_data.search_api_key,
-            )
-            await asyncio.sleep(1)
+                # 0. NLM Preflight
+                await nlm_studio.preflight_check()
 
-            current_stage = "m2_persona"
-            logger.info("Stage 2: Persona Parsing")
-            student_model = await m2.parse(
-                request_data.student_persona, model_override=request_data.model_override
-            )
-            logger.info(f"[HEARTBEAT] {run_id} | M1+M2 complete | Facts: {len(fact_bundle.facts)}")
+                current_stage = "m1_sourcing"
+                logger.info("Stage 1: Sourcing")
+                fact_bundle = await m1.source(
+                    request_data.course_requirement,
+                    search_cx=request_data.search_cx,
+                    search_api_key=request_data.search_api_key,
+                )
+                # Extract notebook_id from M1 metadata — propagated to script after M5
+                notebook_id = (
+                    fact_bundle.metadata.get("notebook_id")
+                    if hasattr(fact_bundle, "metadata") and fact_bundle.metadata
+                    else None
+                )
+                if notebook_id:
+                    logger.info(f"NLM: notebook_id captured from M1: {notebook_id}")
+                await asyncio.sleep(1)
 
-            current_stage = "m3_planner"
-            logger.info("Stage 3: Concept Planning")
-            concept_graph = await m3.plan(
-                request_data.course_requirement, student_model,
-                model_override=request_data.model_override,
-            )
-            logger.info(f"[HEARTBEAT] {run_id} | M3 complete | Nodes: {len(concept_graph.nodes)}")
+                current_stage = "m2_persona"
+                logger.info("Stage 2: Persona Parsing")
+                student_model = await m2.parse(
+                    request_data.student_persona, model_override=request_data.model_override
+                )
+                logger.info(f"[HEARTBEAT] {run_id} | M1+M2 complete | Facts: {len(fact_bundle.facts)}")
 
-            current_stage = "m4_generator"
-            logger.info("Stage 4: Multi-Variant Script Generation")
-            scripts = await m4.generate_variants(
-                concept_graph, student_model, fact_bundle,
-                model_override=request_data.model_override,
-            )
-            logger.info(f"[HEARTBEAT] {run_id} | M4 complete | Variants: {len(scripts)}")
+                current_stage = "m3_planner"
+                logger.info("Stage 3: Concept Planning")
+                concept_graph = await m3.plan(
+                    request_data.course_requirement, student_model,
+                    model_override=request_data.model_override,
+                )
+                logger.info(f"[HEARTBEAT] {run_id} | M3 complete | Nodes: {len(concept_graph.nodes)}")
 
-            current_stage = "m5_critic"
-            logger.info("Stage 5: CIDPP Critic Selection")
-            script, selection_log = await m5.score_variants(
-                scripts, student_model,
-                fact_bundle=fact_bundle,
-                concept_graph=concept_graph,
-                model_override=request_data.model_override
-            )
-            logger.info(f"[HEARTBEAT] {run_id} | M5 complete | Selected: {script.title}")
+                current_stage = "m4_generator"
+                logger.info("Stage 4: Multi-Variant Script Generation")
+                scripts = await m4.generate_variants(
+                    concept_graph, student_model, fact_bundle,
+                    model_override=request_data.model_override,
+                )
+                logger.info(f"[HEARTBEAT] {run_id} | M4 complete | Variants: {len(scripts)}")
 
-            current_stage = "m6_multimodal"
-            logger.info("Stage 6: Multimodal Planning")
-            visual_plan = await m6.plan_visuals(script)
-            logger.info(f"[HEARTBEAT] {run_id} | M6 complete")
+                current_stage = "m5_critic"
+                logger.info("Stage 5: CIDPP Critic Selection")
+                script, selection_log = await m5.score_variants(
+                    scripts, student_model,
+                    fact_bundle=fact_bundle,
+                    concept_graph=concept_graph,
+                    model_override=request_data.model_override
+                )
+                logger.info(f"[HEARTBEAT] {run_id} | M5 complete | Selected: {script.title}")
 
-            # M7 — must complete BEFORE returning video_url (contest rules)
-            current_stage = "m7_renderer"
-            logger.info("Stage 7: Video/Subtitle Rendering")
-            render_results = await m7.render(visual_plan, script, run_id=run_id)
-            logger.info(f"[HEARTBEAT] {run_id} | M7 complete")
+                # ── NLM Bridge: propagate notebook_id to script ───────────────
+                if notebook_id:
+                    script.notebook_id = notebook_id
+                    logger.info(f"NLM: notebook_id set on script → slides enabled in M6")
 
-            video_filename = render_results.get("video", "error")
-            subtitle_filename = render_results.get("subtitles", "error")
+                # ── NLM Deep Dive Audio (replaces per-segment Gemini TTS) ──────
+                # Run concurrently with M6 so it doesn't add to the critical path.
+                nlm_audio_task = None
+                if nlm_studio.is_available() and notebook_id:
+                    audio_output_path = os.path.join("temp", "video", run_id, "nlm_audio.mp3")
+                    os.makedirs(os.path.dirname(audio_output_path), exist_ok=True)
+                    logger.info("NLM: Requesting Deep Dive audio (concurrent with M6)...")
+                    nlm_audio_task = asyncio.create_task(
+                        nlm_studio.generate_audio(notebook_id, audio_output_path)
+                    )
 
-            base_url = str(request.base_url).rstrip("/")
-            public_video_url = f"{base_url}/output/{video_filename}"
-            public_subtitle_url = f"{base_url}/output/{subtitle_filename}"
-            generation_time = int(time.time() - start_time)
+                current_stage = "m6_multimodal"
+                logger.info("Stage 6: Multimodal Planning")
+                visual_plan = await m6.plan_visuals(script)
+                logger.info(f"[HEARTBEAT] {run_id} | M6 complete")
 
-            current_stage = "m8_logger"
-            run_data = {
-                "request": request_data.model_dump(),
-                "student_model": student_model.model_dump(),
-                "concept_graph": concept_graph.model_dump(),
-                "selected_strategy": script.scaffolding_strategy,
-                "script": script.model_dump(),
-                "video_url": public_video_url,
-                "subtitle_url": public_subtitle_url,
-                "generation_time_seconds": generation_time,
-            }
-            await m8.log_run(run_id, run_data, selection_log=selection_log)
+                # Collect NLM audio result (if it was requested)
+                if nlm_audio_task is not None:
+                    try:
+                        total_audio_path = await nlm_audio_task
+                        if total_audio_path:
+                            script.total_audio_path = total_audio_path
+                            logger.success(f"NLM: Deep Dive audio ready → {total_audio_path}")
+                        else:
+                            logger.warning("NLM: Deep Dive audio failed — M7 will use Gemini TTS fallback")
+                    except Exception as nlm_err:
+                        logger.warning(f"NLM: Audio task error: {nlm_err} — using Gemini TTS fallback")
 
-            logger.success(f"Pipeline complete for {run_id} in {generation_time}s")
-            return GenerationResponse(
-                video_url=public_video_url,
-                subtitle_url=public_subtitle_url,
-                supplementary_url=fact_bundle.study_guide_url,
-                generation_time_seconds=generation_time,
-            )
+                # M7 — must complete BEFORE returning video_url (contest rules)
+                current_stage = "m7_renderer"
+                logger.info("Stage 7: Video/Subtitle Rendering")
+                render_results = await m7.render(visual_plan, script, run_id=run_id)
+                logger.info(f"[HEARTBEAT] {run_id} | M7 complete")
 
-        except Exception as e:
-            logger.exception(f"FATAL PIPELINE ERROR for {run_id} at [{current_stage}]: {e}")
-            err_log.log_error(
-                run_id=run_id, exc=e,
-                request_data=request_data.model_dump(),
-                failed_stage=current_stage,
-            )
-            return None  # signal error to outer generator
+                video_filename = render_results.get("video", "error")
+                subtitle_filename = render_results.get("subtitles", "error")
+
+                base_url = str(request.base_url).rstrip("/")
+                public_video_url = f"{base_url}/output/{video_filename}"
+                public_subtitle_url = f"{base_url}/output/{subtitle_filename}"
+                generation_time = int(time.time() - start_time)
+
+                current_stage = "m8_logger"
+                run_data = {
+                    "request": request_data.model_dump(),
+                    "student_model": student_model.model_dump(),
+                    "concept_graph": concept_graph.model_dump(),
+                    "selected_strategy": script.scaffolding_strategy,
+                    "script": script.model_dump(),
+                    "video_url": public_video_url,
+                    "subtitle_url": public_subtitle_url,
+                    "generation_time_seconds": generation_time,
+                }
+                await m8.log_run(run_id, run_data, selection_log=selection_log)
+
+                logger.success(f"Pipeline complete for {run_id} in {generation_time}s")
+                return GenerationResponse(
+                    video_url=public_video_url,
+                    subtitle_url=public_subtitle_url,
+                    supplementary_url=fact_bundle.study_guide_url,
+                    generation_time_seconds=generation_time,
+                )
+
+            except Exception as e:
+                logger.exception(f"FATAL PIPELINE ERROR for {run_id} at [{current_stage}]: {e}")
+                err_log.log_error(
+                    run_id=run_id, exc=e,
+                    request_data=request_data.model_dump(),
+                    failed_stage=current_stage,
+                )
+                return None  # signal error to outer generator
 
     # Run pipeline as asyncio task so we can heartbeat concurrently
     task = asyncio.create_task(pipeline_task())

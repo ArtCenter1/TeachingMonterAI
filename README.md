@@ -1,4 +1,4 @@
-# 🎓 Teaching Monster AI Agent (v0.6.0 — RLT Edition)
+# 🎓 Teaching Monster AI Agent (v0.7.0 — Operational Edition)
 
 > [!IMPORTANT]
 > **🤖 FOR AI AGENTS / ASSISTANTS**
@@ -6,18 +6,18 @@
 
 ---
 
-[![Status](https://img.shields.io/badge/Status-RAG_Branch-orange.svg)](https://teaching.monster)
-[![Version](https://img.shields.io/badge/Version-0.6.0--RLT-blue.svg)](https://github.com/ArtCenter1/TeachingMonsterAI)
-[![Branch](https://img.shields.io/badge/Branch-RAG-purple.svg)](https://github.com/ArtCenter1/TeachingMonsterAI/tree/RAG)
+[![Status](https://img.shields.io/badge/Status-Operational-brightgreen.svg)](https://teaching.monster)
+[![Version](https://img.shields.io/badge/Version-0.7.0--Operational-blue.svg)](https://github.com/ArtCenter1/TeachingMonsterAI)
+[![Branch](https://img.shields.io/badge/Branch-main-purple.svg)](https://github.com/ArtCenter1/TeachingMonsterAI/tree/main)
 [![Docker](https://img.shields.io/badge/Docker-Ready-0db7ed.svg)](https://www.docker.com/)
 
 An autonomous pedagogical video generation system built for the **Teaching Monster Challenge**. The agent receives a topic and a student persona, then delivers a high-quality, grounded educational video in under 30 minutes — with zero human intervention.
 
-**v0.6.0 introduces stabilized NotebookLM authentication, Phase 4-B "RLT-Style" Reward Signals, and global version synchronization.**
+**v0.7.0 marks the transition to production-readiness with high-load concurrency stability (asyncio semaphores), hardened error fallbacks, and real-world ELO ingestion for autonomous strategy optimization.**
 
 ---
 
-## 🌟 What's New in v0.6.0 (RLT Phase)
+## 🌟 What's New in v0.7.0 (Operational Phase)
 
 | Feature | v0.5.1 | v0.6.0 |
 | :--- | :--- | :--- |

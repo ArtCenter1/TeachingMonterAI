@@ -96,8 +96,8 @@ async def preflight_check() -> bool:
     else:
         age = _auth_age_hours()
         logger.info(f"NLM: Auth cookie age: {age:.1f} hours")
-        if age > 120:  # 5 days
-            logger.info("NLM: Cookies stale (>5 days). Running headless refresh...")
+        if age > 12:  # 12 hours
+            logger.info("NLM: Cookies older than 12 hours. Running headless refresh...")
             _run_refresh_auth()
 
     # Test API connectivity
@@ -109,7 +109,21 @@ async def preflight_check() -> bool:
         _NLM_AVAILABLE = True
         return True
     except Exception as e:
-        logger.warning(f"NLM: Preflight check failed ({type(e).__name__}): {e}. Using fallback pipeline.")
+        logger.warning(f"NLM: Preflight check failed ({type(e).__name__}): {e}. Attempting emergency refresh...")
+        
+        # If it failed, maybe the cookie expired prematurely. Try refreshing once.
+        if not os.getenv("NOTEBOOKLM_AUTH_JSON"):
+            refreshed = _run_refresh_auth()
+            if refreshed:
+                try:
+                    async with await NotebookLMClient.from_storage() as client:
+                        await asyncio.wait_for(client.notebooks.list(), timeout=30)
+                    logger.success("NLM: Preflight check passed after emergency refresh. NLM Studio AVAILABLE.")
+                    _NLM_AVAILABLE = True
+                    return True
+                except Exception as e2:
+                    logger.warning(f"NLM: Preflight check still failed after refresh: {e2}. Using fallback pipeline.")
+        
         _NLM_AVAILABLE = False
         return False
 

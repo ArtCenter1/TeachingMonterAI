@@ -7,7 +7,7 @@ Why pure FFmpeg instead of MoviePy?
 - A 3-segment 720×1280 video now encodes in ~30–60 seconds instead of 6 minutes.
 
 Architecture:
-  _generate_audio()             → Cartesia TTS → .wav file per segment
+  _generate_audio()             → Gemini TTS (primary, free) → Cartesia fallback → .wav file per segment
   _source_visual_path()         → Pexels download or color fallback → local .mp4 file path
   _render_infographic_segment() → FFmpeg: Ken Burns zoom on static AI infographic PNG
   _render_segment()             → FFmpeg: B-roll trim/resize + drawtext caption
@@ -21,12 +21,16 @@ import subprocess
 import random
 import math
 import time
+import wave
+import struct
+import base64
 from typing import List, Dict, Any, Optional
 from loguru import logger
 
 from .schemas import FullScript
 from .pexels_client import PexelsClient
 from .m6c_avatar_gen import get_avatar_compositor
+from .llm_client import get_gemini_pool
 from . import nlm_studio
 
 
@@ -120,12 +124,17 @@ class VideoRenderer:
     HEIGHT = 720
     FPS = 24
 
+    # Gemini TTS voice — neutral, professional. Options: Kore, Charon, Fenrir, Aoede, Puck
+    GEMINI_VOICE = "Kore"
+    GEMINI_TTS_MODEL = "models/gemini-2.5-flash-preview-tts"
+
     def __init__(self, output_dir="temp/output"):
         self.output_dir = output_dir
         self.temp_audio_dir = "temp/audio"
         self.temp_video_dir = "temp/video"
         self.assets_dir = "temp/assets"
         self.pexels = PexelsClient()
+        # Legacy Cartesia voice ID (kept for reference / optional fallback)
         self.voice_id = "cec7cae1-ac8b-4a59-9eac-ec48366f37ae"
 
         os.makedirs(self.output_dir, exist_ok=True)
@@ -133,9 +142,16 @@ class VideoRenderer:
         os.makedirs(self.temp_video_dir, exist_ok=True)
         os.makedirs(self.assets_dir, exist_ok=True)
 
+        # Primary TTS: Gemini pool (free, 9 keys)
+        self.gemini_pool = get_gemini_pool()
+        logger.info(f"M7: Gemini TTS pool — {len(self.gemini_pool._entries)} key(s) available")
+
+        # Optional fallback: Cartesia (paid, high quality)
         self.cartesia_pool = get_cartesia_pool()
-        if len(self.cartesia_pool._keys) == 0:
-            logger.warning("No CARTESIA_API_KEY configured. Video rendering will fail.")
+        if len(self.cartesia_pool._keys) > 0:
+            logger.info(f"M7: Cartesia TTS fallback — {len(self.cartesia_pool._keys)} key(s) available")
+        else:
+            logger.info("M7: No Cartesia keys configured — Gemini TTS will be used exclusively")
 
         # Avatar compositor (professor PiP overlay)
         self.avatar = get_avatar_compositor()
@@ -151,22 +167,113 @@ class VideoRenderer:
             raise RuntimeError("All Cartesia API keys are exhausted.")
         return Cartesia(api_key=key), key
 
+    def _pcm_to_wav(self, pcm_data: bytes, output_path: str, sample_rate: int = 24000):
+        """Wrap raw 16-bit mono PCM bytes in a WAV header and write to disk."""
+        n_channels = 1
+        sampwidth = 2  # 16-bit = 2 bytes
+        n_frames = len(pcm_data) // sampwidth
+        with wave.open(output_path, "wb") as wf:
+            wf.setnchannels(n_channels)
+            wf.setsampwidth(sampwidth)
+            wf.setframerate(sample_rate)
+            wf.setnframes(n_frames)
+            wf.writeframes(pcm_data)
+
+    async def _generate_audio_gemini(self, text: str, audio_path: str) -> str:
+        """
+        Generate TTS audio via Gemini 2.5 Flash TTS model using the shared key pool.
+        Returns the path to the written WAV file.
+        Raises RuntimeError if all keys fail.
+        """
+        from google import genai
+        from google.genai import types as genai_types
+
+        attempted = set()
+        last_error = None
+
+        while True:
+            entry = self.gemini_pool.get_key()
+            if entry is None or entry.key in attempted:
+                raise RuntimeError(
+                    f"Gemini TTS: all keys exhausted. Last error: {last_error}"
+                )
+            attempted.add(entry.key)
+
+            try:
+                client = genai.Client(api_key=entry.key)
+                config = genai_types.GenerateContentConfig(
+                    response_modalities=["AUDIO"],
+                    speech_config=genai_types.SpeechConfig(
+                        voice_config=genai_types.VoiceConfig(
+                            prebuilt_voice_config=genai_types.PrebuiltVoiceConfig(
+                                voice_name=self.GEMINI_VOICE
+                            )
+                        )
+                    ),
+                )
+                # Gemini SDK is sync — run in executor to avoid blocking event loop
+                response = await asyncio.get_event_loop().run_in_executor(
+                    None,
+                    lambda: client.models.generate_content(
+                        model=self.GEMINI_TTS_MODEL,
+                        contents=text,
+                        config=config,
+                    ),
+                )
+                # Extract PCM audio bytes from response
+                part = response.candidates[0].content.parts[0]
+                data = part.inline_data.data
+                pcm_bytes = base64.b64decode(data) if isinstance(data, str) else data
+                self._pcm_to_wav(pcm_bytes, audio_path, sample_rate=24000)
+                self.gemini_pool.report_success(entry)
+                return audio_path
+
+            except Exception as e:
+                last_error = e
+                err_str = str(e)
+                logger.warning(f"M7 Gemini TTS key {entry.alias} failed: {err_str[:200]}")
+                # Quarantine rate-limited keys
+                if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str.upper():
+                    self.gemini_pool.report_error(entry, 429, err_str)
+                elif "402" in err_str or "quota" in err_str.lower():
+                    self.gemini_pool.report_error(entry, 402, err_str)
+                else:
+                    # Non-quota error — don't rotate, just raise
+                    raise
+
     async def render(
         self,
         visual_plan: List[Dict[str, Any]],
         script: FullScript,
         run_id: str = "default",
     ) -> Dict[str, str]:
-        has_total_audio = getattr(script, "total_audio_path", None) is not None
-        
-        if not has_total_audio and len(self.cartesia_pool._keys) == 0:
-            logger.error("M7: No Cartesia API key and no NotebookLM audio — cannot render video")
-            return {"video": "error", "subtitles": "error"}
-
         run_audio_dir = os.path.join(self.temp_audio_dir, run_id)
         run_video_dir = os.path.join(self.temp_video_dir, run_id)
         os.makedirs(run_audio_dir, exist_ok=True)
         os.makedirs(run_video_dir, exist_ok=True)
+
+        notebook_id = getattr(script, "notebook_id", None)
+        if notebook_id and nlm_studio.is_available():
+            logger.info("M7: Attempting to generate primary narration audio via NotebookLM...")
+            try:
+                audio_path = await nlm_studio.generate_audio(notebook_id, run_audio_dir)
+                if audio_path and os.path.exists(audio_path):
+                    script.total_audio_path = audio_path
+                    # We should also update segment durations to match the total audio
+                    total_dur = self._get_audio_duration(audio_path)
+                    if total_dur > 0 and len(script.segments) > 0:
+                        # Distribute duration equally or proportionally
+                        dur_per_seg = total_dur / len(script.segments)
+                        for seg in script.segments:
+                            seg.duration_seconds = dur_per_seg
+            except Exception as e:
+                logger.error(f"M7: NotebookLM audio generation failed, falling back: {e}")
+
+        has_total_audio = getattr(script, "total_audio_path", None) is not None
+        
+        if not has_total_audio and len(self.gemini_pool._entries) == 0:
+            logger.error("M7: No Gemini API keys and no NotebookLM audio — cannot render video")
+            return {"video": "error", "subtitles": "error"}
 
         logger.info(f"M7: Starting FFmpeg rendering for run {run_id}")
         t0 = time.time()
@@ -186,12 +293,12 @@ class VideoRenderer:
             audio_path = None
             if has_total_audio:
                 # Use segment duration from script
-                duration = segment.duration_seconds
+                duration = max(segment.duration_seconds, 0.5)
             else:
                 # Legacy flow: generate segment audio
                 try:
                     audio_path = await self._generate_audio(segment, run_audio_dir)
-                    duration = self._get_audio_duration(audio_path)
+                    duration = max(self._get_audio_duration(audio_path), 0.5)
                 except Exception as e:
                     logger.error(f"M7: Audio failed for segment {segment.segment_id}: {e}")
                     continue
@@ -307,21 +414,22 @@ class VideoRenderer:
                 output_path
             ], f"final_mux_{run_id}")
         else:
-            # Legacy: segments already contain audio, just mix BGM
-            bgm_path = "resources/bg_music.mp3"
-            if os.path.exists(bgm_path):
-                logger.info("M7: Mixing background music...")
-                self._mix_bgm(concat_no_audio_path, bgm_path, output_path)
-            else:
-                logger.info("M7: No BGM found, copying concatenated segments to output.")
-                _run_ffmpeg(
-                    ["-i", concat_no_audio_path, "-c", "copy", output_path],
-                    "copy_no_bgm",
-                )
+            # Legacy TTS path: segments already contain per-segment audio — no BGM
+            logger.info("M7: Copying concatenated segments to output (no BGM).")
+            _run_ffmpeg(
+                ["-i", concat_no_audio_path, "-c", "copy", output_path],
+                "copy_no_bgm",
+            )
 
         elapsed = time.time() - t0
         logger.success(f"M7: Export complete → {output_path} ({elapsed:.1f}s total)")
-        return {"video": output_filename, "subtitles": "built-in"}
+
+        # 7. Generate external SRT for contest compliance
+        srt_filename = f"TeachingMonster_{run_id}.srt"
+        srt_path = os.path.join(self.output_dir, srt_filename)
+        self._generate_srt(script.segments, srt_path)
+
+        return {"video": output_filename, "subtitles": srt_filename}
 
     # ── Internal helpers ────────────────────────────────────────────────────
 
@@ -578,15 +686,33 @@ class VideoRenderer:
         )
 
     async def _generate_audio(self, segment: Any, output_dir: str) -> str:
-        """Generate TTS audio using Cartesia pool with key rotation on failure."""
+        """
+        Generate TTS audio for a segment.
+
+        Priority:
+          1. Gemini TTS (free, 9-key pool) — primary engine
+          2. Cartesia (paid, high-quality) — optional fallback if keys exist
+        """
         audio_path = os.path.join(output_dir, f"{segment.segment_id}.wav")
         if os.path.exists(audio_path):
             return audio_path
 
         logger.info(f"M7: Generating voice for segment {segment.segment_id}")
 
+        # ── 1. Try Gemini TTS first ──────────────────────────────────────────
+        try:
+            result = await self._generate_audio_gemini(segment.narration, audio_path)
+            logger.success(f"M7: Gemini TTS OK for segment {segment.segment_id}")
+            return result
+        except Exception as e:
+            logger.warning(f"M7: Gemini TTS failed for {segment.segment_id}: {e} — trying Cartesia fallback")
+
+        # ── 2. Cartesia fallback (if keys exist) ─────────────────────────────
+        if len(self.cartesia_pool._keys) == 0:
+            raise RuntimeError(f"No audio provider available. Gemini TTS failed and no Cartesia keys configured.")
+
         last_error = None
-        for attempt in range(len(self.cartesia_pool._keys) or 1):
+        for _ in range(len(self.cartesia_pool._keys)):
             try:
                 client, used_key = self._get_cartesia_client()
                 data_iterator = client.tts.bytes(
@@ -602,7 +728,7 @@ class VideoRenderer:
                 with open(audio_path, "wb") as f:
                     for chunk in data_iterator:
                         f.write(chunk)
-                logger.success(f"M7: Audio generated for segment {segment.segment_id}")
+                logger.success(f"M7: Cartesia TTS OK for segment {segment.segment_id}")
                 return audio_path
 
             except Exception as e:
@@ -616,4 +742,40 @@ class VideoRenderer:
                     logger.error(f"M7: Cartesia TTS failed (non-quota): {e}")
                     break
 
-        raise RuntimeError(f"All Cartesia TTS attempts failed. Last error: {last_error}")
+        raise RuntimeError(f"All TTS providers failed. Last error: {last_error}")
+    def _generate_srt(self, segments: List[Any], output_path: str):
+        """Generates a standard SubRip (.srt) subtitle file."""
+        try:
+            with open(output_path, "w", encoding="utf-8") as f:
+                current_time = 0.0
+                for i, seg in enumerate(segments):
+                    duration = getattr(seg, "duration_seconds", 5.0)
+                    # Handle both dict-like and object-like segments
+                    if isinstance(seg, dict):
+                        text = seg.get("narration", "").replace("\n", " ").strip()
+                    else:
+                        text = getattr(seg, "narration", "").replace("\n", " ").strip()
+                    
+                    if not text:
+                        current_time += duration
+                        continue
+                    
+                    start_str = self._format_srt_time(current_time)
+                    end_str = self._format_srt_time(current_time + duration)
+                    
+                    f.write(f"{i+1}\n")
+                    f.write(f"{start_str} --> {end_str}\n")
+                    f.write(f"{text}\n\n")
+                    
+                    current_time += duration
+            logger.info(f"M7: SRT generated at {output_path}")
+        except Exception as e:
+            logger.error(f"M7: Failed to generate SRT: {e}")
+
+    def _format_srt_time(self, seconds: float) -> str:
+        """Formats seconds into HH:MM:SS,mmm string."""
+        hrs = int(seconds // 3600)
+        mins = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        msecs = int((seconds % 1) * 1000)
+        return f"{hrs:02d}:{mins:02d}:{secs:02d},{msecs:03d}"

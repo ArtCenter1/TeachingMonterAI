@@ -18,7 +18,7 @@ services:
       - ./m8_feedback.json:/app/m8_feedback.json
       - ./m8_errors.json:/app/m8_errors.json
       - ./strategy_stats.json:/app/strategy_stats.json
-      - "${USERPROFILE}/.notebooklm:/root/.notebooklm:rw"
+      - ./.notebooklm_linux:/root/.notebooklm:rw
     environment:
       - PYTHONUNBUFFERED=1
       # Uvicorn keeps HTTP connections alive for up to 30 minutes (contest timeout)

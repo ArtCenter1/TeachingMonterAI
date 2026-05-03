@@ -91,103 +91,108 @@ class SourcingModule:
         model_override: Optional[str] = None,
     ) -> FactBundle:
         """
-        Main sourcing method with timeout and fallback chain:
-        1. Attempt NotebookLM MCP sourcing (timeout: 90 seconds)
-        2. On timeout or error: fall back to web_search + web_fetch
-        3. Run code interpreter verification on all formulas and numerical claims
-        4. Log the failure mode in M8 for post-run analysis
+        Main sourcing method with fallback chain:
+        1. Attempt local RAG sourcing (Primary)
+        2. On failure: fall back to web_search + web_fetch
+        3. On failure: fall back to AI Research
+        4. Setup NLM Notebook if available
         """
         start_time = time.time()
-
-        # ── Constants ────────────────────────────────────────────────────────
-        MIN_FACTS = 8  # Minimum acceptable fact count; below this we force AI fallback
-
-        # Stage 0: Attempt NotebookLM Sourcing (Primary Path — only if NLM is available)
+        MIN_FACTS = 8
         domain = self._get_domain_for_topic(topic) or "General"
-        notebook_id = None
-        if nlm_studio.is_available():
-            try:
-                logger.info("Attempting NotebookLM sourcing...")
+        fact_bundle = None
+        rag_chunks = []
 
-                # 1. Create Notebook via nlm_studio (autonomous, with preflight)
-                notebook_id = await nlm_studio.ensure_notebook(topic, domain)
-                if not notebook_id:
-                    # Try legacy manager as backup
-                    notebook_id = await notebooklm_manager.create_notebook_for_topic(topic, domain)
-
-                if notebook_id:
-                    # 2. Upload RAG chunks as sources
-                    rag_chunks = retriever.retrieve(topic, domain=domain, n_results=5)
-                    await nlm_studio.add_sources_to_notebook(notebook_id, rag_chunks)
-                    await notebooklm_manager.add_sources(notebook_id, rag_chunks)
-
-                    # 3. Get Facts from NLM chat
-                    facts = await notebooklm_manager.ask_for_structured_facts(notebook_id, topic)
-                    if facts and len(facts) >= MIN_FACTS:
-                        logger.info(f"NotebookLM sourcing successful: {len(facts)} facts retrieved")
-                        fact_bundle = FactBundle(facts=facts)
-                        fact_bundle.metadata = {"notebook_id": notebook_id, "subject": domain}
-                        return await self._verify_and_enhance_facts(fact_bundle, topic)
-                    elif facts:
-                        logger.warning(f"NLM returned only {len(facts)} facts (< {MIN_FACTS}). Continuing to RAG fallback for enrichment.")
-            except Exception as e:
-                logger.error(f"NotebookLM sourcing failed: {str(e)}")
-        else:
-            logger.info("NLM Studio not available in this environment. Skipping NLM sourcing.")
-
-        # Stage 1: Attempt local RAG sourcing (Fallback)
+        # Stage 1: Attempt local RAG sourcing (Primary)
         try:
             logger.info("Attempting local RAG sourcing...")
-            fact_bundle = await self._rag_source(topic)
-
-            # Verify the sourcing succeeded with enough facts
-            if fact_bundle and fact_bundle.facts and len(fact_bundle.facts) >= MIN_FACTS:
-                logger.info(
-                    f"RAG sourcing successful: {len(fact_bundle.facts)} facts retrieved"
-                )
-                fact_bundle.metadata["subject"] = domain
-                return await self._verify_and_enhance_facts(fact_bundle, topic)
-            elif fact_bundle and fact_bundle.facts:
-                logger.warning(f"RAG returned only {len(fact_bundle.facts)} facts (< {MIN_FACTS}). Falling back further.")
-
+            # Fetch raw chunks for both RAG FactBundle and NLM source injection
+            rag_chunks = retriever.retrieve(topic, domain=domain, n_results=7)
+            
+            if rag_chunks:
+                facts = [
+                    {
+                        "claim": chunk.strip(),
+                        "citation": f"Local Curriculum Content ({domain or 'General'})",
+                        "confidence": 0.95
+                    }
+                    for chunk in rag_chunks if len(chunk.strip()) > 50
+                ]
+                if len(facts) >= MIN_FACTS:
+                    logger.info(f"RAG sourcing successful: {len(facts)} facts retrieved")
+                    fact_bundle = FactBundle(facts=facts)
+                    fact_bundle.metadata = {"subject": domain}
+                elif facts:
+                    logger.warning(f"RAG returned only {len(facts)} facts (< {MIN_FACTS}). Using as base, but could be sparse.")
+                    fact_bundle = FactBundle(facts=facts)
+                    fact_bundle.metadata = {"subject": domain}
         except Exception as e:
             logger.error(f"RAG sourcing failed: {str(e)}")
 
-
         # Stage 2: Fallback to web_search + web_fetch
-        try:
-            logger.info("Falling back to web_search + web_fetch...")
-            fact_bundle = await self._web_search_fallback(
-                topic, search_cx, search_api_key
-            )
+        if not fact_bundle or len(fact_bundle.facts) < MIN_FACTS:
+            try:
+                logger.info("Attempting web_search + web_fetch...")
+                web_bundle = await self._web_search_fallback(topic, search_cx, search_api_key)
+                if web_bundle and web_bundle.facts:
+                    logger.info(f"Web search successful: {len(web_bundle.facts)} facts retrieved")
+                    if fact_bundle:
+                        fact_bundle.facts.extend(web_bundle.facts)
+                    else:
+                        fact_bundle = web_bundle
+                        fact_bundle.metadata = {"subject": domain}
+            except Exception as e:
+                logger.error(f"Web search fallback failed: {str(e)}")
 
-            if fact_bundle and fact_bundle.facts and len(fact_bundle.facts) > 0:
-                logger.info(
-                    f"Web search fallback successful: {len(fact_bundle.facts)} facts retrieved"
-                )
-                fact_bundle.metadata["subject"] = domain
-                return await self._verify_and_enhance_facts(fact_bundle, topic)
+        # Stage 3: AI Research Fallback
+        if not fact_bundle or len(fact_bundle.facts) < MIN_FACTS:
+            try:
+                logger.info("Triggering AI Research Fallback (Internal Knowledge)...")
+                ai_bundle = await self._ai_research_fallback(topic, model_override=model_override)
+                if ai_bundle and ai_bundle.facts:
+                    logger.info(f"AI Research successful: {len(ai_bundle.facts)} facts retrieved")
+                    if fact_bundle:
+                        fact_bundle.facts.extend(ai_bundle.facts)
+                    else:
+                        fact_bundle = ai_bundle
+                        fact_bundle.metadata = {"subject": domain}
+            except Exception as e:
+                logger.error(f"AI Research Fallback failed: {str(e)}")
 
-        except Exception as e:
-            logger.error(f"Web search fallback failed: {str(e)}")
+        # Stage 4: Mock data (Last resort)
+        if not fact_bundle or not fact_bundle.facts:
+            logger.warning("All sourcing methods failed, using mock data")
+            fact_bundle = self.get_mock_data(topic)
+            fact_bundle.metadata = {"subject": domain}
 
-        # Stage 3: AI Research Fallback (NEW)
-        # If real-time search fails, use the LLM's internal knowledge to ground the lesson
-        try:
-            logger.info("Triggering AI Research Fallback (Internal Knowledge)...")
-            fact_bundle = await self._ai_research_fallback(topic, model_override=model_override)
-            if fact_bundle and fact_bundle.facts:
-                logger.info(
-                    f"AI Research Fallback successful: {len(fact_bundle.facts)} facts retrieved"
-                )
-                fact_bundle.metadata["subject"] = domain
-                return await self._verify_and_enhance_facts(fact_bundle, topic)
-        except Exception as e:
-            logger.error(f"AI Research Fallback failed: {str(e)}")
+        # Verify and enhance facts
+        fact_bundle = await self._verify_and_enhance_facts(fact_bundle, topic)
 
-        # Stage 4: Final fallback to mock data (should very rarely happen)
-        logger.warning("All sourcing methods failed, using mock data")
-        return self.get_mock_data(topic)
+        # Stage 5: Setup NotebookLM (Autonomous, non-blocking to pipeline failure)
+        if nlm_studio.is_available():
+            try:
+                logger.info("Setting up NotebookLM studio...")
+                notebook_id = await nlm_studio.ensure_notebook(topic, domain)
+                if notebook_id:
+                    # Use RAG chunks if available, else extract text from fact claims
+                    sources_to_inject = rag_chunks
+                    if not sources_to_inject:
+                        sources_to_inject = [f["claim"] for f in fact_bundle.facts]
+                    
+                    if sources_to_inject:
+                        await nlm_studio.add_sources_to_notebook(notebook_id, sources_to_inject)
+                    
+                    # Store notebook_id in metadata for downstream modules (M5, M6, M7)
+                    fact_bundle.metadata["notebook_id"] = notebook_id
+                    logger.info(f"NotebookLM setup complete. Notebook ID: {notebook_id}")
+                else:
+                    logger.warning("Failed to create NLM notebook. Downstream modules will use fallbacks.")
+            except Exception as e:
+                logger.error(f"NotebookLM setup failed: {e}")
+        else:
+            logger.info("NLM Studio not available. Skipping NLM setup.")
+
+        return fact_bundle
 
     async def _rag_source(self, topic: str) -> FactBundle:
         """Source facts from the local ChromaDB store."""

@@ -163,9 +163,14 @@ class MultimodalPlanner:
 
     async def _generate_keywords_map(self, script: FullScript) -> dict:
         """Batch-generate Pexels search keywords for all segments via LLM."""
-        keywords_raw = await self.llm.generate_text(
-            self._build_keywords_prompt(script), temperature=0.1
-        )
+        try:
+            keywords_raw = await self.llm.generate_text(
+                self._build_keywords_prompt(script), temperature=0.1
+            )
+        except Exception as e:
+            logger.error(f"M6: LLM failed to generate keywords: {e}. Using concept fallback.")
+            return {}
+
         try:
             import re
             import json
