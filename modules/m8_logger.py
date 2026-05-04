@@ -239,6 +239,52 @@ class FeedbackLogger:
 
         return False  # Run ID not found
 
+    def add_public_feedback(
+        self,
+        run_id: str,
+        star_rating: int,
+        comments: Optional[str] = None,
+    ) -> bool:
+        """Append public student feedback to an existing run entry.
+
+        If the star_rating translates to a decisive outcome (>=4 is win, <=2 is loss),
+        also update the strategy tracker with the Elo result.
+        """
+        logs = []
+        if os.path.exists(self.log_file):
+            with open(self.log_file, "r") as f:
+                try:
+                    logs = json.load(f)
+                except json.JSONDecodeError:
+                    return False
+
+        for entry in logs:
+            if entry.get("run_id") == run_id:
+                if "public_feedback" not in entry["data"]:
+                    entry["data"]["public_feedback"] = []
+                entry["data"]["public_feedback"].append({
+                    "star_rating": star_rating,
+                    "comments": comments,
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                })
+
+                # Phase 5: Record Elo outcome in strategy tracker based on real human feedback
+                elo_outcome = "win" if star_rating >= 4 else ("loss" if star_rating <= 2 else None)
+                if elo_outcome and entry.get("data", {}).get("selected_strategy"):
+                    strategy = entry["data"]["selected_strategy"]
+                    level = entry["data"].get("student_model", {}).get("level", "high_school")
+                    req = entry["data"].get("request", {}).get("course_requirement", "")
+                    subject = infer_subject(req)
+                    self.strategy_tracker.record_elo_outcome(
+                        strategy, level, subject, won=(elo_outcome == "win")
+                    )
+
+                with open(self.log_file, "w") as f:
+                    json.dump(logs, f, indent=2)
+                return True
+
+        return False  # Run ID not found
+
     def get_rlt_run_count(self) -> int:
         """Count how many runs have RLT scores recorded."""
         if not os.path.exists(self.log_file):

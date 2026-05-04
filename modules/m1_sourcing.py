@@ -9,7 +9,7 @@ from .schemas import FactBundle
 from loguru import logger
 from .m8_logger import StrategyTracker
 from .utils import infer_subject
-from .notebooklm_manager import notebooklm_manager
+
 from . import nlm_studio
 from .rag_retriever import retriever
 import yaml

@@ -491,5 +491,58 @@
       "search_api_key": null,
       "request_id": "celery_2610_1777833233"
     }
+  },
+  {
+    "run_id": "cf12f88e-f7a7-4645-8263-df97507f854c",
+    "timestamp": "2026-05-04T03:53:18.954094+00:00",
+    "failed_stage": "m4_generator",
+    "error_type": "TypeError",
+    "error_message": "'bool' object is not callable",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 169, in pipeline_task\n    scripts = await m4.generate_variants(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 142, in generate_variants\n    script = await self._generate_with_notebooklm(notebook_id, concept_graph, student_model, topic_context)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 357, in _generate_with_notebooklm\n    await nlm_studio.generate_audio(notebook_id, audio_path)\n  File \"/app/modules/notebooklm_manager.py\", line 79, in generate_audio_overview\n    client = await self._ensure_client()\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/notebooklm_manager.py\", line 20, in _ensure_client\n    if self.client and getattr(self.client, 'is_connected', False):\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: 'bool' object is not callable\n",
+    "request": {
+      "course_requirement": "unit: Functions Involving Parameters, Vectors, and Matrices\n\ntopic: Vectors\n\nlearning objective: Represent vectors geometrically and algebraically.\n\nessential knowledge: A vector has both magnitude and direction and can be represented by a directed line segment or in component form.",
+      "student_persona": "Education Level: Junior high school | Learning Pace: Fast | Learning Motivation: Exams | Timeline Urgency: Normal | Depth Preference: Principles-first",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2610_1777837797"
+    }
+  },
+  {
+    "run_id": "ae647eb5-59fb-400b-811e-12f304ad72ce",
+    "timestamp": "2026-05-04T05:48:19.816350+00:00",
+    "failed_stage": "m4_generator",
+    "error_type": "TypeError",
+    "error_message": "'bool' object is not callable",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 169, in pipeline_task\n    scripts = await m4.generate_variants(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 142, in generate_variants\n    script = await self._generate_with_notebooklm(notebook_id, concept_graph, student_model, topic_context)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 357, in _generate_with_notebooklm\n    await nlm_studio.generate_audio(notebook_id, audio_path)\n  File \"/app/modules/notebooklm_manager.py\", line 79, in generate_audio_overview\n    client = await self._ensure_client()\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/notebooklm_manager.py\", line 20, in _ensure_client\n    if self.client and getattr(self.client, 'is_connected', False):\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: 'bool' object is not callable\n",
+    "request": {
+      "course_requirement": "unit: Linear Momentum\n\ntopic: Conservation of Linear Momentum\n\nlearning objective: Describe the behavior of a system using conservation of linear momentum.\n\nessential knowledge: For a collection of objects, the system’s momentum is the vector sum of individual momenta and the velocity of the center of mass is $v_{cm} = \\Sigma p_i / \\Sigma m_i$.",
+      "student_persona": "Preferred Explanation Style: Intuition | Learning Motivation: Research papers | Timeline Urgency: Relaxed | Depth Preference: Principles-first",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2623_1777844759"
+    }
+  },
+  {
+    "run_id": "e0e05934-5c90-4b6c-b382-59be3e97419b",
+    "timestamp": "2026-05-04T06:07:42.220453+00:00",
+    "failed_stage": "m4_generator",
+    "error_type": "RuntimeError",
+    "error_message": "NotebookLM Audio Generation Failed",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 169, in pipeline_task\n    scripts = await m4.generate_variants(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 142, in generate_variants\n    script = await self._generate_with_notebooklm(notebook_id, concept_graph, student_model, topic_context)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 361, in _generate_with_notebooklm\n    raise RuntimeError(\"NotebookLM Audio Generation Failed\")\nRuntimeError: NotebookLM Audio Generation Failed\n",
+    "request": {
+      "course_requirement": "Conservation of Linear Momentum",
+      "student_persona": "High school physics student",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null
+    }
   }
 ]

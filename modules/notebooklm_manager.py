@@ -17,7 +17,7 @@ class NotebookLMManager:
         without needing the host's ~/.notebooklm filesystem mounted.
         """
         async with self._init_lock:
-            if self.client and self.client.is_connected():
+            if self.client:
                 return self.client
 
             auth_json = os.getenv("NOTEBOOKLM_AUTH_JSON")

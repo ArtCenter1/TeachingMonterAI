@@ -159,6 +159,12 @@ class AIStudentFeedback(BaseModel):
     )
 
 
+class PublicFeedback(BaseModel):
+    run_id: str
+    star_rating: int = Field(ge=1, le=5)
+    comments: Optional[str] = None
+
+
 class ComprehensionProbe(BaseModel):
     """A single comprehension probe derived from M1 ground-truth facts."""
     question: str

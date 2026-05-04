@@ -10,7 +10,7 @@ from loguru import logger
 from utils.analogy_store import analogy_store
 from .m8_logger import StrategyTracker
 from .utils import infer_subject
-from .notebooklm_manager import notebooklm_manager
+from . import nlm_studio
 
 
 class ScriptGenerator:
@@ -259,7 +259,7 @@ class ScriptGenerator:
 
         Requirements:
         1. Narrative Flow: Ensure smooth transitions between concepts.
-        2. Visual Cues: For each segment, provide a 'visual_content_spec' detailing what should be on screen.
+        2. Visual Cues: For each segment, provide a 'visual_content_spec' detailing what should be on screen. If the subject is Physics or Mathematics, the 'visual_content_spec' MUST specifically request clean vector schematics, technical diagrams, or 2D graphs without text, avoiding realistic imagery that causes nonsensical artifacts.
         3. Pacing: Match student level (vocabulary, complexity).
         4. Citations: Every factual claim must be attributed to a source in the facts.
         5. Hook: First 60 seconds must have a curiosity trigger.
@@ -354,7 +354,7 @@ class ScriptGenerator:
 
         # 1. Generate and Download Audio
         logger.info(f"M4: Generating NotebookLM Audio Overview for {notebook_id}...")
-        await notebooklm_manager.generate_audio_overview(notebook_id, audio_path)
+        await nlm_studio.generate_audio(notebook_id, audio_path)
 
         if not os.path.exists(audio_path):
             logger.error("M4: NotebookLM audio generation failed. Falling back to legacy LLM flow.")
@@ -399,6 +399,7 @@ class ScriptGenerator:
         1. Segments must cover the ENTIRE audio file. 
         2. 'duration_seconds' for all segments must sum up to the total length of the audio.
         3. Be descriptive in 'visual_content_spec'.
+        4. If the topic is Physics or Mathematics, ensure 'visual_content_spec' explicitly requests clean vector schematics, technical diagrams, or 2D graphs, avoiding realistic/photographic imagery that could generate nonsensical artifacts.
         """
         
         try:

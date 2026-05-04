@@ -673,7 +673,7 @@ class VideoRenderer:
                 "-i", bgm_path,
                 "-filter_complex",
                 "[1:a]volume=0.15[bgm];[0:a][bgm]amix=inputs=2:duration=first:dropout_transition=3[aout]",
-                "-map", "0:v",
+                "-map", "0:v?",
                 "-map", "[aout]",
                 "-c:v", "copy",
                 "-c:a", "aac",

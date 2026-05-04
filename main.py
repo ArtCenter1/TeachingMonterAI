@@ -26,7 +26,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 logger.add("pipeline.log", rotation="10 MB")
 
-from modules.schemas import GenerationRequest, GenerationResponse, AIStudentFeedback
+from modules.schemas import GenerationRequest, GenerationResponse, AIStudentFeedback, PublicFeedback
 from modules.m1_sourcing import SourcingModule
 from modules.m2_persona import PersonaParser
 from modules.m3_planner import ConceptPlanner
@@ -310,6 +310,22 @@ async def submit_ai_student_feedback(feedback: AIStudentFeedback):
             detail=f"Run ID {feedback.run_id} not found in feedback logs.",
         )
     logger.info(f"AI Student feedback ingested for run_id: {feedback.run_id}")
+    return {"status": "feedback ingested"}
+
+
+@app.post("/feedback/public")
+async def submit_public_feedback(feedback: PublicFeedback):
+    success = m8.add_public_feedback(
+        run_id=feedback.run_id,
+        star_rating=feedback.star_rating,
+        comments=feedback.comments,
+    )
+    if not success:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Run ID {feedback.run_id} not found in feedback logs.",
+        )
+    logger.info(f"Public feedback ingested for run_id: {feedback.run_id}")
     return {"status": "feedback ingested"}
 
 

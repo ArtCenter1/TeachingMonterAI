@@ -111,7 +111,7 @@ NARRATION CONTEXT: "{narration_excerpt}"
 
 INSTRUCTIONS:
 1. FOCUS: The image must precisely illustrate the KEY CONCEPT using the requested style.
-2. TEXT: Minimize text. Use ONLY 1-3 short, perfectly spelled labels. NO generic filler text or gibberish.
+2. TEXT: DO NOT include any mathematical text, equations, or long labels, because AI generates them as nonsensical gibberish. If you must use labels, use only 1-3 simple English words. Completely avoid drawing formulas.
 3. QUALITY: Ensure the diagram is technically accurate to the subject matter.
 4. COMPOSITION: Centered layout with clear margins. Professional educational graphics only.
 5. NO PHOTOREALISM: Stick strictly to the specified illustration style. NO generic stock photos.
