@@ -139,8 +139,12 @@ class ScriptGenerator:
         if notebook_id:
             topic_context = concept_graph.nodes[0].concept if concept_graph.nodes else "Education"
             logger.info(f"M4: Using NotebookLM flow for script generation (ID: {notebook_id})")
-            script = await self._generate_with_notebooklm(notebook_id, concept_graph, student_model, topic_context)
-            return [script]
+            try:
+                script = await self._generate_with_notebooklm(notebook_id, concept_graph, student_model, topic_context)
+                return [script]
+            except Exception as e:
+                logger.error(f"M4: NotebookLM flow failed ({e}). Falling back to legacy LLM flow.")
+
 
         is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
         
