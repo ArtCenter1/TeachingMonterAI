@@ -473,5 +473,23 @@
       "search_cx": null,
       "search_api_key": null
     }
+  },
+  {
+    "run_id": "5fdc1634-c9e9-4d01-81bb-d53d091a448d",
+    "timestamp": "2026-05-04T02:37:11.599326+00:00",
+    "failed_stage": "m4_generator",
+    "error_type": "TypeError",
+    "error_message": "'bool' object is not callable",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 169, in pipeline_task\n    scripts = await m4.generate_variants(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 142, in generate_variants\n    script = await self._generate_with_notebooklm(notebook_id, concept_graph, student_model, topic_context)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 357, in _generate_with_notebooklm\n    await notebooklm_manager.generate_audio_overview(notebook_id, audio_path)\n  File \"/app/modules/notebooklm_manager.py\", line 79, in generate_audio_overview\n    client = await self._ensure_client()\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/notebooklm_manager.py\", line 20, in _ensure_client\n    if self.client and self.client.is_connected():\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: 'bool' object is not callable\n",
+    "request": {
+      "course_requirement": "unit: Functions Involving Parameters, Vectors, and Matrices\n\ntopic: Vectors\n\nlearning objective: Represent vectors geometrically and algebraically.\n\nessential knowledge: A vector has both magnitude and direction and can be represented by a directed line segment or in component form.",
+      "student_persona": "Education Level: Junior high school | Learning Pace: Fast | Learning Motivation: Exams | Timeline Urgency: Normal | Depth Preference: Principles-first",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": null,
+      "search_cx": null,
+      "search_api_key": null,
+      "request_id": "celery_2610_1777833233"
+    }
   }
 ]
