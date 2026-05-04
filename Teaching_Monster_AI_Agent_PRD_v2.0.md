@@ -9,7 +9,7 @@
 |---|---|
 | Version | 2.2 — NLM Studio Integration |
 | Previous Version | 2.1 — Visual Pipeline & Hybrid RAG |
-| Status | Pre-Execution Planning (v0.7.0) |
+| Status | Pre-Execution Planning (v0.8.0) |
 | Date | April 2026 |
 | Competition | Teaching Monster Challenge — teaching.monster |
 | Team Size | 3–6 engineers |
@@ -117,7 +117,7 @@ POST /generate
 
 ### 2.3 Module Map
 
-| Module | Primary Responsibility | Key Output | v0.7.0 NLM Upgrade |
+| Module | Primary Responsibility | Key Output | v0.8.0 NLM Upgrade |
 |---|---|---|---|
 | **M1** — RAG Sourcing | Query local ChromaDB → AI Research → Web Search | Cited content bundle (JSON) | NLM notebook created; sources injected from curriculum |
 | **M2** — Persona Parser | Infer learner state from `student_persona` string | Student model object | Unchanged |
@@ -382,7 +382,7 @@ The CIDPP critic's Integrity dimension (minimum 9/10) remains the final safety n
 
 ---
 
-### Phase 2 — NLM Studio Visual & Audio Upgrade 🎯 NEXT (v0.7.0)
+### Phase 2 — NLM Studio Visual & Audio Upgrade 🎯 NEXT (v0.8.0)
 
 **Goal:** Fix the #1 and #2 competition weaknesses — contextually inaccurate visuals and robotic TTS narration — using NotebookLM Studio outputs as primary sources.
 
@@ -500,8 +500,8 @@ The CIDPP critic's Integrity dimension (minimum 9/10) remains the final safety n
 |---|---|---|
 | ChromaDB | Local vector store for RAG | Yes — `all-MiniLM-L6-v2`, CPU-only |
 | sentence-transformers | Local embedding model | Yes — CPU-only |
-| notebooklm-py | NLM Studio API (slides, audio, quiz) | Yes (v0.7.0+) — `pip install notebooklm-py[browser]` |
-| Playwright Chromium | NLM authentication browser | Yes (v0.7.0+) — one-time login, cookies persisted |
+| notebooklm-py | NLM Studio API (slides, audio, quiz) | Yes (v0.8.0+) — `pip install notebooklm-py[browser]` |
+| Playwright Chromium | NLM authentication browser | Yes (v0.8.0+) — one-time login, cookies persisted |
 | Pexels API | B-roll fallback video sourcing | Fallback — `PEXELS_API_KEY` in `.env` |
 | Cartesia API | TTS narration fallback | Fallback — `CARTESIA_API_KEY` in `.env` |
 | moviepy v2 | Video compositing (slides + subtitles + BGM) | Yes |

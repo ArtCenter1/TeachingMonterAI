@@ -1,5 +1,5 @@
 """
-nlm_studio.py — Autonomous NLM Studio wrapper for Teaching Monster v0.7.0
+nlm_studio.py — Autonomous NLM Studio wrapper for Teaching Monster v0.8.0
 
 Design rules:
 - Every public method returns None on failure (never raises to caller)

@@ -193,7 +193,7 @@ concept lookups return `None` and the M4 prompt receives no few-shot exemplars.
 
 ### [X] Phase 4: Full Pipeline Workshop (The Stabilization)
 **Status: FINALIZED**
-**Version: v0.7.0**
+**Version: v0.8.0**
 
 *   [x] **RAG Database Completion:** Full subject coverage (Physics, Bio, CS, Math).
 *   [x] **Concurrency Guard:** Implemented global `asyncio.Semaphore(2)` in FastAPI.

@@ -40,7 +40,7 @@ from modules.llm_client import get_gemini_pool, get_router_pool
 from modules import nlm_studio
 
 
-app = FastAPI(title="Teaching Monster AI Agent API", version="0.7.0")
+app = FastAPI(title="Teaching Monster AI Agent API", version="0.8.0")
 pipeline_semaphore = asyncio.Semaphore(2)
 
 
