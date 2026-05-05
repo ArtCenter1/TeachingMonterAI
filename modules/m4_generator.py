@@ -141,10 +141,11 @@ class ScriptGenerator:
             logger.info(f"M4: Using NotebookLM flow for script generation (ID: {notebook_id})")
             try:
                 script = await self._generate_with_notebooklm(notebook_id, concept_graph, student_model, topic_context)
-                return [script]
+                if script:  # Guard against None fallback
+                    return [script]
+                logger.warning("M4: NotebookLM returned None. Falling back to legacy LLM flow.")
             except Exception as e:
                 logger.error(f"M4: NotebookLM flow failed ({e}). Falling back to legacy LLM flow.")
-
 
         is_contest_mode = os.getenv("CONTEST_MODE", "false").lower() == "true"
         
@@ -153,7 +154,11 @@ class ScriptGenerator:
             return await self._generate_all(concept_graph, student_model, fact_bundle, model_override)
 
         # Legacy LLM flow
-        level = student_model.level
+        # Resilience: Use getattr for optional/partial models
+        level = getattr(student_model, "level", "high_school")
+        if hasattr(level, "value"):
+            level = level.value  # Ensure string value for strategy tracking
+            
         subject = fact_bundle.metadata.get("subject", "General")
         strategy, mode = self._select_strategy(level, subject)
         

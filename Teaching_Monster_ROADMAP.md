@@ -1,6 +1,6 @@
 # Roadmap: Teaching Monster AI Agent
 
-**Current Version:** `v0.6.0-RLT` (Resilience & Longevity Tuning)
+**Current Version:** `v0.8.0-RLT` (Production Hardening)
 **Overall Status:** Phase 3/4 Stabilized 🚀
 **RAG Confidence (Avg):** 82% (Target: 90%)
 

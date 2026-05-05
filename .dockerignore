@@ -8,7 +8,10 @@ __pycache__/
 # Virtual environments (don't copy into container)
 .venv/
 venv/
+.venv_*/
 ENV/
+env/
+lib64/
 
 # Windows-only FFmpeg binary (Docker uses apt-installed ffmpeg)
 bin/

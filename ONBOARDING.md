@@ -1,4 +1,4 @@
-# Teaching Monster AI — v0.6.0 Onboarding & Development Guide (RLT Edition)
+# Teaching Monster AI — v0.8.0 Onboarding & Development Guide (RLT Edition)
 
 Welcome to the **Teaching Monster AI Agent** project. This document is designed for AI agents and developers to understand the high-performance, local-first RAG architecture of v2.0.
 

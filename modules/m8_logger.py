@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import traceback
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -320,6 +321,32 @@ class ErrorLogger:
     def __init__(self, log_file: str = "m8_errors.json"):
         self.log_file = log_file
 
+    def _mask_sensitive_data(self, text: str) -> str:
+        """Redacts common API key patterns from text."""
+        if not text:
+            return text
+        # Redact Google API keys (AIza...), OpenRouter/OpenAI (sk-...), etc.
+        patterns = [
+            (r"AIzaSy[A-Za-z0-9_-]{33}", "AIzaSy... [REDACTED]"),
+            (r"sk-[a-zA-Z0-9]{20,}", "sk-... [REDACTED]"),
+            (r"sk-or-v1-[a-zA-Z0-9]{32,}", "sk-or-... [REDACTED]"),
+        ]
+        masked = text
+        for pattern, replacement in patterns:
+            masked = re.sub(pattern, replacement, masked)
+        return masked
+
+    def _sanitize_request(self, data: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """Removes sensitive keys from request metadata."""
+        if not data:
+            return data
+        sanitized = data.copy()
+        sensitive_keys = ["google_api_key", "search_api_key", "openrouter_api_key", "xai_api_key", "api_key"]
+        for key in sensitive_keys:
+            if key in sanitized:
+                sanitized[key] = "[REDACTED]"
+        return sanitized
+
     def log_error(
         self,
         run_id: str,
@@ -349,9 +376,9 @@ class ErrorLogger:
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "failed_stage": failed_stage,
             "error_type": type(exc).__name__,
-            "error_message": str(exc),
-            "traceback": traceback.format_exc(),
-            "request": request_data,
+            "error_message": self._mask_sensitive_data(str(exc)),
+            "traceback": self._mask_sensitive_data(traceback.format_exc()),
+            "request": self._sanitize_request(request_data),
         }
         logs.append(entry)
 

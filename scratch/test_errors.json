@@ -1,0 +1,41 @@
+[
+  {
+    "run_id": "test_run_123",
+    "timestamp": "2026-05-05T00:57:50.849083+00:00",
+    "failed_stage": "test",
+    "error_type": "ValueError",
+    "error_message": "Failed with key AIzaSy... [REDACTED]",
+    "traceback": "Traceback (most recent call last):\n  File \"D:\\My_Projects\\TeachingMonsterAI\\scratch\\test_hardening.py\", line 23, in test_log_masking\n    raise ValueError(f\"Failed with key {google_key}\")\nValueError: Failed with key AIzaSy... [REDACTED]\n",
+    "request": {
+      "google_api_key": "[REDACTED]",
+      "openrouter_api_key": "[REDACTED]",
+      "other_field": "safe data"
+    }
+  },
+  {
+    "run_id": "test_run_123",
+    "timestamp": "2026-05-05T00:58:32.135675+00:00",
+    "failed_stage": "test",
+    "error_type": "ValueError",
+    "error_message": "Failed with key AIzaSy... [REDACTED]",
+    "traceback": "Traceback (most recent call last):\n  File \"D:\\My_Projects\\TeachingMonsterAI\\scratch\\test_hardening.py\", line 23, in test_log_masking\n    raise ValueError(f\"Failed with key {google_key}\")\nValueError: Failed with key AIzaSy... [REDACTED]\n",
+    "request": {
+      "google_api_key": "[REDACTED]",
+      "openrouter_api_key": "[REDACTED]",
+      "other_field": "safe data"
+    }
+  },
+  {
+    "run_id": "test_run_123",
+    "timestamp": "2026-05-05T00:58:50.365622+00:00",
+    "failed_stage": "test",
+    "error_type": "ValueError",
+    "error_message": "Failed with key AIzaSy... [REDACTED]",
+    "traceback": "Traceback (most recent call last):\n  File \"D:\\My_Projects\\TeachingMonsterAI\\scratch\\test_hardening.py\", line 23, in test_log_masking\n    raise ValueError(f\"Failed with key {google_key}\")\nValueError: Failed with key AIzaSy... [REDACTED]\n",
+    "request": {
+      "google_api_key": "[REDACTED]",
+      "openrouter_api_key": "[REDACTED]",
+      "other_field": "safe data"
+    }
+  }
+]

@@ -1,4 +1,5 @@
 FROM python:3.11-slim
+LABEL version="0.8.0"
 
 # Install system dependencies
 # - ffmpeg: for video processing
