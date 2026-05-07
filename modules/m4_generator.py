@@ -2,6 +2,7 @@ import os
 import json
 import asyncio
 import random
+import re
 from typing import List, Dict, Any, Tuple, Optional
 from .schemas import FullScript, ScriptSegment, ConceptGraph, StudentModel, FactBundle
 from .utils import extract_json
@@ -247,9 +248,28 @@ class ScriptGenerator:
             strategy_desc = self.strategies.get(strategy_name, "Standard explanation")
 
         # Get few-shot examples
-        level = student_model.level.value
+        level_val = student_model.level.value if hasattr(student_model.level, 'value') else str(student_model.level)
         subject = infer_subject(concept_graph.nodes[0].concept if concept_graph.nodes else "")
-        exemplars = self._get_exemplary_lessons(subject, level, strategy_name)
+        exemplars = self._get_exemplary_lessons(subject, level_val, strategy_name)
+
+        # ── Phase 2: Audience Calibration ─────────────────────────────────────
+        audience_profiles = {
+            "middle_school":  "Age 11-13. Use concrete analogies, no abstract notation. Sentences ≤15 words. Every concept needs a real-world object comparison.",
+            "high_school":    "Age 14-18. Can handle light algebra and notation. Relate to things they care about (sports, gaming, social media). Vocabulary: accessible but not dumbed-down.",
+            "undergraduate":  "Age 18-22. Comfortable with notation and proofs. Use precise technical language. Emphasize 'why it matters' for future courses or careers.",
+            "advanced":       "Assumes strong prior knowledge. Focus on nuance, edge cases, and connections to other fields.",
+        }
+        audience_guidance = audience_profiles.get(level_val, audience_profiles["high_school"])
+
+        # Check if topic has known misconceptions — force Cognitive-Conflict if so
+        has_misconceptions = bool(self.get_relevant_misconceptions(concept_graph))
+        strategy_override_note = ""
+        if has_misconceptions and strategy_name != "Cognitive-Conflict":
+            strategy_override_note = (
+                "\n⚠️ MISCONCEPTION ALERT: This topic has known student misconceptions (listed above). "
+                "Even though the selected strategy is not Cognitive-Conflict, you MUST explicitly "
+                "address and correct each misconception at the point in the script where it would naturally arise."
+            )
 
         prompt = f"""
         Generate a full educational script for the following lesson plan.
@@ -267,14 +287,31 @@ class ScriptGenerator:
         SCAFFOLDING STRATEGY: {strategy_name} ({strategy_desc})
 
         Requirements:
-        1. Narrative Flow: Ensure smooth transitions between concepts.
-        2. Visual Cues: For each segment, provide a 'visual_content_spec' detailing what should be on screen. If the subject is Physics or Mathematics, the 'visual_content_spec' MUST specifically request clean vector schematics, technical diagrams, or 2D graphs without text, avoiding realistic imagery that causes nonsensical artifacts.
-        3. Pacing: Match student level (vocabulary, complexity).
-        4. Citations: Every factual claim must be attributed to a source in the facts.
-        5. Hook: First 60 seconds must have a curiosity trigger.
-        6. Checks: Include Socratic questions or checks for understanding.
-        7. For Cognitive-Conflict strategy, explicitly address and correct the listed misconceptions.
-        8. Verbosity: Every segment narration MUST be between 150-250 words. Do not be overly concise. Explain in detail to ensure the final video length is substantial.
+        1. AUDIENCE CALIBRATION ({level_val}): {audience_guidance}
+        2. ENGAGEMENT HOOKS — MANDATORY, minimum 3 per video:
+           a. OPENING HOOK (first 30 seconds): Start with a surprising fact, a relatable struggle, 
+              or a "what if..." question. DO NOT start with "Today we will learn about...".
+           b. MID-VIDEO RE-ENGAGEMENT (once per 2 segments): Include a "Pause and predict" 
+              prompt, e.g. "Before I reveal the answer — what do you think happens when...?"
+           c. CLOSING CHALLENGE: End with an open question or mini-challenge the student can 
+              try immediately without extra materials.
+        3. Narrative Flow: Smooth transitions. Each segment must reference the previous concept 
+           using a bridging sentence ("Now that we know X, let's use that to understand Y...").
+        4. Visual Cues: For each segment, 'visual_content_spec' MUST describe ONLY pure 
+           diagrams, arrows, and shapes — NO photographic imagery. For math/physics topics, 
+           explicitly specify: clean vector schematic, axis labels, color-coded arrows on dark background.
+        5. Pacing: Match student level vocabulary. Use {level_val} appropriate sentence length.
+        6. Citations: Every factual claim attributed to a source in the facts.
+        7. Misconception Handling: {strategy_override_note if strategy_override_note else "Address any misconceptions proactively with 'You might think X, but actually Y' phrasing."}
+        8. Verbosity: Every segment narration MUST be 150-250 words. Explain in full detail.
+        9. MATHEMATICAL ACCURACY — DISQUALIFICATION RISK:
+           All formulas MUST be mathematically correct. Verify each before writing:
+           - Slope: (y2 - y1) / (x2 - x1)          ← y2 MINUS y1, NOT y2 minus x1
+           - Vector components: (x2 - x1, y2 - y1)   ← both pairs use matching subscripts
+           - Distance: sqrt((x2-x1)² + (y2-y1)²)     ← both terms must be SQUARED
+           Any incorrect formula → automatic disqualification.
+        10. SOCRATIC CHECKS: Include at least 2 genuine student-facing questions in the 
+            'checks' array that test conceptual understanding, not just recall.
 
         Return the data as a JSON object matching this schema:
         {{
@@ -306,20 +343,75 @@ class ScriptGenerator:
             )
             data = extract_json(response_text)
             
-            # Post-generation validation: check for overly concise segments
+            # ── Phase 1: Post-generation validation: formula check ──────────
+            formula_errors = self._validate_formulas(data)
+            if formula_errors:
+                logger.error(
+                    f"M4: FORMULA VALIDATION FAILED for strategy '{strategy_name}'. "
+                    f"Errors: {formula_errors}. Triggering one retry with explicit correction."
+                )
+                # Build a correction prompt and retry once
+                correction_prompt = prompt + f"""
+
+CRITICAL CORRECTION REQUIRED — Your previous response contained these errors:
+{chr(10).join(formula_errors)}
+
+Regenerate the FULL script again, fixing ALL errors listed above.
+Double-check every mathematical formula before writing it.
+"""
+                response_text = await self.llm.generate_text(
+                    prompt=correction_prompt,
+                    model_override=model_override,
+                    temperature=0.5,   # Lower temp for more deterministic correction
+                    max_tokens=8192,
+                    model_size="large",
+                )
+                data = extract_json(response_text)
+                formula_errors_retry = self._validate_formulas(data)
+                if formula_errors_retry:
+                    logger.error(f"M4: Formula errors persist after retry: {formula_errors_retry}")
+                else:
+                    logger.success("M4: Formula validation passed after correction retry.")
+
+            # ── Post-generation validation: word count check ───────────────
             for seg in data.get("segments", []):
                 narration = seg.get("narration", "")
                 word_count = len(narration.split())
                 if word_count < 100:
-                    logger.warning(f"M4: Segment {seg.get('segment_id')} is too short ({word_count} words).")
-                    # We could trigger a retry here, but for now we just log it.
+                    logger.warning(
+                        f"M4: Segment {seg.get('segment_id')} is too short ({word_count} words)."
+                    )
             # Ensure strategy name is preserved
             data["scaffolding_strategy"] = strategy_name
             data["subject"] = subject
             return FullScript(**data)
         except Exception as e:
             logger.error(f"Error generating script ({strategy_name}): {str(e)}")
-            return self.get_mock_data(concept_graph, strategy_name)
+    # ── Phase 1: Formula Validator ──────────────────────────────────────────
+    _FORMULA_ERRORS = [
+        # (bad_pattern_regex, correct_form, description)
+        (r"y2\s*[-–]\s*x1", "y2 - y1", "Vector y-component: y2-x1 is wrong, must be y2-y1"),
+        (r"x2\s*[-–]\s*y1", "x2 - x1", "Vector x-component: x2-y1 is wrong, must be x2-x1"),
+        (r"sqrt\s*\(\s*\(\s*x2\s*[-–]\s*x1\s*\)\s*\+\s*\(\s*y2\s*[-–]\s*y1\s*\)\s*\)", 
+         "sqrt((x2-x1)^2 + (y2-y1)^2)", "Distance formula missing squares"),
+    ]
+
+    def _validate_formulas(self, script_data: dict) -> list[str]:
+        """
+        Scan all narration segments for known bad formula patterns.
+        Returns a list of error strings (empty list = pass).
+        """
+        errors = []
+        for seg in script_data.get("segments", []):
+            narration = seg.get("narration", "")
+            seg_id = seg.get("segment_id", "?")
+            for bad_pattern, correct_form, description in self._FORMULA_ERRORS:
+                if re.search(bad_pattern, narration, re.IGNORECASE):
+                    errors.append(
+                        f"Segment {seg_id}: FORMULA ERROR — {description}. "
+                        f"Correct form: '{correct_form}'"
+                    )
+        return errors
 
     def get_mock_data(
         self, concept_graph: ConceptGraph, strategy_name: str = "Intuition-First"

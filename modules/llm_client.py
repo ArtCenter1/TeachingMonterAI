@@ -89,10 +89,10 @@ class LLMClient:
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
         # Primary & Fallback model names
-        self.primary_model = os.getenv("PRIMARY_MODEL", "models/gemini-2.5-flash")
-        self.fallback_model = os.getenv("FALLBACK_MODEL", "models/gemini-2.5-flash")
-        # FIX: Last resort must be a live model — gemini-2.0-flash-exp is deprecated/404
-        self.gemini_last_resort = "models/gemini-2.5-flash"
+        self.primary_model = os.getenv("PRIMARY_MODEL", "models/gemini-2.0-flash")
+        self.fallback_model = os.getenv("FALLBACK_MODEL", "models/gemini-1.5-flash")
+        # FIX: Last resort must be a live model — 1.5-flash is the most reliable free-tier option
+        self.gemini_last_resort = "models/gemini-1.5-flash"
 
         # Use shared pools
         self.gemini_pool = get_gemini_pool()
@@ -141,7 +141,7 @@ class LLMClient:
           2. size_to_models[model_size] — OpenRouter first, then Gemini as last entry
           3. primary_model from .env (if not already in the list)
           4. fallback_model from .env (if not already in the list)
-          5. gemini_last_resort (hardcoded gemini-2.5-flash as final safety net)
+          5. gemini_last_resort (hardcoded gemini-1.5-flash as final safety net)
 
         The key insight: each model is tried sequentially. When an OpenRouter model
         raises AllKeysExhaustedError OR any other exception, we move to the NEXT
@@ -160,13 +160,13 @@ class LLMClient:
                 "openrouter/meta-llama/llama-3.3-70b-instruct:free",
                 "openrouter/google/gemma-3-27b-it:free",
                 "kilo/nvidia/nemotron-3-super-120b-a12b:free",
-                "models/gemini-2.5-flash",
+                "models/gemini-2.0-flash",
             ],
             "large": [
                 "openrouter/nousresearch/hermes-3-llama-3.1-405b:free",
                 "openrouter/meta-llama/llama-3.3-70b-instruct:free",
                 "kilo/nvidia/nemotron-3-super-120b-a12b:free",
-                "models/gemini-2.5-flash",
+                "models/gemini-2.0-flash",
             ],
         }
 
@@ -185,7 +185,7 @@ class LLMClient:
         if self.fallback_model not in models_to_try:
             models_to_try.append(self.fallback_model)
 
-        # Hard-coded absolute last resort — gemini-2.5-flash (not deprecated gemini-2.0-flash)
+        # Hard-coded absolute last resort — gemini-1.5-flash
         if self.gemini_last_resort not in models_to_try:
             models_to_try.append(self.gemini_last_resort)
 
@@ -245,10 +245,10 @@ class LLMClient:
                                 and "audio" not in m.lower()
                             ]
 
-                            # Preference: gemini-2.5-flash > gemini-1.5-flash > anything else
+                            # Preference: gemini-2.0-flash > gemini-1.5-flash > anything else
                             new_fallback = None
                             if candidates:
-                                for pref in ["2.5-flash", "1.5-flash"]:
+                                for pref in ["2.0-flash", "1.5-flash"]:
                                     match = next((m for m in candidates if pref in m), None)
                                     if match:
                                         new_fallback = match

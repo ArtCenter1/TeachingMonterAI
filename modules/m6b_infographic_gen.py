@@ -2,14 +2,14 @@
 M6B InfographicGen — Gemini Native Image Generation for Script-Aligned Visuals
 
 Replaces generic Pexels B-roll with dynamically generated, narration-accurate
-educational infographics using gemini-2.5-flash-image.
+educational infographics using stable Gemini models.
 
 Architecture:
   generate_segment_infographic(segment, style) → PNG path
   InfographicGenerator.generate_all(script) → list of (segment_id, path)
 
 Models used (in priority order, all from GOOGLE_API_KEY_POOL):
-  1. gemini-2.5-flash-image   (free tier, fast)
+  1. gemini-2.0-flash       (free tier, experimental)
   2. gemini-2.0-flash-exp     (fallback if image model unavailable)
 
 Style options:
@@ -111,7 +111,11 @@ NARRATION CONTEXT: "{narration_excerpt}"
 
 INSTRUCTIONS:
 1. FOCUS: The image must precisely illustrate the KEY CONCEPT using the requested style.
-2. TEXT: DO NOT include any mathematical text, equations, or long labels, because AI generates them as nonsensical gibberish. If you must use labels, use only 1-3 simple English words. Completely avoid drawing formulas.
+2. TEXT — CRITICAL RULE — NO EXCEPTIONS: 
+   ABSOLUTELY NO text, letters, numbers, symbols, equations, labels, or annotations of ANY kind. 
+   Not even axis labels or legend text. 
+   If you draw any character from any alphabet, this image is REJECTED.
+   Communicate ALL concepts using ONLY: shapes, arrows, colors, icons, and spatial relationships.
 3. QUALITY: Ensure the diagram is technically accurate to the subject matter.
 4. COMPOSITION: Centered layout with clear margins. Professional educational graphics only.
 5. NO PHOTOREALISM: Stick strictly to the specified illustration style. NO generic stock photos.
@@ -128,9 +132,9 @@ class InfographicGenerator:
     """
 
     # Primary model — "Nano Banana Pro" for high-quality infographics and diagrams
-    PRIMARY_MODEL = "gemini-3-pro-image-preview"
+    PRIMARY_MODEL = "gemini-2.0-flash-preview-image-generation"
     # Fallback — "Nano Banana 2" 
-    FALLBACK_MODEL = "gemini-3.1-flash-image-preview"
+    FALLBACK_MODEL = "gemini-2.0-flash-exp"
 
     def __init__(self, output_dir: str = "temp/visuals/infographics"):
         self.output_dir = output_dir

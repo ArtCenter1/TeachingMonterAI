@@ -4,7 +4,7 @@ M7 VideoRenderer — Pure FFmpeg subprocess implementation.
 Why pure FFmpeg instead of MoviePy?
 - MoviePy TextClip calls ImageMagick for EVERY FRAME → very slow (6+ min for 3 segments).
 - FFmpeg's drawtext filter renders text at mux time, not per-frame → 10× faster.
-- A 3-segment 720×1280 video now encodes in ~30–60 seconds instead of 6 minutes.
+- A 3-segment 1920×1080 video now encodes in ~30–60 seconds instead of 6 minutes.
 
 Architecture:
   _generate_audio()             → Gemini TTS (primary, free) → Cartesia fallback → .wav file per segment
@@ -119,14 +119,14 @@ def _run_ffmpeg(args: list[str], step_label: str = ""):
 # ── Main Renderer ───────────────────────────────────────────────────────────
 
 class VideoRenderer:
-    # Target resolution — 720p landscape (High Definition, contest requirement)
-    WIDTH = 1280
-    HEIGHT = 720
+    # Target resolution — 1080p landscape (Full High Definition, contest requirement)
+    WIDTH = 1920
+    HEIGHT = 1080
     FPS = 24
 
     # Gemini TTS voice — neutral, professional. Options: Kore, Charon, Fenrir, Aoede, Puck
     GEMINI_VOICE = "Kore"
-    GEMINI_TTS_MODEL = "models/gemini-2.5-flash-preview-tts"
+    GEMINI_TTS_MODEL = "models/gemini-2.0-flash-exp"
 
     def __init__(self, output_dir="temp/output"):
         self.output_dir = output_dir

@@ -4,30 +4,30 @@
     "level": "high_school",
     "subject": "General",
     "wins": 2,
-    "losses": 10,
+    "losses": 11,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 12
+    "total": 13
   },
   "Cognitive-Conflict|StudentLevel.HIGH_SCHOOL|General": {
     "strategy": "Cognitive-Conflict",
     "level": "high_school",
     "subject": "General",
     "wins": 3,
-    "losses": 9,
+    "losses": 10,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 12
+    "total": 13
   },
   "Intuition-First|StudentLevel.HIGH_SCHOOL|General": {
     "strategy": "Intuition-First",
     "level": "high_school",
     "subject": "General",
-    "wins": 31,
+    "wins": 32,
     "losses": 3,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 34
+    "total": 35
   },
   "Intuition-First|StudentLevel.HIGH_SCHOOL|Biology": {
     "strategy": "Intuition-First",
@@ -63,31 +63,31 @@
     "strategy": "Intuition-First",
     "level": "high_school",
     "subject": "Mathematics",
-    "wins": 2,
+    "wins": 4,
     "losses": 0,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 2
+    "total": 4
   },
   "Cognitive-Conflict|StudentLevel.HIGH_SCHOOL|Mathematics": {
     "strategy": "Cognitive-Conflict",
     "level": "high_school",
     "subject": "Mathematics",
     "wins": 0,
-    "losses": 2,
+    "losses": 4,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 2
+    "total": 4
   },
   "Inductive|StudentLevel.HIGH_SCHOOL|Mathematics": {
     "strategy": "Inductive",
     "level": "high_school",
     "subject": "Mathematics",
     "wins": 0,
-    "losses": 2,
+    "losses": 4,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 2
+    "total": 4
   },
   "Intuition-First|StudentLevel.MIDDLE_SCHOOL|General": {
     "strategy": "Intuition-First",
@@ -183,6 +183,16 @@
     "strategy": "Intuition-First",
     "level": "high_school",
     "subject": "Physics",
+    "wins": 0,
+    "losses": 0,
+    "elo_wins": 0,
+    "elo_losses": 1,
+    "total": 0
+  },
+  "Intuition-First|high_school|General": {
+    "strategy": "Intuition-First",
+    "level": "high_school",
+    "subject": "General",
     "wins": 0,
     "losses": 0,
     "elo_wins": 0,

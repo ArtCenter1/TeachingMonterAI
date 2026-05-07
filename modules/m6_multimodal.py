@@ -121,8 +121,18 @@ class MultimodalPlanner:
                     "abstract science",
                 ]
 
+            # ── Narration-anchor enforcement ──────────────────────────────────
+            # Ensure the visual spec references the narration content explicitly.
+            # This prevents the M6B image generator from drifting to generic imagery.
+            narration_anchor = segment.narration[:150].strip()
+            content_spec_anchored = (
+                f"{segment.visual_content_spec} "
+                f"[NARRATION CONTEXT: '{narration_anchor}...'] "
+                f"The visual must directly illustrate what is being described in this narration."
+            )
+
             # ── Sequential reveal logic (unchanged from original) ─────────────
-            content_spec = segment.visual_content_spec
+            content_spec = content_spec_anchored
             reveal_sequential = False
             elements = []
             if (
@@ -142,7 +152,7 @@ class MultimodalPlanner:
                 "visual_source": visual_source,
                 "nlm_slide_path": nlm_slide_path,        # NLM slide PNG (highest priority)
                 "infographic_path": infographic_path,    # Gemini infographic (fallback 1)
-                "content_spec": segment.visual_content_spec,
+                "content_spec": content_spec_anchored,
                 "duration_seconds": segment.duration_seconds,
                 "image_path": slide_path,                # fallback slide
                 "pexels_keywords": search_terms,
@@ -192,18 +202,29 @@ class MultimodalPlanner:
 
         return f"""
 Act as a Visual Director for a high-end educational YouTube channel.
-Your task is to extract concrete, search-friendly visual keywords from the narration of each lesson segment.
-These keywords will be used for B-roll video search AND background music matching.
+Your task: for each lesson segment, generate Pexels B-roll keywords that are ANCHORED 
+to what the narration is saying at that EXACT moment.
 
-Rules:
-1. Keywords must be highly specific to the *narration* context.
-2. Avoid abstract words like "education", "science", "knowledge".
-3. Use realistic B-roll scene descriptions (useful also for audio mood matching).
-4. Provide 5 distinct keywords/phrases per segment.
+CRITICAL RULE — NARRATION SYNC:
+The keywords for each segment must describe a visual that a viewer would expect to see 
+while HEARING that segment's narration. If the narration says "imagine a treasure hunt", 
+the visual must show a treasure hunt or a map — NOT a generic science lab.
+
+ANTI-PATTERNS (these will cause a poor evaluation score):
+- Generic visuals: "education", "science", "knowledge", "abstract" → REJECTED
+- Mismatched visuals: narration talks about vectors, visual shows a forest → REJECTED
+- Photographic imagery for math/physics: narration explains a formula, visual shows people → REJECTED
+
+CORRECT APPROACH:
+- Read the narration first, identify the CORE ACTION or CONCEPT being described right now
+- Generate keywords that show that specific action/concept
+- For math/physics: prefer "animation", "diagram", "schematic", "graph" keywords
 
 Example:
-Narration: "Imagine the heart as a double-pump, pushing oxygenated blood to the brain."
-Keywords: ["human heart animation", "blood cells flowing", "circulatory system", "medical visualization heart", "pumping heart close up"]
+Narration: "A vector has both magnitude AND direction — unlike a scalar, which only has size."  
+Keywords: ["arrow with magnitude label diagram", "vector vs scalar comparison animation", 
+           "physics vector direction illustration", "force direction arrow graphic", 
+           "mathematical vector schematic dark background"]
 
 Segments to process:
 {segments_info}

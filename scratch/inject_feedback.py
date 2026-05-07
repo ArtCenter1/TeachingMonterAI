@@ -5,31 +5,25 @@ import os
 def main():
     logger = FeedbackLogger("m8_feedback.json")
     
-    # Find the latest run
-    with open("m8_feedback.json", "r") as f:
-        logs = json.load(f)
+    # Target run
+    run_id = "e9a7cda9-c6f5-44d5-9cd6-4730644ae9b2"
+    print(f"Targeting run: {run_id}")
     
-    latest_run = logs[-1]["run_id"]
-    print(f"Found latest run: {latest_run}")
-    
-    # Inject the feedback we got from the browser subagent
+    # Actual scores from teaching.monster contest portal
     scores = {
-        "accuracy": 4.4,
-        "logic": 4.5,
-        "adaptability": 3.4,
-        "engagement": 2.7
+        "accuracy": 1.9,
+        "logic": 3.1,
+        "adaptability": 1.1,
+        "engagement": 1.0
     }
     
-    critique = "The report notes that the video provides a high-quality conceptual overview aligned with AP/IB standards, using effective analogies like 'train vs. car.' However, it points out that the AI-generated background imagery contains 'nonsensical artifacts' and suggests replacing them with standard physics schematics and real mathematical notation."
+    critique = "Factual error at 03:58: 'Y2 minus X1' instead of 'Y2 minus Y1'. Poor visual presentation: Irrelevant AI-generated imagery and nonsensical text. The AI student found the math formula for vector components incorrect."
     
-    # Let's decide elo_outcome: accuracy and logic are high, but engagement is low. 
-    # Average is (4.4+4.5+3.4+2.7)/4 = 3.75. Not a strict win, but logic is good.
-    # Let's consider it a "win" for strategy purposes, or maybe "loss" since engagement was < 3. 
-    # We'll put "loss" to trigger strategy evolution on the images.
+    # Elo Outcome
     elo_outcome = "loss"
     
     success = logger.add_ai_student_feedback(
-        run_id=latest_run,
+        run_id=run_id,
         ai_student_scores=scores,
         critique_text=critique,
         elo_outcome=elo_outcome
