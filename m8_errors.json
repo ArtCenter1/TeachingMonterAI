@@ -1,0 +1,38 @@
+[
+  {
+    "run_id": "a479b5c4-714d-4447-a537-eceb36e71f2c",
+    "timestamp": "2026-05-08T06:23:59.557136+00:00",
+    "failed_stage": "m4_generator",
+    "error_type": "AttributeError",
+    "error_message": "'NoneType' object has no attribute 'greedy_selected'",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 169, in pipeline_task\n    scripts = await m4.generate_variants(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 181, in generate_variants\n    variant.greedy_selected = True\n    ^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'greedy_selected'\n",
+    "request": {
+      "course_requirement": "unit: Analytical Applications of Differentiation\n\ntopic: Introduction to Optimization Problems\n\nlearning objective: Solve optimization problems.\n\nessential knowledge: Optimization problems involve finding maximum or minimum values in applied contexts using derivatives.",
+      "student_persona": "Education Level: Senior high school | Preferred Explanation Style: Examples | Timeline Urgency: Relaxed | Depth Preference: Application-first",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": "[REDACTED]",
+      "search_cx": null,
+      "search_api_key": "[REDACTED]",
+      "request_id": "celery_2683_1778192244"
+    }
+  },
+  {
+    "run_id": "8e9c8237-879b-47b7-a8ab-bda981a8a8fe",
+    "timestamp": "2026-05-08T11:11:50.269029+00:00",
+    "failed_stage": "m4_generator",
+    "error_type": "AttributeError",
+    "error_message": "'NoneType' object has no attribute 'greedy_selected'",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 169, in pipeline_task\n    scripts = await m4.generate_variants(\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m4_generator.py\", line 181, in generate_variants\n    if variant is None:\nAttributeError: 'NoneType' object has no attribute 'greedy_selected'\n",
+    "request": {
+      "course_requirement": "unit: Analytical Applications of Differentiation\n\ntopic: Introduction to Optimization Problems\n\nlearning objective: Solve optimization problems.\n\nessential knowledge: Optimization problems involve finding maximum or minimum values in applied contexts using derivatives.",
+      "student_persona": "Education Level: Senior high school | Preferred Explanation Style: Examples | Timeline Urgency: Relaxed | Depth Preference: Application-first",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": "[REDACTED]",
+      "search_cx": null,
+      "search_api_key": "[REDACTED]",
+      "request_id": "celery_2683_1778209431"
+    }
+  }
+]

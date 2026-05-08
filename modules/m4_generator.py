@@ -178,6 +178,11 @@ class ScriptGenerator:
             model_override,
         )
         # Transient flags for M8 handling
+        if variant is None:
+            logger.warning(
+                f"[M4] All LLMs exhausted for strategy '{strategy}' — falling back to cold-start"
+            )
+            return await self._generate_all(concept_graph, student_model, fact_bundle, model_override)
         variant.greedy_selected = True
         variant.greedy_mode = mode
         return [variant]

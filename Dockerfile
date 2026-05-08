@@ -28,6 +28,9 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install edge-tts: free Microsoft Neural TTS fallback (no API key required)
+RUN pip install --no-cache-dir edge-tts
+
 # Install Playwright Chromium for NLM headless auth refresh (no manual login needed at runtime)
 RUN playwright install chromium --with-deps
 

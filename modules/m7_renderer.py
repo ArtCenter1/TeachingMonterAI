@@ -7,7 +7,7 @@ Why pure FFmpeg instead of MoviePy?
 - A 3-segment 1920×1080 video now encodes in ~30–60 seconds instead of 6 minutes.
 
 Architecture:
-  _generate_audio()             → Gemini TTS (primary, free) → Cartesia fallback → .wav file per segment
+  _generate_audio()             → Gemini TTS (primary, free) → Cartesia fallback → Edge TTS (free, no key) → .wav file per segment
   _source_visual_path()         → Pexels download or color fallback → local .mp4 file path
   _render_infographic_segment() → FFmpeg: Ken Burns zoom on static AI infographic PNG
   _render_segment()             → FFmpeg: B-roll trim/resize + drawtext caption
@@ -685,6 +685,29 @@ class VideoRenderer:
             "mix_bgm",
         )
 
+    async def _generate_audio_edge_tts(self, text: str, audio_path: str) -> str:
+        """
+        Generate TTS audio via Microsoft Edge TTS (free, no API key required).
+        Uses the 'en-US-AriaNeural' voice — natural, clear, professional.
+        Returns the path to the written MP3/WAV file.
+        """
+        import edge_tts
+        # Use a professional, clear English voice
+        voice = os.getenv("EDGE_TTS_VOICE", "en-US-AriaNeural")
+        mp3_path = audio_path.replace(".wav", ".mp3")
+        communicate = edge_tts.Communicate(text, voice)
+        await communicate.save(mp3_path)
+        # Convert MP3 → WAV using ffmpeg so downstream pipeline stays consistent
+        _run_ffmpeg(
+            ["-i", mp3_path, "-ar", "44100", "-ac", "1", audio_path],
+            "edge_tts_mp3_to_wav",
+        )
+        try:
+            os.remove(mp3_path)
+        except Exception:
+            pass
+        return audio_path
+
     async def _generate_audio(self, segment: Any, output_dir: str) -> str:
         """
         Generate TTS audio for a segment.
@@ -692,6 +715,7 @@ class VideoRenderer:
         Priority:
           1. Gemini TTS (free, 9-key pool) — primary engine
           2. Cartesia (paid, high-quality) — optional fallback if keys exist
+          3. Edge TTS (Microsoft, free, no API key) — guaranteed last-resort fallback
         """
         audio_path = os.path.join(output_dir, f"{segment.segment_id}.wav")
         if os.path.exists(audio_path):
@@ -708,41 +732,48 @@ class VideoRenderer:
             logger.warning(f"M7: Gemini TTS failed for {segment.segment_id}: {e} — trying Cartesia fallback")
 
         # ── 2. Cartesia fallback (if keys exist) ─────────────────────────────
-        if len(self.cartesia_pool._keys) == 0:
-            raise RuntimeError(f"No audio provider available. Gemini TTS failed and no Cartesia keys configured.")
+        if len(self.cartesia_pool._keys) > 0:
+            last_error = None
+            for _ in range(len(self.cartesia_pool._keys)):
+                try:
+                    client, used_key = self._get_cartesia_client()
+                    data_iterator = client.tts.bytes(
+                        model_id="sonic-english",
+                        transcript=segment.narration,
+                        voice={"mode": "id", "id": self.voice_id},
+                        output_format={
+                            "container": "wav",
+                            "encoding": "pcm_s16le",
+                            "sample_rate": 44100,
+                        },
+                    )
+                    with open(audio_path, "wb") as f:
+                        for chunk in data_iterator:
+                            f.write(chunk)
+                    logger.success(f"M7: Cartesia TTS OK for segment {segment.segment_id}")
+                    return audio_path
 
-        last_error = None
-        for _ in range(len(self.cartesia_pool._keys)):
-            try:
-                client, used_key = self._get_cartesia_client()
-                data_iterator = client.tts.bytes(
-                    model_id="sonic-english",
-                    transcript=segment.narration,
-                    voice={"mode": "id", "id": self.voice_id},
-                    output_format={
-                        "container": "wav",
-                        "encoding": "pcm_s16le",
-                        "sample_rate": 44100,
-                    },
-                )
-                with open(audio_path, "wb") as f:
-                    for chunk in data_iterator:
-                        f.write(chunk)
-                logger.success(f"M7: Cartesia TTS OK for segment {segment.segment_id}")
-                return audio_path
+                except Exception as e:
+                    last_error = e
+                    err_str = str(e).lower()
+                    if any(kw in err_str for kw in ["429", "rate limit", "quota", "402", "unauthorized", "403"]):
+                        quarantine_sec = 300 if any(k in err_str for k in ["402", "quota"]) else 120
+                        logger.warning(f"M7: Cartesia key error ({e}) — quarantining for {quarantine_sec}s")
+                        self.cartesia_pool.report_error(used_key, quarantine_sec)
+                    else:
+                        logger.error(f"M7: Cartesia TTS failed (non-quota): {e}")
+                        break
+            logger.warning(f"M7: All Cartesia keys failed ({last_error}) — falling back to Edge TTS")
+        else:
+            logger.warning("M7: No Cartesia keys configured — falling back to Edge TTS")
 
-            except Exception as e:
-                last_error = e
-                err_str = str(e).lower()
-                if any(kw in err_str for kw in ["429", "rate limit", "quota", "402", "unauthorized", "403"]):
-                    quarantine_sec = 300 if any(k in err_str for k in ["402", "quota"]) else 120
-                    logger.warning(f"M7: Cartesia key error ({e}) — quarantining for {quarantine_sec}s")
-                    self.cartesia_pool.report_error(used_key, quarantine_sec)
-                else:
-                    logger.error(f"M7: Cartesia TTS failed (non-quota): {e}")
-                    break
-
-        raise RuntimeError(f"All TTS providers failed. Last error: {last_error}")
+        # ── 3. Edge TTS — free, no API key, always available ─────────────────
+        try:
+            result = await self._generate_audio_edge_tts(segment.narration, audio_path)
+            logger.success(f"M7: Edge TTS OK for segment {segment.segment_id}")
+            return result
+        except Exception as e:
+            raise RuntimeError(f"All TTS providers failed (Gemini, Cartesia, Edge TTS). Last error: {e}")
     def _generate_srt(self, segments: List[Any], output_path: str):
         """Generates a standard SubRip (.srt) subtitle file."""
         try:
