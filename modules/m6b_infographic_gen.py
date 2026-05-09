@@ -111,11 +111,11 @@ NARRATION CONTEXT: "{narration_excerpt}"
 
 INSTRUCTIONS:
 1. FOCUS: The image must precisely illustrate the KEY CONCEPT using the requested style.
-2. TEXT — CRITICAL RULE — NO EXCEPTIONS: 
-   ABSOLUTELY NO text, letters, numbers, symbols, equations, labels, or annotations of ANY kind. 
-   Not even axis labels or legend text. 
-   If you draw any character from any alphabet, this image is REJECTED.
-   Communicate ALL concepts using ONLY: shapes, arrows, colors, icons, and spatial relationships.
+2. TEXT USAGE — CRITICAL RULE:
+   Keep text EXTREMELY minimal to avoid AI generation artifacts. 
+   ONLY use text for essential mathematical labels (e.g., "f(x)", "f'(x) = 0", "Max", "Min"). 
+   Do NOT generate sentences, paragraphs, or long titles. 
+   Render any requested math symbols EXACTLY as requested without typos.
 3. QUALITY: Ensure the diagram is technically accurate to the subject matter.
 4. COMPOSITION: Centered layout with clear margins. Professional educational graphics only.
 5. NO PHOTOREALISM: Stick strictly to the specified illustration style. NO generic stock photos.

@@ -323,6 +323,9 @@ class ScriptGenerator:
            Any incorrect formula → automatic disqualification.
         10. SOCRATIC CHECKS: Include at least 2 genuine student-facing questions in the 
             'checks' array that test conceptual understanding, not just recall.
+        11. TOPIC-SPECIFIC SAFEGUARDS:
+            - If topic is "Optimization Problems", you MUST explicitly cover setting up objective functions, constraints, and finding critical points using the derivative (f'(x) = 0). DO NOT just talk about basic kinematics (position vs speed). Use f(x) for position/value and f'(x) for rate of change.
+            - VISUAL ALIGNMENT REQUIREMENT: When discussing f'(x) = 0 or critical points, the `visual_content_spec` MUST explicitly describe drawing a tangent line with zero slope and labeling it "f'(x)=0". When discussing constraints, the visual MUST explicitly show boundaries or feasible regions.
 
         Return the data as a JSON object matching this schema:
         {{
@@ -405,6 +408,8 @@ Double-check every mathematical formula before writing it.
         (r"x2\s*[-–]\s*y1", "x2 - x1", "Vector x-component: x2-y1 is wrong, must be x2-x1"),
         (r"sqrt\s*\(\s*\(\s*x2\s*[-–]\s*x1\s*\)\s*\+\s*\(\s*y2\s*[-–]\s*y1\s*\)\s*\)", 
          "sqrt((x2-x1)^2 + (y2-y1)^2)", "Distance formula missing squares"),
+        (r"f\(x\)\s+(is|represents|means)\s+(the\s+)?(speed|velocity|rate\s+of\s+change)", "f'(x) is speed", "Function f(x) confused with derivative f'(x)"),
+        (r"(speed|velocity)\s+(is|equals)\s+(the\s+)?f\(x\)", "speed is f'(x)", "Derivative f'(x) incorrectly called f(x)"),
     ]
 
     def _validate_formulas(self, script_data: dict) -> list[str]:
