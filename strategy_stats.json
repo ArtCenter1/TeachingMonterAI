@@ -198,5 +198,35 @@
     "elo_wins": 0,
     "elo_losses": 1,
     "total": 0
+  },
+  "Intuition-First|StudentLevel.IB|Mathematics": {
+    "strategy": "Intuition-First",
+    "level": "IB",
+    "subject": "Mathematics",
+    "wins": 1,
+    "losses": 0,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 1
+  },
+  "Cognitive-Conflict|StudentLevel.IB|Mathematics": {
+    "strategy": "Cognitive-Conflict",
+    "level": "IB",
+    "subject": "Mathematics",
+    "wins": 0,
+    "losses": 1,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 1
+  },
+  "Inductive|StudentLevel.IB|Mathematics": {
+    "strategy": "Inductive",
+    "level": "IB",
+    "subject": "Mathematics",
+    "wins": 0,
+    "losses": 1,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 1
   }
 }
