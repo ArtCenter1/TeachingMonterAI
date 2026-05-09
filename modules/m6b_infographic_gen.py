@@ -92,6 +92,14 @@ def _build_prompt(concept: str, narration: str, visual_content_spec: str,
     # Get the detailed style description from the map
     style_description = _STYLE_PROMPTS.get(style, "Style: clean, professional educational infographic.")
     
+    # Task 1.3: Hard-block AI slop patterns
+    slop_blocklist = [
+        "glowing orbs", "energy particles", "magical dust", "abstract swirls",
+        "floating sparks", "unnecessary fractals", "dreamy bokeh", "mystical atmosphere",
+        "neon liquid", "cyberpunk elements"
+    ]
+    block_instruction = f"NEVER include any of the following 'slop' artifacts: {', '.join(slop_blocklist)}."
+
     return f"""
         Create an educational illustration for a video segment about: {concept}.
         
@@ -101,7 +109,10 @@ def _build_prompt(concept: str, narration: str, visual_content_spec: str,
         
         CRITICAL CONSTRAINTS:
         - [NO_TEXT]: Do NOT include any letters, words, or labels in the image.
-        - [STEM_ACCURACY]: If showing light rays, use arrows. If showing lenses, make them clearly convex or concave.
+        - [STEM_ACCURACY]: {block_instruction}
+        - [STRICT_VISUALS]: NEVER include decorative energy spheres or abstract light effects.
+        - [SPECIFIC_OBJECTS]: If this is a Physics problem, ONLY use the specific objects named in the concept description.
+        - [SCHEMATIC_ONLY]: Output a clear, textbook-style schematic. DO NOT add artistic flourishes or nonsensical diagrams.
         - Theme: Educational, professional, clean.
         """
 
@@ -188,6 +199,16 @@ class InfographicGenerator:
                     if result:
                         if entry:
                             self.pool.report_success(entry)
+                        
+                        # Task 1.2: Self-Validation Loop
+                        # Use Gemini Vision to check if the image is pedagogically sound
+                        is_valid = await self._validate_infographic(out_path, concept, narration)
+                        if not is_valid:
+                            logger.warning(f"[M6B] Infographic validation failed for {segment_id} — triggering regeneration")
+                            # Modify prompt slightly to discourage slop
+                            prompt = "RETRY WITH MORE PRECISE SCHEMATIC, NO ARTISTIC BLOAT: " + prompt
+                            continue # Try next attempt or next model
+
                         elapsed = time.time() - t0
                         logger.success(
                             f"[M6B] ✓ Infographic ready: {out_path} ({elapsed:.1f}s, model={model})"
@@ -219,6 +240,48 @@ class InfographicGenerator:
 
         logger.error(f"[M6B] All models/attempts failed for segment {segment_id} — using B-roll fallback")
         return None
+
+    async def _validate_infographic(self, img_path: str, concept: str, narration: str) -> bool:
+        """
+        Use Gemini Vision to check if the generated image is pedagogically sound.
+        """
+        try:
+            with open(img_path, "rb") as f:
+                img_bytes = f.read()
+            
+            validation_prompt = f"""
+            Analyze this educational infographic for a lesson on: {concept}.
+            Narration context: {narration}
+            
+            Check for 'slop' (hallucinated or nonsensical visual artifacts):
+            1. Does it contain glowing orbs, magical dust, or nonsensical energy swirls?
+            2. Is the diagram technically relevant to the concept?
+            3. Does it contain any distorted text/letters? (Text is forbidden).
+            
+            If the image contains ANY slop or is technically incorrect, respond ONLY with 'FAIL'.
+            Otherwise, respond ONLY with 'PASS'.
+            """
+            
+            # Use a standard flash model for vision validation
+            entry = self.pool.get_key()
+            if not entry:
+                return True # Default to true if no keys available for validation
+            
+            import google.generativeai as genai
+            genai.configure(api_key=entry.key)
+            model = genai.GenerativeModel("gemini-2.0-flash-exp")
+            
+            response = await model.generate_content_async(
+                [validation_prompt, {"mime_type": "image/png", "data": img_bytes}]
+            )
+            
+            result = response.text.strip().upper()
+            if "FAIL" in result:
+                return False
+            return True
+        except Exception as e:
+            logger.error(f"[M6B] Validation error: {e}")
+            return True # Default to true to avoid infinite loops on API error
 
     def _call_gemini_image(self, prompt: str, model: str, out_path: str, api_key: str) -> bool:
         """

@@ -25,19 +25,19 @@ class SyntheticStudentTester:
         self.personas = {
             "Persona A (Confused Visual)": {
                 "description": "A visual learner who feels completely lost without diagrams or spatial representations.",
-                "mandate": "Identify segments lacking clear visual scaffolds. Flag text-only explanations.",
+                "mandate": "Identify segments lacking clear visual scaffolds. Check if 'visual preference' was honored (did narration say 'Look at...' or 'Observe...').",
             },
             "Persona B (Math-Anxious)": {
                 "description": "A student with severe math anxiety who shuts down when encountering ungrounded equations.",
-                "mandate": "Find formulas or quantitative statements introduced WITHOUT a prior relatable analogy.",
+                "mandate": "Check cognitive load. Find formulas introduced WITHOUT a prior relatable analogy. Flag if steps are too large.",
             },
             "Persona C (High-Performer)": {
                 "description": "An advanced student who is easily bored and frustrated by oversimplification.",
-                "mandate": "Identify places where the explanation was too simplified or skipped important nuance.",
+                "mandate": "Check abstraction level. Did it lean into formulas if requested? Identify places where it felt 'dumbed down' or repetitive.",
             },
             "Persona D (Low-Prior/High-Curiosity)": {
                 "description": "A complete beginner — no background knowledge, but highly curious and motivated.",
-                "mandate": "Find assumed knowledge gaps — terms, concepts, or steps used without explanation.",
+                "mandate": "Check engagement. Were the hooks (opening, mid, closing) actually interesting? Flag generic 'today we learn' phrasing.",
             },
         }
 
@@ -53,7 +53,7 @@ class SyntheticStudentTester:
             )
 
         # Truncate script to ~3000 chars to stay within token budget
-        script_text = script.json()[:3000]
+        script_text = script.model_dump_json()[:3000]
 
         prompt = f"""You are simulating 4 different students who just watched an educational video.
 Each student has a distinct perspective and MUST find specific problems.
@@ -76,28 +76,36 @@ Return ONLY a JSON array with exactly 4 objects (one per persona):
     "is_perfect": false,
     "gaps": ["specific gap 1", "specific gap 2"],
     "confusing_quotes": ["exact quote from script"],
-    "suggested_improvement": "One concrete fix"
+    "suggested_improvement": "One concrete fix",
+    "adaptability_comment": "How well did it fit your visual/verbal needs?",
+    "engagement_comment": "Did the hooks keep you interested?"
   }},
   {{
     "persona": "Persona B (Math-Anxious)",
     "is_perfect": false,
     "gaps": ["specific gap 1", "specific gap 2"],
     "confusing_quotes": ["exact quote from script"],
-    "suggested_improvement": "One concrete fix"
+    "suggested_improvement": "One concrete fix",
+    "adaptability_comment": "Did the cognitive load feel right?",
+    "engagement_comment": "Did you feel encouraged or discouraged?"
   }},
   {{
     "persona": "Persona C (High-Performer)",
     "is_perfect": false,
     "gaps": ["specific gap 1", "specific gap 2"],
     "confusing_quotes": ["exact quote from script"],
-    "suggested_improvement": "One concrete fix"
+    "suggested_improvement": "One concrete fix",
+    "adaptability_comment": "Was the abstraction level appropriate?",
+    "engagement_comment": "Was it boring or intellectually stimulating?"
   }},
   {{
     "persona": "Persona D (Low-Prior/High-Curiosity)",
     "is_perfect": false,
     "gaps": ["specific gap 1", "specific gap 2"],
     "confusing_quotes": ["exact quote from script"],
-    "suggested_improvement": "One concrete fix"
+    "suggested_improvement": "One concrete fix",
+    "adaptability_comment": "Were the explanations clear for a beginner?",
+    "engagement_comment": "Did the hooks actually 'hook' you?"
   }}
 ]
 """
@@ -150,6 +158,8 @@ Return ONLY a JSON array with exactly 4 objects (one per persona):
                     "gaps": [f"[Auto-padded] Batched call returned only {len(raw_data)} responses."],
                     "confusing_quotes": [],
                     "suggested_improvement": "Run synthetic test again for full coverage.",
+                    "adaptability_comment": "Auto-padded entry.",
+                    "engagement_comment": "Auto-padded entry."
                 })
 
             logger.info(f"Batched synthetic student test: {len(results)} personas in 1 LLM call")
@@ -167,6 +177,8 @@ Return ONLY a JSON array with exactly 4 objects (one per persona):
                     ],
                     "confusing_quotes": [],
                     "suggested_improvement": "Re-run synthetic student test.",
+                    "adaptability_comment": "Unable to verify adaptability due to system error.",
+                    "engagement_comment": "Unable to verify engagement due to system error."
                 }
                 for name in self.personas.keys()
             ]
@@ -285,7 +297,7 @@ class CIDPPCritic:
         student_model: StudentModel,
         fact_bundle: Optional[FactBundle] = None,
         concept_graph: Optional[ConceptGraph] = None,
-        model_override: str = None,
+        model_override: str | None = None,
         max_revisions: int = 1,
     ) -> Tuple[FullScript, List[Dict[str, Any]]]:
         """Review multiple scripts and select the one with the highest pedagogical score (CIDPP + RLT)."""
@@ -333,8 +345,10 @@ class CIDPPCritic:
                 + review.depth
                 + review.practicality
                 + review.pertinence
+                + review.adaptability
+                + review.engagement
             )
-            cidpp_n = cidpp_total / 50.0
+            cidpp_n = cidpp_total / 70.0
 
             # RLT scoring (0-1)
             rlt_res = None
@@ -423,6 +437,8 @@ class CIDPPCritic:
                     "depth": d["review"].depth,
                     "practicality": d["review"].practicality,
                     "pertinence": d["review"].pertinence,
+                    "adaptability": d["review"].adaptability,
+                    "engagement": d["review"].engagement,
                 },
                 "revisions": d["review"].revisions,
             }
@@ -446,7 +462,7 @@ class CIDPPCritic:
         script: FullScript,
         student_model: StudentModel,
         feedback: List[Dict[str, Any]],
-        model_override: str = None,
+        model_override: str | None = None,
     ) -> FullScript:
         """Refine the script based on synthetic student feedback."""
 
@@ -471,13 +487,13 @@ class CIDPPCritic:
         Refine the following educational script based on student feedback.
         
         ORIGINAL SCRIPT:
-        {script.json()}
+        {script.model_dump_json()}
         
         STUDENT FEEDBACK (Identified Gaps):
         {json.dumps(critical_gaps, indent=2)}
         
         STUDENT PROFILE:
-        {student_model.json()}
+        {student_model.model_dump_json()}
         
         Goal:
         - Address all identified gaps (improve clarity, technical depth, or visual cues).
@@ -522,7 +538,7 @@ class CIDPPCritic:
         self,
         script: FullScript,
         student_model: StudentModel,
-        model_override: str = None,
+        model_override: str | None = None,
     ) -> CIDPPScores:
         """
         Score a script on the CIDPP rubric.
@@ -541,8 +557,8 @@ class CIDPPCritic:
         IMPORTANT: Your scores MUST reflect genuine quality differences. Do NOT give 8/10 for everything.
         Scores of 7, 8, 9, or 10 must be EARNED. A score of 5 means average. A score of 3 means poor.
 
-        Script: {script.json()}
-        Student Model: {student_model.json()}
+        Script: {script.model_dump_json()}
+        Student Model: {student_model.model_dump_json()}
 
         CIDPP Scoring Anchors (use these STRICTLY):
         - Clarity (Logical flow + transitions + language match for student level)
@@ -575,6 +591,18 @@ class CIDPPCritic:
           5: Several sections feel misaligned with the stated student level.
           3: Content is clearly written for a different audience.
 
+        - Adaptability (Adherence to student-specific cognitive load, modality, and abstraction tolerance)
+          10: Perfectly follows all adaptive constraints (load, modality, abstraction).
+          7: Follows most constraints but misses 1 nuance (e.g. slightly too abstract).
+          5: General attempt at adaptation but feels like a template.
+          3: Completely ignores student-specific constraints.
+
+        - Engagement (Hooks, re-engagement prompts, and closing challenges)
+          10: Captivating opening, strong mid-video re-engagement, compelling closing.
+          7: Has all 3 required elements, but 1 feels forced or generic.
+          5: Missing 1 of the 3 mandatory engagement elements.
+          3: Boring, generic, or missing multiple engagement elements.
+
         MANDATORY: Your revisions list must contain at least 2 specific, actionable improvements.
         
         Return ONLY a JSON object:
@@ -584,6 +612,8 @@ class CIDPPCritic:
             "depth": int,
             "practicality": int,
             "pertinence": int,
+            "adaptability": int,
+            "engagement": int,
             "revisions": ["Specific improvement 1", "Specific improvement 2"]
         }}
         """
@@ -604,9 +634,17 @@ class CIDPPCritic:
                 else:
                     logger.error(f"Failed to review script after 3 attempts. Using mock data.")
                     return self.get_mock_data()
-
+        
+        return self.get_mock_data()
 
     def get_mock_data(self) -> CIDPPScores:
         return CIDPPScores(
-            clarity=8, integrity=10, depth=7, practicality=7, pertinence=8, revisions=[]
+            clarity=8, 
+            integrity=10, 
+            depth=7, 
+            practicality=7, 
+            pertinence=8,
+            adaptability=7,
+            engagement=8,
+            revisions=[]
         )

@@ -145,6 +145,13 @@
       "Orbiting satellites have no gravity acting on them",
       "A satellite in orbit must constantly fire its engines to stay up",
       "Gravity decreases linearly with distance"
+    ],
+    "pendulums": [
+      "A simple pendulum and a Newton's Cradle are the same thing",
+      "The mass of the bob significantly affects the period of a simple pendulum",
+      "The amplitude (angle) of swing has no effect on the period at large angles",
+      "Gravity is not required for a pendulum to swing",
+      "A rigid-body pendulum (physical pendulum) behaves exactly like a point-mass pendulum"
     ]
   },
   "Biology": {

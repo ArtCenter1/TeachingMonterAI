@@ -42,6 +42,7 @@ class ConceptNode(BaseModel):
     visual_type: str = Field(
         ..., description="Optimal visual representation (e.g. animation, flowchart)"
     )
+    is_disambiguation: bool = False
     duration_minutes: float
 
 
@@ -58,6 +59,7 @@ class ScriptSegment(BaseModel):
     visual_content_spec: str
     duration_seconds: float
     citations: List[Dict[str, str]] = Field(default_factory=list)
+    word_timings: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class FullScript(BaseModel):
@@ -82,6 +84,8 @@ class CIDPPScores(BaseModel):
     depth: int = Field(ge=1, le=10)
     practicality: int = Field(ge=1, le=10)
     pertinence: int = Field(ge=1, le=10)
+    adaptability: int = Field(ge=1, le=10, default=5)
+    engagement: int = Field(ge=1, le=10, default=5)
     revisions: List[str] = Field(default_factory=list)
 
 

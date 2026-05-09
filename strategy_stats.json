@@ -23,11 +23,11 @@
     "strategy": "Intuition-First",
     "level": "high_school",
     "subject": "General",
-    "wins": 33,
+    "wins": 34,
     "losses": 4,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 37
+    "total": 38
   },
   "Intuition-First|StudentLevel.HIGH_SCHOOL|Biology": {
     "strategy": "Intuition-First",
@@ -123,61 +123,61 @@
     "strategy": "Intuition-First",
     "level": "AP",
     "subject": "General",
-    "wins": 1,
-    "losses": 0,
+    "wins": 2,
+    "losses": 1,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 1
+    "total": 3
   },
   "Cognitive-Conflict|StudentLevel.AP|General": {
     "strategy": "Cognitive-Conflict",
     "level": "AP",
     "subject": "General",
-    "wins": 0,
-    "losses": 1,
-    "elo_wins": 0,
-    "elo_losses": 0,
-    "total": 1
-  },
-  "Inductive|StudentLevel.AP|General": {
-    "strategy": "Inductive",
-    "level": "AP",
-    "subject": "General",
-    "wins": 0,
-    "losses": 1,
-    "elo_wins": 0,
-    "elo_losses": 0,
-    "total": 1
-  },
-  "Intuition-First|StudentLevel.HIGH_SCHOOL|Physics": {
-    "strategy": "Intuition-First",
-    "level": "high_school",
-    "subject": "Physics",
-    "wins": 3,
-    "losses": 1,
-    "elo_wins": 0,
-    "elo_losses": 0,
-    "total": 4
-  },
-  "Cognitive-Conflict|StudentLevel.HIGH_SCHOOL|Physics": {
-    "strategy": "Cognitive-Conflict",
-    "level": "high_school",
-    "subject": "Physics",
     "wins": 1,
     "losses": 2,
     "elo_wins": 0,
     "elo_losses": 0,
     "total": 3
   },
-  "Inductive|StudentLevel.HIGH_SCHOOL|Physics": {
+  "Inductive|StudentLevel.AP|General": {
     "strategy": "Inductive",
-    "level": "high_school",
-    "subject": "Physics",
+    "level": "AP",
+    "subject": "General",
     "wins": 0,
     "losses": 3,
     "elo_wins": 0,
     "elo_losses": 0,
     "total": 3
+  },
+  "Intuition-First|StudentLevel.HIGH_SCHOOL|Physics": {
+    "strategy": "Intuition-First",
+    "level": "high_school",
+    "subject": "Physics",
+    "wins": 4,
+    "losses": 1,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 5
+  },
+  "Cognitive-Conflict|StudentLevel.HIGH_SCHOOL|Physics": {
+    "strategy": "Cognitive-Conflict",
+    "level": "high_school",
+    "subject": "Physics",
+    "wins": 1,
+    "losses": 3,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 4
+  },
+  "Inductive|StudentLevel.HIGH_SCHOOL|Physics": {
+    "strategy": "Inductive",
+    "level": "high_school",
+    "subject": "Physics",
+    "wins": 0,
+    "losses": 4,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 4
   },
   "Intuition-First|high_school|Physics": {
     "strategy": "Intuition-First",
@@ -223,6 +223,36 @@
     "strategy": "Inductive",
     "level": "IB",
     "subject": "Mathematics",
+    "wins": 0,
+    "losses": 1,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 1
+  },
+  "Intuition-First|StudentLevel.MIDDLE_SCHOOL|Physics": {
+    "strategy": "Intuition-First",
+    "level": "middle_school",
+    "subject": "Physics",
+    "wins": 1,
+    "losses": 0,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 1
+  },
+  "Cognitive-Conflict|StudentLevel.MIDDLE_SCHOOL|Physics": {
+    "strategy": "Cognitive-Conflict",
+    "level": "middle_school",
+    "subject": "Physics",
+    "wins": 0,
+    "losses": 1,
+    "elo_wins": 0,
+    "elo_losses": 0,
+    "total": 1
+  },
+  "Inductive|StudentLevel.MIDDLE_SCHOOL|Physics": {
+    "strategy": "Inductive",
+    "level": "middle_school",
+    "subject": "Physics",
     "wins": 0,
     "losses": 1,
     "elo_wins": 0,

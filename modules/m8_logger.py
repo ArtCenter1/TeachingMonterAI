@@ -104,7 +104,7 @@ class StrategyTracker:
             f"(level={level}, subject={subject})"
         )
 
-    def get_win_rates(self, level: str = None, subject: str = None) -> Dict[str, float]:
+    def get_win_rates(self, level: str | None = None, subject: str | None = None) -> Dict[str, float]:
         """Return win rates per strategy, optionally filtered by level/subject.
 
         Returns: { "Intuition-First": 0.67, "Cognitive-Conflict": 0.45, ... }
@@ -152,7 +152,7 @@ class FeedbackLogger:
         self,
         run_id: str,
         data: Dict[str, Any],
-        selection_log: List[Dict[str, Any]] = None,
+        selection_log: List[Dict[str, Any]] | None = None,
     ):
         """Log a generation run with optional selection/A/B data.
 
@@ -176,7 +176,9 @@ class FeedbackLogger:
         # Check for greedy_selected flag in selection_log. If any variant was
         # selected via a greedy choice, we skip multi-strategy win/loss
         # recording to avoid corrupting the denominator.
-        is_greedy = any(s.get("greedy_selected", False) for s in selection_log)
+        is_greedy = False
+        if selection_log:
+            is_greedy = any(s.get("greedy_selected", False) for s in selection_log)
         
         if selection_log and data.get("selected_strategy") and not is_greedy:
             winning = data["selected_strategy"]
@@ -201,7 +203,7 @@ class FeedbackLogger:
         run_id: str,
         ai_student_scores: Dict[str, Any],
         critique_text: str,
-        elo_outcome: str = None,
+        elo_outcome: str | None = None,
     ) -> bool:
         """Append AI student feedback to an existing run entry.
 
@@ -240,6 +242,45 @@ class FeedbackLogger:
 
         return False  # Run ID not found
 
+    def log_mismatch_event(
+        self,
+        run_id: str,
+        segment_id: str,
+        concept: str,
+        issue_type: str,
+        severity: float,
+        details: str,
+    ):
+        """Log a visual-audio mismatch event (hallucination or slop detection)."""
+        logs = []
+        if os.path.exists(self.log_file):
+            with open(self.log_file, "r", encoding="utf-8") as f:
+                try:
+                    logs = json.load(f)
+                except json.JSONDecodeError:
+                    pass
+
+        for entry in logs:
+            if entry.get("run_id") == run_id:
+                if "visual_qa_events" not in entry["data"]:
+                    entry["data"]["visual_qa_events"] = []
+                
+                event = {
+                    "timestamp": time.time(),
+                    "segment_id": segment_id,
+                    "concept": concept,
+                    "issue_type": issue_type,
+                    "severity": severity,
+                    "details": details
+                }
+                entry["data"]["visual_qa_events"].append(event)
+                
+                with open(self.log_file, "w", encoding="utf-8") as f:
+                    json.dump(logs, f, indent=2, ensure_ascii=False)
+                logger.warning(f"[M8] Logged {issue_type} mismatch for {segment_id} (run={run_id})")
+                return True
+        return False
+
     def add_public_feedback(
         self,
         run_id: str,
@@ -251,6 +292,7 @@ class FeedbackLogger:
         If the star_rating translates to a decisive outcome (>=4 is win, <=2 is loss),
         also update the strategy tracker with the Elo result.
         """
+        from datetime import datetime, timezone
         logs = []
         if os.path.exists(self.log_file):
             with open(self.log_file, "r", encoding="utf-8") as f:
@@ -263,6 +305,7 @@ class FeedbackLogger:
             if entry.get("run_id") == run_id:
                 if "public_feedback" not in entry["data"]:
                     entry["data"]["public_feedback"] = []
+                
                 entry["data"]["public_feedback"].append({
                     "star_rating": star_rating,
                     "comments": comments,
@@ -283,7 +326,6 @@ class FeedbackLogger:
                 with open(self.log_file, "w", encoding="utf-8") as f:
                     json.dump(logs, f, indent=2, ensure_ascii=False)
                 return True
-
         return False  # Run ID not found
 
     def get_rlt_run_count(self) -> int:
@@ -384,4 +426,29 @@ class ErrorLogger:
 
         with open(self.log_file, "w", encoding="utf-8") as f:
             json.dump(logs, f, indent=2, ensure_ascii=False)
+
+    def log_av_mismatch(
+        self,
+        run_id: str,
+        segment_id: str,
+        audio_dur: float,
+        video_dur: float,
+        threshold: float = 0.5,
+    ) -> None:
+        """Log a significant duration mismatch between audio and video tracks."""
+        diff = abs(audio_dur - video_dur)
+        if diff < threshold:
+            return
+
+        logger.warning(
+            f"[AV Mismatch] Run {run_id}, Seg {segment_id}: "
+            f"Audio={audio_dur:.2f}s, Video={video_dur:.2f}s (Diff={diff:.2f}s)"
+        )
+        
+        # We also log it to m8_errors.json but as a WARNING type
+        self.log_error(
+            run_id=run_id,
+            exc=RuntimeError(f"AV Duration Mismatch: A={audio_dur:.2f}s, V={video_dur:.2f}s"),
+            failed_stage=f"m7_renderer_sync_{segment_id}"
+        )
 

@@ -28,6 +28,9 @@ class ConceptPlanner:
             "reflection": "resources/curriculum/physics/optics_and_light.md",
             "nuclear": "resources/curriculum/physics/nuclear_physics_basics.md",
             "circulatory": "resources/curriculum/biology/human_circulatory_system.md",
+            "kinematics": "resources/curriculum/physics/kinematics_and_dynamics.md",
+            "dynamics": "resources/curriculum/physics/kinematics_and_dynamics.md",
+            "pendulum": "resources/curriculum/physics/mechanics_pendulums.md",
         }
         topic_lower = topic.lower()
         for keyword, path in CURRICULUM_MAP.items():
@@ -70,7 +73,7 @@ Your concept nodes MUST be drawn from the above content. Do not use concepts not
 You are a pedagogical lesson planner specializing in concept scaffolding.
 
 Your task: Plan a lesson sequence for the topic: "{topic}".
-Student Model: {student_model.json()}
+Student Model: {student_model.model_dump_json()}
 {curriculum_block}
 STEP 1 — THINK FIRST (do not output this):
 Analyze the topic and break it down into {MIN_CONCEPT_NODES} to 7 distinct sub-concepts that build progressively.
@@ -84,6 +87,7 @@ CONSTRAINTS (strictly enforced):
 - Returning fewer than {MIN_CONCEPT_NODES} nodes is a failure and will be rejected.
 - The final node must cover the complete topic "{topic}".
 - Each node must teach something new that cannot be derived from the previous node alone.
+- If a topic has common points of confusion (e.g. "Simple vs Physical Pendulum"), you MUST include a "disambiguation" node specifically to clarify the difference. Set "is_disambiguation": true for these nodes.
 - Prerequisites must use the EXACT concept name of a prior node, or be an assumed prior knowledge concept already in the student model.
 - Scaffold from concrete → abstract, simple → complex.
 - total_duration_minutes must be <= 25.
@@ -124,16 +128,19 @@ Return ONLY a JSON object matching this exact schema (no explanation text):
             "prerequisites": ["exact name of a prior node concept, or assumed prior knowledge"],
             "misconceptions": ["common student error 1", "common student error 2"],
             "visual_type": "Animation" | "Flowchart" | "Diagram" | "Derivation",
+            "is_disambiguation": true | false,
             "duration_minutes": 3.0
         }}
     ],
     "total_duration_minutes": 12.0
 }}
+
+NOTE ON DISAMBIGUATION: If a node's primary purpose is to address the listed misconceptions or distinguish the concept from a related one, set "is_disambiguation": true. This will trigger special pedagogical handling.
 {retry_block}
 """
 
     async def plan(
-        self, topic: str, student_model: StudentModel, model_override: str = None
+        self, topic: str, student_model: StudentModel, model_override: str | None = None
     ) -> ConceptGraph:
         """
         Generate a ConceptGraph with at least MIN_CONCEPT_NODES nodes.
@@ -235,12 +242,13 @@ Return ONLY a JSON object matching this exact schema (no explanation text):
                     duration_minutes=6.0,
                 ),
                 ConceptNode(
-                    concept=f"Applications and Implications of {topic}",
+                    concept=f"Common Pitfalls and Disambiguation of {topic}",
                     prerequisites=[f"Core Mechanisms of {topic}"],
                     misconceptions=[
                         f"Assuming {topic} applies universally without conditions"
                     ],
                     visual_type="Flowchart",
+                    is_disambiguation=True,
                     duration_minutes=5.0,
                 ),
             ],

@@ -242,47 +242,21 @@ class ScriptGenerator:
         examples_str = "\n".join([json.dumps(c[1], indent=2) for c in top_candidates])
         return f"\nEXEMPLARY LESSONS (Reference for quality and style - these scored highly):\n{examples_str}\n"
 
-    async def generate(
+    def _build_prompt(
         self,
         concept_graph: ConceptGraph,
         student_model: StudentModel,
         fact_bundle: FactBundle,
-        strategy_name: str = "Intuition-First",
-        strategy_desc: str = None,
-        model_override: str = None,
-    ) -> FullScript:
-        if not self.google_api_key and not self.openrouter_api_key:
-            logger.warning("No LLM API keys found, falling back to mock data.")
-            return self.get_mock_data(concept_graph, strategy_name)
-
-        if not strategy_desc:
-            strategy_desc = self.strategies.get(strategy_name, "Standard explanation")
-
-        # Get few-shot examples
-        level_val = student_model.level.value if hasattr(student_model.level, 'value') else str(student_model.level)
-        subject = infer_subject(concept_graph.nodes[0].concept if concept_graph.nodes else "")
-        exemplars = self._get_exemplary_lessons(subject, level_val, strategy_name)
-
-        # ── Phase 2: Audience Calibration ─────────────────────────────────────
-        audience_profiles = {
-            "middle_school":  "Age 11-13. Use concrete analogies, no abstract notation. Sentences ≤15 words. Every concept needs a real-world object comparison.",
-            "high_school":    "Age 14-18. Can handle light algebra and notation. Relate to things they care about (sports, gaming, social media). Vocabulary: accessible but not dumbed-down.",
-            "undergraduate":  "Age 18-22. Comfortable with notation and proofs. Use precise technical language. Emphasize 'why it matters' for future courses or careers.",
-            "advanced":       "Assumes strong prior knowledge. Focus on nuance, edge cases, and connections to other fields.",
-        }
-        audience_guidance = audience_profiles.get(level_val, audience_profiles["high_school"])
-
-        # Check if topic has known misconceptions — force Cognitive-Conflict if so
-        has_misconceptions = bool(self.get_relevant_misconceptions(concept_graph))
-        strategy_override_note = ""
-        if has_misconceptions and strategy_name != "Cognitive-Conflict":
-            strategy_override_note = (
-                "\n⚠️ MISCONCEPTION ALERT: This topic has known student misconceptions (listed above). "
-                "Even though the selected strategy is not Cognitive-Conflict, you MUST explicitly "
-                "address and correct each misconception at the point in the script where it would naturally arise."
-            )
-
-        prompt = f"""
+        strategy_name: str,
+        strategy_desc: str,
+        exemplars: str,
+        audience_guidance: str,
+        load_guidance: str,
+        modality_guidance: str,
+        abstraction_guidance: str,
+        strategy_override_note: str,
+    ) -> str:
+        return f"""
         Generate a full educational script for the following lesson plan.
         Topic: {concept_graph.nodes[0].concept if concept_graph.nodes else "Topic"}
         Student Model: {student_model.json()}
@@ -298,8 +272,12 @@ class ScriptGenerator:
         SCAFFOLDING STRATEGY: {strategy_name} ({strategy_desc})
 
         Requirements:
-        1. AUDIENCE CALIBRATION ({level_val}): {audience_guidance}
-        2. ENGAGEMENT HOOKS — MANDATORY, minimum 3 per video:
+        1. AUDIENCE CALIBRATION ({student_model.level.value if hasattr(student_model.level, 'value') else student_model.level}): {audience_guidance}
+        2. ADAPTIVE CONSTRAINTS:
+           - {load_guidance}
+           - {modality_guidance}
+           - {abstraction_guidance}
+        3. ENGAGEMENT HOOKS — MANDATORY, minimum 3 per video:
            a. OPENING HOOK (first 30 seconds): Start with a surprising fact, a relatable struggle, 
               or a "what if..." question. DO NOT start with "Today we will learn about...".
            b. MID-VIDEO RE-ENGAGEMENT (once per 2 segments): Include a "Pause and predict" 
@@ -310,7 +288,7 @@ class ScriptGenerator:
            using a bridging sentence ("Now that we know X, let's use that to understand Y...").
         4. Visual Cues: For each segment, 'visual_content_spec' MUST describe ONLY pure 
            diagrams, arrows, and shapes — NO photographic imagery.
-        5. Pacing: Match student level vocabulary. Use {level_val} appropriate sentence length.
+        5. Pacing: Match student level vocabulary. Use {student_model.level.value if hasattr(student_model.level, 'value') else student_model.level} appropriate sentence length.
         6. Citations: Every factual claim attributed to a source in the facts.
         7. Misconception Handling: {strategy_override_note if strategy_override_note else "Address any misconceptions proactively with 'You might think X, but actually Y' phrasing."}
         8. Verbosity: Every segment narration MUST be 150-250 words. Explain in full detail.
@@ -351,6 +329,89 @@ class ScriptGenerator:
             "checks": ["question 1", "question 2"]
         }}
         """
+
+
+    async def generate(
+        self,
+        concept_graph: ConceptGraph,
+        student_model: StudentModel,
+        fact_bundle: FactBundle,
+        strategy_name: str = "Intuition-First",
+        strategy_desc: str = None,
+        model_override: str = None,
+    ) -> FullScript:
+        if not self.google_api_key and not self.openrouter_api_key:
+            logger.warning("No LLM API keys found, falling back to mock data.")
+            return self.get_mock_data(concept_graph, strategy_name)
+
+        if not strategy_desc:
+            strategy_desc = self.strategies.get(strategy_name, "Standard explanation")
+
+        # Get few-shot examples
+        level_val = student_model.level.value if hasattr(student_model.level, 'value') else str(student_model.level)
+        subject = infer_subject(concept_graph.nodes[0].concept if concept_graph.nodes else "")
+        exemplars = self._get_exemplary_lessons(subject, level_val, strategy_name)
+
+        # ── Phase 2: Audience Calibration ─────────────────────────────────────
+        audience_profiles = {
+            "middle_school":  "Age 11-13. Use concrete analogies, no abstract notation. Sentences ≤15 words. Every concept needs a real-world object comparison.",
+            "high_school":    "Age 14-18. Can handle light algebra and notation. Relate to things they care about (sports, gaming, social media). Vocabulary: accessible but not dumbed-down.",
+            "undergraduate":  "Age 18-22. Comfortable with notation and proofs. Use precise technical language. Emphasize 'why it matters' for future courses or careers.",
+            "advanced":       "Assumes strong prior knowledge. Focus on nuance, edge cases, and connections to other fields.",
+        }
+        audience_guidance = audience_profiles.get(level_val, audience_profiles["high_school"])
+
+        # Adaptability: Cognitive Load Adjustment
+        load_budget = getattr(student_model, "cognitive_load_budget", 0.6)
+        if load_budget < 0.4:
+            load_guidance = "STRICT COGNITIVE LOAD LIMIT: Use extremely simple language. Break concepts into micro-steps. Maximum 1 new term per 2 segments."
+        elif load_budget > 0.8:
+            load_guidance = "ADVANCED COGNITIVE LOAD: Move quickly. Connect to interdisciplinary concepts. Use professional technical terminology."
+        else:
+            load_guidance = "BALANCED COGNITIVE LOAD: Scaffold new terms with immediate definitions. Maintain a steady building pace."
+
+        # Adaptability: Modality Preference
+        modality = getattr(student_model, "modality_preference", "mixed")
+        if hasattr(modality, "value"): modality = modality.value
+        if modality == "visual":
+            modality_guidance = "PREFER VISUAL LEARNING: Focus on describing spatial relationships and visual transformations. Use 'Look at...', 'Observe how...' phrasing."
+        elif modality == "verbal":
+            modality_guidance = "PREFER VERBAL LEARNING: Use rich, descriptive analogies and clear logical deductions. Focus on the 'narrative' of the concept."
+        else:
+            modality_guidance = "MIXED MODALITY: Balanced use of visual descriptions and logical verbal explanations."
+
+        # Adaptability: Abstraction Tolerance
+        tolerance = getattr(student_model, "abstraction_tolerance", 0.5)
+        if tolerance < 0.3:
+            abstraction_guidance = "LOW ABSTRACTION TOLERANCE: Avoid abstract symbols (x, y, theta) unless necessary. Use physical objects (apples, pendulums, cars) as the primary subjects."
+        elif tolerance > 0.7:
+            abstraction_guidance = "HIGH ABSTRACTION TOLERANCE: Lean into formulas and symbolic logic. Focus on the mathematical beauty and generalizable principles."
+        else:
+            abstraction_guidance = "MODERATE ABSTRACTION TOLERANCE: Start with a concrete example, then derive the abstract rule."
+
+        # Check if topic has known misconceptions — force Cognitive-Conflict if so
+        has_misconceptions = bool(self.get_relevant_misconceptions(concept_graph))
+        strategy_override_note = ""
+        if has_misconceptions and strategy_name != "Cognitive-Conflict":
+            strategy_override_note = (
+                "\n⚠️ MISCONCEPTION ALERT: This topic has known student misconceptions (listed above). "
+                "Even though the selected strategy is not Cognitive-Conflict, you MUST explicitly "
+                "address and correct each misconception at the point in the script where it would naturally arise."
+            )
+
+        prompt = self._build_prompt(
+            concept_graph,
+            student_model,
+            fact_bundle,
+            strategy_name,
+            strategy_desc,
+            exemplars,
+            audience_guidance,
+            load_guidance,
+            modality_guidance,
+            abstraction_guidance,
+            strategy_override_note
+        )
 
         try:
             response_text = await self.llm.generate_text(
