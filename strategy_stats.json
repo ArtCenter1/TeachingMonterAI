@@ -4,30 +4,30 @@
     "level": "high_school",
     "subject": "General",
     "wins": 2,
-    "losses": 11,
+    "losses": 12,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 13
+    "total": 14
   },
   "Cognitive-Conflict|StudentLevel.HIGH_SCHOOL|General": {
     "strategy": "Cognitive-Conflict",
     "level": "high_school",
     "subject": "General",
-    "wins": 3,
+    "wins": 4,
     "losses": 10,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 13
+    "total": 14
   },
   "Intuition-First|StudentLevel.HIGH_SCHOOL|General": {
     "strategy": "Intuition-First",
     "level": "high_school",
     "subject": "General",
     "wins": 32,
-    "losses": 3,
+    "losses": 4,
     "elo_wins": 0,
     "elo_losses": 0,
-    "total": 35
+    "total": 36
   },
   "Intuition-First|StudentLevel.HIGH_SCHOOL|Biology": {
     "strategy": "Intuition-First",

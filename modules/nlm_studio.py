@@ -210,40 +210,55 @@ async def generate_slides(
         visual_content_spec=visual_content_spec[:800]
     )
 
-    try:
-        from notebooklm import NotebookLMClient
-        from notebooklm.types import ReportFormat
+    max_retries = 2
+    for attempt in range(max_retries + 1):
+        try:
+            from notebooklm import NotebookLMClient
+            from notebooklm.types import ReportFormat
 
-        async with await NotebookLMClient.from_storage() as client:
-            task = await asyncio.wait_for(
-                client.artifacts.generate_report(
-                    notebook_id,
-                    report_format=ReportFormat("custom"),
-                    custom_prompt=prompt,
-                ),
-                timeout=_slide_timeout()
-            )
-            task_id = getattr(task, "task_id", None) or getattr(task, "id", None)
-            if task_id:
-                await asyncio.wait_for(
-                    client.artifacts.wait_for_completion(notebook_id, task_id),
+            async with await NotebookLMClient.from_storage() as client:
+                logger.info(f"NLM: Generating slide for '{concept}' (attempt {attempt + 1}/{max_retries + 1})...")
+                task = await asyncio.wait_for(
+                    client.artifacts.generate_report(
+                        notebook_id,
+                        report_format=ReportFormat("custom"),
+                        custom_prompt=prompt,
+                    ),
                     timeout=_slide_timeout()
                 )
-                # Download the artifact image
-                await asyncio.wait_for(
-                    client.artifacts.download(notebook_id, task_id, output_path),
-                    timeout=60
-                )
-                if os.path.exists(output_path):
-                    logger.success(f"NLM: Slide generated → {output_path}")
-                    return output_path
-        return None
-    except asyncio.TimeoutError:
-        logger.warning(f"NLM: Slide generation timed out for segment {segment_id}. Using Gemini fallback.")
-        return None
-    except Exception as e:
-        logger.warning(f"NLM: Slide generation failed for {segment_id}: {e}. Using Gemini fallback.")
-        return None
+                task_id = getattr(task, "task_id", None) or getattr(task, "id", None)
+                if task_id:
+                    await asyncio.wait_for(
+                        client.artifacts.wait_for_completion(notebook_id, task_id),
+                        timeout=_slide_timeout()
+                    )
+                    # Download the artifact image
+                    await asyncio.wait_for(
+                        client.artifacts.download(notebook_id, task_id, output_path),
+                        timeout=60
+                    )
+                    if os.path.exists(output_path):
+                        logger.success(f"NLM: Slide generated → {output_path}")
+                        return output_path
+            
+            # If we reached here without returning, something is wrong
+            logger.warning(f"NLM: Slide generation completed but file not found: {output_path}")
+            return None
+
+        except asyncio.TimeoutError:
+            if attempt < max_retries:
+                logger.warning(f"NLM: Slide generation timed out for segment {segment_id}. Retrying ({attempt + 1})...")
+                await asyncio.sleep(2)  # Small delay before retry
+                continue
+            else:
+                logger.error(f"NLM: Slide generation timed out after {max_retries + 1} attempts for {segment_id}.")
+                return None
+        except Exception as e:
+            logger.error(f"NLM: Slide generation failed for {segment_id} (attempt {attempt + 1}): {e}")
+            if attempt < max_retries:
+                await asyncio.sleep(1)
+                continue
+            return None
 
 
 # ── Audio generation ─────────────────────────────────────────────────────────

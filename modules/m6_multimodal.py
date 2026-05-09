@@ -85,19 +85,33 @@ class MultimodalPlanner:
             nlm_slide_path = nlm_slide_map.get(seg_id_str)
             infographic_path = infographic_map.get(seg_id_str)
 
+            # ── Strict STEM Routing ──────────────────────────────────────────
+            # Prevent hallucinatory text and irrelevant diagrams in Math/Physics
+            is_stem = False
+            if subject:
+                stem_keywords = ["physics", "math", "calculus", "differentiation", "kinematics", "geometry", "logic"]
+                if any(k in str(subject).lower() for k in stem_keywords):
+                    is_stem = True
+
             if nlm_slide_path:
                 visual_source = "nlm_slide"
                 logger.info(f"M6: Seg {seg_id_str} → NLM slide")
             elif infographic_path is not None:
-                visual_source = "gemini_infographic"
-                logger.info(
-                    f"M6: Seg {seg_id_str} → AI infographic ({visual_type})"
-                )
+                # For STEM technical visuals, block Gemini fallback to avoid "Visual Gibberish"
+                if is_stem and visual_type in ["diagram", "data", "graph", "chart", "theory"]:
+                    visual_source = "fallback_slide"
+                    logger.warning(f"M6: Seg {seg_id_str} (STEM) → NLM failed. Blocking Gemini to avoid gibberish text.")
+                else:
+                    visual_source = "gemini_infographic"
+                    logger.info(f"M6: Seg {seg_id_str} → AI infographic ({visual_type})")
             else:
-                visual_source = "pexels_broll"
-                logger.info(
-                    f"M6: Seg {seg_id_str} → Pexels B-roll ({visual_type})"
-                )
+                # For STEM technical visuals, block Pexels fallback to avoid "Contextual Mismatch" (e.g. CPU diagrams)
+                if is_stem and visual_type in ["diagram", "data", "graph", "chart", "theory"]:
+                    visual_source = "fallback_slide"
+                    logger.warning(f"M6: Seg {seg_id_str} (STEM) → NLM/Gemini failed. Blocking Pexels to avoid mismatch.")
+                else:
+                    visual_source = "pexels_broll"
+                    logger.info(f"M6: Seg {seg_id_str} → Pexels B-roll ({visual_type})")
 
             # ── Fallback slide (used by renderer if both Pexels and infographic fail) ──
             slide_path = os.path.join(self.output_dir, f"slide_{segment.segment_id}.png")
