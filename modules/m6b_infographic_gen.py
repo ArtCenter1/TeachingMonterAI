@@ -63,34 +63,25 @@ _STYLE_PROMPTS = {
     ),
 }
 
-def _select_style(visual_type: str, subject: Optional[str] = None) -> str:
-    """Pick style based on visual_type; optionally refine by subject."""
-    env_style = os.getenv("INFOGRAPHIC_STYLE", "").strip().lower()
-    if env_style and env_style in _STYLE_PROMPTS:
-        return env_style
-
-    # Subject-based overrides (Highest Priority)
-    if subject:
-        subject_lower = subject.lower()
-        if any(s in subject_lower for s in ["biology", "nature", "environment", "taxonomy", "anatomy", "evolution", "biodiversity"]):
-            return "nature"
-        if any(s in subject_lower for s in ["history", "archaeology", "social"]):
-            return "sketchbook"
-        if any(s in subject_lower for s in ["math", "statistics", "economics", "physics", "logic"]):
-            return "clean_slide"
-        if any(s in subject_lower for s in ["computer", "engineering", "tech", "coding", "robot"]):
-            return "blueprint"
-
-    # Type-based defaults
-    vt = str(visual_type).lower().strip()
-    if any(t in vt for t in ["diagram", "concept", "map"]):
-        return "blueprint"
-    if any(t in vt for t in ["story", "lesson", "intro"]):
-        return "illustrated"
-    if any(t in vt for t in ["data", "chart", "slide"]):
-        return "clean_slide"
+def _select_style(subject: Optional[str], concept: str) -> str:
+    """Select appropriate illustration style based on subject."""
+    sub = (subject or "").lower()
+    con = concept.lower()
+    
+    # Technical subjects get the blueprint style to ensure precision
+    tech_keywords = (
+        "math", "physics", "geometry", "optics", "calculus", "science", 
+        "chemistry", "chemical", "biology", "cell", "anatomy",
+        "data science", "machine learning", "artificial intelligence", "ai",
+        "algorithm", "code", "programming", "software"
+    )
+    if any(k in sub or k in con for k in tech_keywords):
+        return "blueprint"  
         
-    return "blueprint"  # Default
+    if any(k in sub or k in con for k in ("history", "social", "literature")):
+        return "pencil_sketch"
+        
+    return "flat_illustration"
 
 
 # ── Prompt builder ──────────────────────────────────────────────────────────
@@ -98,29 +89,21 @@ def _select_style(visual_type: str, subject: Optional[str] = None) -> str:
 def _build_prompt(concept: str, narration: str, visual_content_spec: str,
                   visual_type: str, style: str) -> str:
     """Construct a rich infographic generation prompt from segment data."""
-    style_desc = _STYLE_PROMPTS.get(style, _STYLE_PROMPTS["blueprint"])
-    narration_excerpt = narration[:400] if narration else ""
-
-    return f"""Create a 16:9 widescreen educational infographic slide (1920×1080 resolution).
-
-TOPIC: {concept}
-KEY CONCEPT TO VISUALIZE: {visual_content_spec}
-NARRATION CONTEXT: "{narration_excerpt}"
-
-{style_desc}
-
-INSTRUCTIONS:
-1. FOCUS: The image must precisely illustrate the KEY CONCEPT using the requested style.
-2. TEXT USAGE — CRITICAL RULE:
-   Keep text EXTREMELY minimal to avoid AI generation artifacts. 
-   ONLY use text for essential mathematical labels (e.g., "f(x)", "f'(x) = 0", "Max", "Min"). 
-   Do NOT generate sentences, paragraphs, or long titles. 
-   Render any requested math symbols EXACTLY as requested without typos.
-3. QUALITY: Ensure the diagram is technically accurate to the subject matter.
-4. COMPOSITION: Centered layout with clear margins. Professional educational graphics only.
-5. NO PHOTOREALISM: Stick strictly to the specified illustration style. NO generic stock photos.
-6. CLARITY: The graphic should make a student immediately understand the concept in 5 seconds.
-"""
+    # Get the detailed style description from the map
+    style_description = _STYLE_PROMPTS.get(style, "Style: clean, professional educational infographic.")
+    
+    return f"""
+        Create an educational illustration for a video segment about: {concept}.
+        
+        Visual Description: {visual_content_spec}
+        
+        {style_description}
+        
+        CRITICAL CONSTRAINTS:
+        - [NO_TEXT]: Do NOT include any letters, words, or labels in the image.
+        - [STEM_ACCURACY]: If showing light rays, use arrows. If showing lenses, make them clearly convex or concave.
+        - Theme: Educational, professional, clean.
+        """
 
 
 # ── Core generator ──────────────────────────────────────────────────────────
@@ -166,12 +149,18 @@ class InfographicGenerator:
             logger.debug(f"[M6B] Infographic disabled via env — skipping {segment_id}")
             return None
 
-        out_path = os.path.join(self.output_dir, f"infographic_{segment_id}.png")
+        import hashlib
+        # Generate a unique hash based on content and style to prevent collisions
+        content_blob = f"{concept}|{narration}|{visual_content_spec}|{subject}"
+        content_hash = hashlib.md5(content_blob.encode()).hexdigest()[:12]
+        
+        out_path = os.path.join(self.output_dir, f"infographic_{segment_id}_{content_hash}.png")
+        
         if os.path.exists(out_path):
-            logger.debug(f"[M6B] Cache hit for {segment_id}")
+            logger.debug(f"[M6B] Cache hit for {segment_id} (hash={content_hash})")
             return out_path
 
-        style = force_style or _select_style(visual_type, subject)
+        style = force_style or _select_style(subject, concept)
         prompt = _build_prompt(concept, narration, visual_content_spec, visual_type, style)
 
         logger.info(f"[M6B] Generating infographic for '{concept}' (style={style})")
@@ -243,24 +232,29 @@ class InfographicGenerator:
 
         response = client.models.generate_content(
             model=model,
-            contents=[prompt],
+            contents=prompt,
             config=types.GenerateContentConfig(
                 response_modalities=["IMAGE", "TEXT"],
             ),
         )
 
         saved = False
-        for part in response.parts:
+        parts = getattr(response, "parts", [])
+        if not parts:
+            raise RuntimeError(f"Gemini returned no parts: {response}")
+
+        for part in parts:
             if part.inline_data is not None:
                 # Save the image bytes
                 img_data = part.inline_data.data
                 if isinstance(img_data, str):
                     import base64
                     img_data = base64.b64decode(img_data)
-                with open(out_path, "wb") as f:
-                    f.write(img_data)
-                saved = True
-                break
+                if img_data:
+                    with open(out_path, "wb") as f:
+                        f.write(img_data)
+                    saved = True
+                    break
             elif part.text:
                 logger.debug(f"[M6B] Model text response: {part.text[:200]}")
 
@@ -330,7 +324,7 @@ class InfographicGenerator:
         for r in results:
             if isinstance(r, Exception):
                 logger.error(f"[M6B] Gather exception: {r}")
-            else:
+            elif isinstance(r, tuple) and len(r) == 2:
                 seg_id, path = r
                 output[seg_id] = path
 

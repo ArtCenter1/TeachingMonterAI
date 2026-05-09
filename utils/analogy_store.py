@@ -60,7 +60,11 @@ class AnalogyStore:
                 "Radioactive Decay": "Like a crowd of people independently flipping coins; at any moment, roughly half will flip heads (decay). The crowd (sample) halves at a predictable rate.",
                 "Gravitational Field": "Like a stretched rubber sheet with a bowling ball on it; massive objects warp spacetime, causing other objects to 'fall' toward them along the curves.",
                 "Diffraction": "Like sound from an open door; you can hear people talking around a corner because sound bends around the edges of the doorway opening.",
-                "Impulse": "Like the difference between catching a ball with a stiff arm vs. letting your arm recoil; the recoil increases the contact time, reducing the peak force."
+                "Impulse": "Like the difference between catching a ball with a stiff arm vs. letting your arm recoil; the recoil increases the contact time, reducing the peak force.",
+                "Refraction (Car on Sand)": "Like a toy car driving from pavement onto sand at an angle; the wheel that hits the sand first slows down, causing the whole car to pivot and change direction.",
+                "Total Internal Reflection": "Like a silvered mirror inside a swimming pool; if you look up from underwater at a steep enough angle, the surface stops being a window and starts acting like a perfect mirror.",
+                "Convex Lens": "Like a magnifying glass or a 'gathering' tool; it collects wide rays of light and focuses them into a single bright point.",
+                "Reflection": "Like a rubber ball bouncing off a wall; the angle it hits the wall is the same as the angle it bounces off."
             },
             "Biology": {
                 "DNA Transcription": "Like photocopying a master blueprint; the original (DNA) stays locked in the library (nucleus) and you take only the copy (mRNA) to the construction site (ribosome).",

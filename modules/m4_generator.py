@@ -148,7 +148,7 @@ class ScriptGenerator:
             logger.info(f"M4: Using NotebookLM flow for script generation (ID: {notebook_id})")
             try:
                 script = await self._generate_with_notebooklm(notebook_id, concept_graph, student_model, topic_context)
-                if script:  # Guard against None fallback
+                if script:
                     return [script]
                 logger.warning("M4: NotebookLM returned None. Falling back to legacy LLM flow.")
             except Exception as e:
@@ -309,23 +309,28 @@ class ScriptGenerator:
         3. Narrative Flow: Smooth transitions. Each segment must reference the previous concept 
            using a bridging sentence ("Now that we know X, let's use that to understand Y...").
         4. Visual Cues: For each segment, 'visual_content_spec' MUST describe ONLY pure 
-           diagrams, arrows, and shapes — NO photographic imagery. For math/physics topics, 
-           explicitly specify: clean vector schematic, axis labels, color-coded arrows on dark background.
+           diagrams, arrows, and shapes — NO photographic imagery.
         5. Pacing: Match student level vocabulary. Use {level_val} appropriate sentence length.
         6. Citations: Every factual claim attributed to a source in the facts.
         7. Misconception Handling: {strategy_override_note if strategy_override_note else "Address any misconceptions proactively with 'You might think X, but actually Y' phrasing."}
         8. Verbosity: Every segment narration MUST be 150-250 words. Explain in full detail.
-        9. MATHEMATICAL ACCURACY — DISQUALIFICATION RISK:
-           All formulas MUST be mathematically correct. Verify each before writing:
+        9. MATHEMATICAL AND PHYSICAL ACCURACY — DISQUALIFICATION RISK:
+           All formulas and physical laws MUST be correct.
+           - Optics: Reflection angle = Incidence angle. Refraction follows Snell's Law (n1*sin1 = n2*sin2).
+           - Optimization: f'(x) = 0 for critical points.
+           - All formulas MUST be mathematically correct. Verify each before writing:
            - Slope: (y2 - y1) / (x2 - x1)          ← y2 MINUS y1, NOT y2 minus x1
            - Vector components: (x2 - x1, y2 - y1)   ← both pairs use matching subscripts
            - Distance: sqrt((x2-x1)² + (y2-y1)²)     ← both terms must be SQUARED
            Any incorrect formula → automatic disqualification.
-        10. SOCRATIC CHECKS: Include at least 2 genuine student-facing questions in the 
+        10. VISUAL ALIGNMENT REQUIREMENT: 
+            For Optics, `visual_content_spec` MUST describe light rays as arrows, the normal as a dashed line, and lens shapes explicitly. 
+            For Math, describe axes, tangent lines (f'(x)=0), and labels.
+        11. SOCRATIC CHECKS: Include at least 2 genuine student-facing questions in the 
             'checks' array that test conceptual understanding, not just recall.
-        11. TOPIC-SPECIFIC SAFEGUARDS:
-            - If topic is "Optimization Problems", you MUST explicitly cover setting up objective functions, constraints, and finding critical points using the derivative (f'(x) = 0). DO NOT just talk about basic kinematics (position vs speed). Use f(x) for position/value and f'(x) for rate of change.
-            - VISUAL ALIGNMENT REQUIREMENT: When discussing f'(x) = 0 or critical points, the `visual_content_spec` MUST explicitly describe drawing a tangent line with zero slope and labeling it "f'(x)=0". When discussing constraints, the visual MUST explicitly show boundaries or feasible regions.
+        12. TOPIC-SPECIFIC SAFEGUARDS:
+            - If topic is "Optics", you MUST cover Reflection, Refraction, and Snell's Law.
+            - If topic is "Optimization Problems", you MUST explicitly cover setting up objective functions, constraints, and finding critical points using the derivative (f'(x) = 0). 
 
         Return the data as a JSON object matching this schema:
         {{
@@ -398,9 +403,14 @@ Double-check every mathematical formula before writing it.
             # Ensure strategy name is preserved
             data["scaffolding_strategy"] = strategy_name
             data["subject"] = subject
-            return FullScript(**data)
+            # Preserve notebook_id for multimodal planning
+            notebook_id = fact_bundle.metadata.get("notebook_id")
+            script = FullScript(**data)
+            script.notebook_id = notebook_id
+            return script
         except Exception as e:
             logger.error(f"Error generating script ({strategy_name}): {str(e)}")
+            return self.get_mock_data(concept_graph, strategy_name)
     # ── Phase 1: Formula Validator ──────────────────────────────────────────
     _FORMULA_ERRORS = [
         # (bad_pattern_regex, correct_form, description)

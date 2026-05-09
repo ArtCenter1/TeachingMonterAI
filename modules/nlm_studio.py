@@ -94,10 +94,11 @@ async def preflight_check() -> bool:
     if os.getenv("NOTEBOOKLM_AUTH_JSON"):
         logger.info("NLM: Using environment variable authentication. Skipping file-age check.")
     else:
+        path = _auth_file_path()
         age = _auth_age_hours()
-        logger.info(f"NLM: Auth cookie age: {age:.1f} hours")
-        if age > 12:  # 12 hours
-            logger.info("NLM: Cookies older than 12 hours. Running headless refresh...")
+        logger.info(f"NLM: Reading auth from: {path} (exists={os.path.exists(path)}, age={age:.1f}h)")
+        if age > 120:  # 5 days - trigger headless refresh before expiry
+            logger.info("NLM: Cookies older than 5 days. Running headless refresh...")
             _run_refresh_auth()
 
     # Test API connectivity

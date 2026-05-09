@@ -100,9 +100,27 @@ def _ffmpeg_path() -> str:
         try:
             subprocess.run([candidate, "-version"], capture_output=True, check=True)
             return candidate
-        except Exception:
+        except (subprocess.CalledProcessError, FileNotFoundError):
             continue
     raise RuntimeError("FFmpeg not found. Install ffmpeg in the container.")
+
+
+def _get_video_duration(path: str) -> float:
+    """Use ffprobe to get video duration in seconds. Returns 0.0 on error."""
+    try:
+        result = subprocess.run(
+            [
+                "ffprobe", "-v", "error",
+                "-show_entries", "format=duration",
+                "-of", "default=noprint_wrappers=1:nokey=1",
+                path,
+            ],
+            capture_output=True, text=True, timeout=15
+        )
+        return float(result.stdout.strip())
+    except Exception as e:
+        logger.warning(f"M7: ffprobe duration check failed: {e}")
+        return 0.0
 
 
 def _run_ffmpeg(args: list[str], step_label: str = ""):
@@ -280,14 +298,13 @@ class VideoRenderer:
 
         segment_paths: list[str] = []
 
-        has_total_audio = getattr(script, "total_audio_path", None) is not None
-        
         for i, segment in enumerate(script.segments):
             visual = next(
                 (v for v in visual_plan if v["segment_id"] == segment.segment_id), None
             )
             if not visual:
-                continue
+                logger.warning(f"M7: No visual plan for segment {segment.segment_id}, using fallback.")
+                visual = {"visual_source": "fallback_slide", "segment_id": segment.segment_id}
 
             # 1. Handle Audio
             audio_path = None
@@ -301,11 +318,11 @@ class VideoRenderer:
                     duration = max(self._get_audio_duration(audio_path), 0.5)
                 except Exception as e:
                     logger.error(f"M7: Audio failed for segment {segment.segment_id}: {e}")
-                    continue
+                    duration = 5.0  # default duration
 
             if duration <= 0:
-                logger.warning(f"M7: Zero duration for {segment.segment_id}, skipping")
-                continue
+                logger.warning(f"M7: Zero duration for {segment.segment_id}, defaulting to 5s")
+                duration = 5.0
 
             # 3. Render segment: AI infographic (Ken Burns) OR Pexels B-roll
             visual_source = visual.get("visual_source", "pexels_broll")
@@ -365,6 +382,27 @@ class VideoRenderer:
                         duration=duration, caption=caption,
                         visual=visual, output_path=seg_raw, step=i,
                     )
+            elif visual_source == "fallback_slide":
+                slide_path = visual.get("image_path")
+                if slide_path and os.path.exists(slide_path):
+                    logger.info(f"M7: Segment {i} → Fallback text slide")
+                    self._render_infographic_segment(
+                        infographic_path=slide_path,
+                        audio_path=audio_path,
+                        duration=duration,
+                        caption=caption,
+                        visual=visual,
+                        output_path=seg_raw,
+                        step=i,
+                    )
+                else:
+                    logger.warning(f"M7: Fallback slide missing for seg {i}, fallback to B-roll")
+                    broll_path = self._source_visual_path(visual, run_video_dir, i)
+                    self._render_segment(
+                        broll_path=broll_path, audio_path=audio_path,
+                        duration=duration, caption=caption,
+                        visual=visual, output_path=seg_raw, step=i,
+                    )
             else:
                 broll_path = self._source_visual_path(visual, run_video_dir, i)
                 self._render_segment(
@@ -395,14 +433,13 @@ class VideoRenderer:
         self._concat_segments(segment_paths, concat_no_audio_path)
         logger.info(f"M7: Segments concatenated ({time.time() - t0:.1f}s elapsed)")
 
-        # 6. Final Audio Mux (NotebookLM total audio or segment-based audio)
+        # 6. Final Audio Mux
         output_filename = f"TeachingMonster_{run_id}.mp4"
-        output_path = os.path.join(self.output_dir, output_filename)
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        final_output_path = os.path.join(self.output_dir, output_filename)
+        os.makedirs(os.path.dirname(final_output_path), exist_ok=True)
 
         if has_total_audio:
             logger.info("M7: Muxing single NotebookLM audio track...")
-            # For NotebookLM, we have the continuous audio file
             _run_ffmpeg([
                 "-i", concat_no_audio_path,
                 "-i", script.total_audio_path,
@@ -411,18 +448,27 @@ class VideoRenderer:
                 "-c:v", "copy",
                 "-c:a", "aac",
                 "-shortest",
-                output_path
+                final_output_path
             ], f"final_mux_{run_id}")
         else:
-            # Legacy TTS path: segments already contain per-segment audio — no BGM
             logger.info("M7: Copying concatenated segments to output (no BGM).")
             _run_ffmpeg(
-                ["-i", concat_no_audio_path, "-c", "copy", output_path],
+                ["-i", concat_no_audio_path, "-c", "copy", final_output_path],
                 "copy_no_bgm",
             )
 
-        elapsed = time.time() - t0
-        logger.success(f"M7: Export complete → {output_path} ({elapsed:.1f}s total)")
+        # ── Minimum Duration Guard ──────────────────────────────────────
+        MIN_VIDEO_DURATION_S = int(os.getenv("MIN_VIDEO_DURATION_S", "60"))
+        actual_duration = _get_video_duration(final_output_path)
+        logger.info(f"M7: Final video duration = {actual_duration:.1f}s (min={MIN_VIDEO_DURATION_S}s)")
+        if actual_duration < MIN_VIDEO_DURATION_S:
+            raise RuntimeError(
+                f"M7: DURATION GUARD FAILED — video is {actual_duration:.1f}s, "
+                f"minimum required is {MIN_VIDEO_DURATION_S}s. "
+                f"This is a placeholder video. Aborting submission."
+            )
+
+        logger.success(f"M7: Rendering complete → {final_output_path}")
 
         # 7. Generate external SRT for contest compliance
         srt_filename = f"TeachingMonster_{run_id}.srt"

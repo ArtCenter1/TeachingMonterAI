@@ -72,7 +72,7 @@ class SourcingModule:
                     return d['name']
         
         # Secondary check: keyword heuristic (inherited from legacy logic)
-        if any(k in topic_lower for k in ("physics", "force", "motion", "wave", "energy", "quantum", "newton", "thermo", "magnet")):
+        if any(k in topic_lower for k in ("physics", "force", "motion", "wave", "energy", "quantum", "newton", "thermo", "magnet", "optics", "light", "refraction")):
             return "Physics"
         elif any(k in topic_lower for k in ("biology", "cell", "dna", "gene", "evolution", "organism")):
             return "Biology"

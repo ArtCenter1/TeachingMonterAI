@@ -317,6 +317,9 @@ class CIDPPCritic:
         reviews = []
         # Score CIDPP sequentially
         for script in scripts:
+            if script is None:
+                logger.warning("[M5] Skipping None script in variants list.")
+                continue
             review = await self.review(script, student_model, model_override)
             reviews.append(review)
             await asyncio.sleep(1)
@@ -524,6 +527,9 @@ class CIDPPCritic:
         """
         Score a script on the CIDPP rubric.
         """
+        if script is None:
+            logger.error("[M5] Received None script for review. Returning mock scores.")
+            return self.get_mock_data()
         # Local LLM CIDPP scoring is now the primary path
         if not self.google_api_key and not self.openrouter_api_key:
             logger.warning("No LLM API keys found, falling back to mock data.")

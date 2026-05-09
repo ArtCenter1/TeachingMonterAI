@@ -1,0 +1,14 @@
+{
+    "venvPath": ".",
+    "venv": ".venv",
+    "include": ["."],
+    "exclude": ["**/node_modules", "**/__pycache__", ".venv"],
+    "executionEnvironments": [
+        {
+            "root": ".",
+            "pythonVersion": "3.11",
+            "pythonPlatform": "Windows",
+            "extraPaths": ["."]
+        }
+    ]
+}

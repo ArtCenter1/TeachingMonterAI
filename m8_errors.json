@@ -52,5 +52,23 @@
       "search_api_key": "[REDACTED]",
       "request_id": "celery_2683_1778252953"
     }
+  },
+  {
+    "run_id": "87255778-c0d1-4492-8618-5a05dd569b38",
+    "timestamp": "2026-05-09T07:28:06.803781+00:00",
+    "failed_stage": "m8_logger",
+    "error_type": "UnicodeDecodeError",
+    "error_message": "'utf-8' codec can't decode byte 0xb2 in position 104025: invalid start byte",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 243, in pipeline_task\n    await m8.log_run(run_id, run_data, selection_log=selection_log)\n  File \"/app/modules/m8_logger.py\", line 165, in log_run\n    logs = json.load(f)\n           ^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/json/__init__.py\", line 293, in load\n    return loads(fp.read(),\n                 ^^^^^^^^^\n  File \"<frozen codecs>\", line 322, in decode\nUnicodeDecodeError: 'utf-8' codec can't decode byte 0xb2 in position 104025: invalid start byte\n",
+    "request": {
+      "course_requirement": "Big Concept: Data Science and Machine Learning\nTopic: Overfitting vs. Underfitting: Why the Best Model Is Not Always the Most Complex\nBloom's Taxonomy: remember, understand\nLearning Goal: Deliver a clear lecture explaining the concepts of overfitting and underfitting. Please visually guide the students through the 'training and test error versus model complexity' curves, explicitly identifying where the underfitting region, the optimal 'sweet spot', and the overfitting regions lie on the graph. To ensure the concepts are intuitive, seamlessly integrate a relatable real-world analogy (think an interesting one yourself) alongside a concrete machine learning example.\nKey Learning Points: Training error vs. test error; generalization; model complexity; bias-variance trade-off (conceptual); learning curves; overfitting signs (train acc ? test acc); underfitting signs (both low)",
+      "student_persona": "Grade: 8th gradeFocus Time: 10 minutesBackground Knowledge: Has: Can read scatter plots and line graphs. Lacks: No data science, modeling, statistics, or functions beyond basic arithmetic; no idea what \"model\" means",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": "[REDACTED]",
+      "search_cx": null,
+      "search_api_key": "[REDACTED]",
+      "request_id": "celery_1347_1778278972"
+    }
   }
 ]

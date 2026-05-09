@@ -71,14 +71,13 @@ class MultimodalPlanner:
                 for seg in script.segments
             ]
             slide_results = await asyncio.gather(*slide_tasks, return_exceptions=True)
-            for seg, result in zip(script.segments, slide_results):
                 if isinstance(result, str) and result:
                     nlm_slide_map[str(seg.segment_id)] = result
             logger.info(f"M6: NLM slides generated: {len(nlm_slide_map)}/{len(script.segments)}")
 
         for i, segment in enumerate(script.segments):
             # ── Route visual source ──────────────────────────────────────────
-            visual_type = str(segment.visual_type).lower().strip()
+            visual_type = (segment.visual_type or "concept").lower().strip()
             seg_id_str = str(segment.segment_id)
 
             # Priority: NLM slide → Gemini infographic → Pexels B-roll
@@ -89,26 +88,47 @@ class MultimodalPlanner:
             # Prevent hallucinatory text and irrelevant diagrams in Math/Physics
             is_stem = False
             if subject:
-                stem_keywords = ["physics", "math", "calculus", "differentiation", "kinematics", "geometry", "logic"]
-                if any(k in str(subject).lower() for k in stem_keywords):
+                sub = subject.lower()
+                con = segment.concept.lower()
+                stem_keywords = ("math", "physics", "geometry", "optics", "calculus", "science", "chemistry", "chemical", "biology", "cell", "anatomy", "data science", "machine learning", "ai", "artificial intelligence")
+                if any(k in sub or k in con for k in stem_keywords):
                     is_stem = True
+
+            # ── Strict STEM Routing ────────────────────────────────────
+            # For STEM subjects, NEVER fall back to Gemini — it generates
+            # hallucinatory text and botanically incorrect diagrams.
+            # The ONLY acceptable fallback is a deterministic fallback_slide.
+            _STEM_BROLL_ALLOWED = {"action", "real_world", "footage"}   # B-roll is OK for these
 
             if nlm_slide_path:
                 visual_source = "nlm_slide"
                 logger.info(f"M6: Seg {seg_id_str} → NLM slide")
-            elif infographic_path is not None:
-                # For STEM technical visuals, block Gemini fallback to avoid "Visual Gibberish"
-                if is_stem and visual_type in ["diagram", "data", "graph", "chart", "theory"]:
-                    visual_source = "fallback_slide"
-                    logger.warning(f"M6: Seg {seg_id_str} (STEM) → NLM failed. Blocking Gemini to avoid gibberish text.")
+            elif is_stem:
+                # NLM failed — refuse Gemini for all STEM types except B-roll
+                if visual_type in _STEM_BROLL_ALLOWED:
+                    visual_source = "pexels_broll"
+                    logger.info(f"M6: Seg {seg_id_str} (STEM) → Pexels B-roll ({visual_type})")
+                elif infographic_path:
+                    # Gemini succeeded — only use if visual_type is safe (no labeled diagrams)
+                    # For STEM, even stories usually need technical diagrams (e.g. Optics)
+                    # We ONLY allow Gemini if NLM is NOT available and it's a non-technical 'example'
+                    _STEM_SAFE_INFOGRAPHIC = {"example"}
+                    if visual_type in _STEM_SAFE_INFOGRAPHIC and not notebook_id:
+                        visual_source = "gemini_infographic"
+                        logger.info(f"M6: Seg {seg_id_str} (STEM-safe) → AI infographic ({visual_type})")
+                    else:
+                        # Priority 1: NotebookLM Slides (Deterministic & Grounded)
+                        # Priority 2: Fallback Slide (Safe Technical Text)
+                        visual_source = "nlm_slide" if notebook_id else "fallback_slide"
+                        logger.warning(f"M6: Seg {seg_id_str} (STEM) → Blocking Gemini for '{visual_type}'. Using {visual_source}.")
                 else:
+                    visual_source = "fallback_slide"
+                    logger.warning(f"M6: Seg {seg_id_str} (STEM) → NLM+Gemini both failed. Using fallback_slide.")
+            else:
+                # Non-STEM: normal routing
+                if infographic_path:
                     visual_source = "gemini_infographic"
                     logger.info(f"M6: Seg {seg_id_str} → AI infographic ({visual_type})")
-            else:
-                # For STEM technical visuals, block Pexels fallback to avoid "Contextual Mismatch" (e.g. CPU diagrams)
-                if is_stem and visual_type in ["diagram", "data", "graph", "chart", "theory"]:
-                    visual_source = "fallback_slide"
-                    logger.warning(f"M6: Seg {seg_id_str} (STEM) → NLM/Gemini failed. Blocking Pexels to avoid mismatch.")
                 else:
                     visual_source = "pexels_broll"
                     logger.info(f"M6: Seg {seg_id_str} → Pexels B-roll ({visual_type})")

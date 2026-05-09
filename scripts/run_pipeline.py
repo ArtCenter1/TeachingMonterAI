@@ -20,9 +20,15 @@ from modules.m6_multimodal import MultimodalPlanner
 from modules.m7_renderer import VideoRenderer
 from modules.m8_logger import FeedbackLogger
 
-async def run_full_pipeline(subject, requirement, persona="High school student"):
+async def run_full_pipeline(subject, requirement, persona="High school student", notebook_id=None):
     run_id = f"manual-{uuid.uuid4().hex[:8]}"
-    logger.info(f"Starting Manual Pipeline Run | Run ID: {run_id} | Subject: {subject}")
+    logger.info(f"Starting Manual Pipeline Run | Run ID: {run_id} | Subject: {subject} | Notebook: {notebook_id}")
+    
+    # ... (rest of the code remains same until script creation)
+    # Note: the script is selected by M5, but M4 generates variants.
+    # In run_pipeline.py, scripts are generated in Stage 4.
+    # We should ensure notebook_id is in the FullScript objects created by M4.
+    # Actually M4.generate_variants should handle this if we pass it.
     
     # Initialize Modules
     m1 = SourcingModule()
@@ -42,6 +48,9 @@ async def run_full_pipeline(subject, requirement, persona="High school student")
     try:
         logger.info("Stage 1: Sourcing")
         fact_bundle = await m1.source(request_data.course_requirement)
+        if notebook_id:
+            fact_bundle.metadata["notebook_id"] = notebook_id
+            logger.info(f"Manual override: Injected notebook_id {notebook_id} into metadata.")
         
         logger.info("Stage 2: Persona")
         student_model = await m2.parse(request_data.student_persona)
@@ -103,7 +112,8 @@ if __name__ == "__main__":
     parser.add_argument("--subject", type=str, required=True, help="Curriculum subject (e.g. Taxonomy)")
     parser.add_argument("--requirement", type=str, required=True, help="Specific requirement (e.g. Diversity of Life)")
     parser.add_argument("--persona", type=str, default="High school student", help="Student persona")
+    parser.add_argument("--notebook_id", type=str, default=None, help="Notebook ID for grounded assets")
     
     args = parser.parse_args()
     
-    asyncio.run(run_full_pipeline(args.subject, args.requirement, args.persona))
+    asyncio.run(run_full_pipeline(args.subject, args.requirement, args.persona, args.notebook_id))

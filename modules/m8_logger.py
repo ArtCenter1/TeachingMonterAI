@@ -24,15 +24,15 @@ class StrategyTracker:
     def _load(self) -> Dict[str, Dict]:
         if os.path.exists(self.store_file):
             try:
-                with open(self.store_file, "r") as f:
+                with open(self.store_file, "r", encoding="utf-8") as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError):
                 pass
         return {}
 
     def _save(self) -> None:
-        with open(self.store_file, "w") as f:
-            json.dump(self._stats, f, indent=2)
+        with open(self.store_file, "w", encoding="utf-8") as f:
+            json.dump(self._stats, f, indent=2, ensure_ascii=False)
 
     def _make_key(self, strategy: str, level: str, subject: str) -> str:
         """Create a composite key for the stats dict."""
@@ -160,7 +160,7 @@ class FeedbackLogger:
         """
         logs = []
         if os.path.exists(self.log_file):
-            with open(self.log_file, "r") as f:
+            with open(self.log_file, "r", encoding="utf-8", errors="replace") as f:
                 try:
                     logs = json.load(f)
                 except json.JSONDecodeError:
@@ -169,8 +169,8 @@ class FeedbackLogger:
         entry = {"run_id": run_id, "data": data, "selection_log": selection_log}
         logs.append(entry)
 
-        with open(self.log_file, "w") as f:
-            json.dump(logs, f, indent=2)
+        with open(self.log_file, "w", encoding="utf-8") as f:
+            json.dump(logs, f, indent=2, ensure_ascii=False)
 
         # ── Phase 3: Auto-record strategy win ──────────────────────────────
         # Check for greedy_selected flag in selection_log. If any variant was
@@ -210,7 +210,7 @@ class FeedbackLogger:
         """
         logs = []
         if os.path.exists(self.log_file):
-            with open(self.log_file, "r") as f:
+            with open(self.log_file, "r", encoding="utf-8") as f:
                 try:
                     logs = json.load(f)
                 except json.JSONDecodeError:
@@ -234,8 +234,8 @@ class FeedbackLogger:
                         strategy, level, subject, won=(elo_outcome == "win")
                     )
 
-                with open(self.log_file, "w") as f:
-                    json.dump(logs, f, indent=2)
+                with open(self.log_file, "w", encoding="utf-8") as f:
+                    json.dump(logs, f, indent=2, ensure_ascii=False)
                 return True
 
         return False  # Run ID not found
@@ -253,7 +253,7 @@ class FeedbackLogger:
         """
         logs = []
         if os.path.exists(self.log_file):
-            with open(self.log_file, "r") as f:
+            with open(self.log_file, "r", encoding="utf-8") as f:
                 try:
                     logs = json.load(f)
                 except json.JSONDecodeError:
@@ -280,8 +280,8 @@ class FeedbackLogger:
                         strategy, level, subject, won=(elo_outcome == "win")
                     )
 
-                with open(self.log_file, "w") as f:
-                    json.dump(logs, f, indent=2)
+                with open(self.log_file, "w", encoding="utf-8") as f:
+                    json.dump(logs, f, indent=2, ensure_ascii=False)
                 return True
 
         return False  # Run ID not found
@@ -291,7 +291,7 @@ class FeedbackLogger:
         if not os.path.exists(self.log_file):
             return 0
         try:
-            with open(self.log_file, "r") as f:
+            with open(self.log_file, "r", encoding="utf-8") as f:
                 logs = json.load(f)
                 count = 0
                 for entry in logs:
@@ -357,7 +357,7 @@ class ErrorLogger:
         """Append one error entry.  Synchronous so it works inside except blocks."""
         logs = []
         if os.path.exists(self.log_file):
-            with open(self.log_file, "r") as f:
+            with open(self.log_file, "r", encoding="utf-8") as f:
                 try:
                     loaded = json.load(f)
                     # Guard: file may have been initialised as a {} dict — reset if so
@@ -382,6 +382,6 @@ class ErrorLogger:
         }
         logs.append(entry)
 
-        with open(self.log_file, "w") as f:
+        with open(self.log_file, "w", encoding="utf-8") as f:
             json.dump(logs, f, indent=2, ensure_ascii=False)
 

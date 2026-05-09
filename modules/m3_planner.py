@@ -16,6 +16,31 @@ class ConceptPlanner:
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
+    def _load_curriculum_context(self, topic: str) -> str:
+        """
+        Load curriculum markdown for the given topic, if one exists.
+        Returns the first 2000 chars (fits comfortably in prompt context).
+        """
+        CURRICULUM_MAP = {
+            "optic": "resources/curriculum/physics/optics_and_light.md",
+            "light": "resources/curriculum/physics/optics_and_light.md",
+            "refraction": "resources/curriculum/physics/optics_and_light.md",
+            "reflection": "resources/curriculum/physics/optics_and_light.md",
+            "nuclear": "resources/curriculum/physics/nuclear_physics_basics.md",
+            "circulatory": "resources/curriculum/biology/human_circulatory_system.md",
+        }
+        topic_lower = topic.lower()
+        for keyword, path in CURRICULUM_MAP.items():
+            if keyword in topic_lower:
+                full_path = os.path.join(os.path.dirname(__file__), "..", path)
+                full_path = os.path.normpath(full_path)
+                if os.path.exists(full_path):
+                    with open(full_path, "r", encoding="utf-8") as f:
+                        content = f.read(2000)
+                    logger.info(f"M3: Loaded curriculum context from {path}")
+                    return content
+        return ""
+
     def _build_prompt(
         self, topic: str, student_model: StudentModel, retry_hint: str = ""
     ) -> str:
@@ -29,12 +54,24 @@ class ConceptPlanner:
 IMPORTANT — YOUR PREVIOUS ATTEMPT FAILED: {retry_hint}
 You MUST return at least {MIN_CONCEPT_NODES} nodes this time. A single-node response is incorrect.
 """
+        
+        curriculum_context = self._load_curriculum_context(topic)
+        curriculum_block = ""
+        if curriculum_context:
+            curriculum_block = f"""
+CURRICULUM REFERENCE (use this as your factual ground truth — do not invent concepts):
+---
+{curriculum_context}
+---
+Your concept nodes MUST be drawn from the above content. Do not use concepts not present in this reference.
+"""
+
         return f"""
 You are a pedagogical lesson planner specializing in concept scaffolding.
 
 Your task: Plan a lesson sequence for the topic: "{topic}".
 Student Model: {student_model.json()}
-
+{curriculum_block}
 STEP 1 — THINK FIRST (do not output this):
 Analyze the topic and break it down into {MIN_CONCEPT_NODES} to 7 distinct sub-concepts that build progressively.
 List them explicitly: 1. Simplest foundational concept, 2. Next level, ..., up to the full topic.
