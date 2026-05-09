@@ -123,7 +123,13 @@ class ScriptGenerator:
             for name, desc in self.strategies.items()
         ]
         variants = await asyncio.gather(*tasks, return_exceptions=False)
-        return list(variants)
+        valid_variants = [v for v in variants if v is not None]
+        
+        if not valid_variants:
+            logger.error("M4: All variants failed to generate. Falling back to mock data.")
+            return [self.get_mock_data(concept_graph, "Intuition-First")]
+            
+        return valid_variants
 
 
     async def generate_variants(

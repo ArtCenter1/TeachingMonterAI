@@ -34,5 +34,23 @@
       "search_api_key": "[REDACTED]",
       "request_id": "celery_2683_1778209431"
     }
+  },
+  {
+    "run_id": "76f0ef03-dc98-410c-9f14-443498f0956c",
+    "timestamp": "2026-05-08T23:47:16.636494+00:00",
+    "failed_stage": "m5_critic",
+    "error_type": "AttributeError",
+    "error_message": "'NoneType' object has no attribute 'json'",
+    "traceback": "Traceback (most recent call last):\n  File \"/app/main.py\", line 177, in pipeline_task\n    script, selection_log = await m5.score_variants(\n                            ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m5_critic.py\", line 320, in score_variants\n    review = await self.review(script, student_model, model_override)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/modules/m5_critic.py\", line 538, in review\n    Script: {script.json()}\n             ^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'json'\n",
+    "request": {
+      "course_requirement": "unit: Analytical Applications of Differentiation\n\ntopic: Introduction to Optimization Problems\n\nlearning objective: Solve optimization problems.\n\nessential knowledge: Optimization problems involve finding maximum or minimum values in applied contexts using derivatives.",
+      "student_persona": "Education Level: Senior high school | Preferred Explanation Style: Examples | Timeline Urgency: Relaxed | Depth Preference: Application-first",
+      "model_override": null,
+      "age_group": "10-15",
+      "google_api_key": "[REDACTED]",
+      "search_cx": null,
+      "search_api_key": "[REDACTED]",
+      "request_id": "celery_2683_1778252953"
+    }
   }
 ]
