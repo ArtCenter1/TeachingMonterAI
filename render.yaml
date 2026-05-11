@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: teaching-monster-ai
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    # Render sets PORT automatically; uvicorn reads it via $PORT
+    envVars:
+      - key: PORT
+        value: 8000
+      # ── LLM Keys ────────────────────────────────────────────────────────────
+      - key: GOOGLE_API_KEY
+        sync: false          # set manually in Render dashboard
+      - key: XAI_API_KEY
+        sync: false
+      - key: CARTESIA_API_KEY
+        sync: false
+      # ── Optional key pools ──────────────────────────────────────────────────
+      - key: GOOGLE_API_KEY_POOL
+        sync: false
+      - key: OPENROUTER_API_KEY_POOL
+        sync: false
+      # ── Search ──────────────────────────────────────────────────────────────
+      - key: SEARCH_API_KEY
+        sync: false
+      - key: SEARCH_CX
+        sync: false
+      # ── Pexels ──────────────────────────────────────────────────────────────
+      - key: PEXELS_API_KEY
+        sync: false
+      # ── NLM Studio ──────────────────────────────────────────────────────────
+      - key: NLM_SLIDES_ENABLED
+        value: "false"       # disable NLM on Render (needs local Chrome session)
+      - key: NLM_AUDIO_ENABLED
+        value: "false"
+      # ── Pipeline tuning ─────────────────────────────────────────────────────
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    # Render free plan has 512 MB RAM — this service needs at least 1 GB
+    # Upgrade to Starter ($7/mo) or Standard ($25/mo) before the contest
+    plan: starter
+    healthCheckPath: /health
+    # Keep the service awake (free tier sleeps after 15 min inactivity)
+    autoDeploy: true

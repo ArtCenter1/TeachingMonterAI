@@ -57,4 +57,4 @@ ENV PYTHONUNBUFFERED=1
 # Command to run the application
 # --timeout-keep-alive: keep HTTP connection alive for 30 min (contest pipeline duration)
 # --timeout-graceful-shutdown: give long requests time to finish on SIGTERM
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--timeout-keep-alive", "1800", "--timeout-graceful-shutdown", "1800"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --timeout-keep-alive 1800 --timeout-graceful-shutdown 1800"]
